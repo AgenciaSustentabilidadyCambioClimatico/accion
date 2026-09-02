@@ -1781,6 +1781,9 @@ class FondoProduccionLimpia < ApplicationRecord
     total_fpl = 0.0
     total_aporte = 0.0
 
+    fmt_clp = lambda { |m| ActiveSupport::NumberHelper.number_to_currency(m.to_f, delimiter: '.', precision: 0, format: "%u%n", unit: "$") }
+    fmt_pct = lambda { |p| ActiveSupport::NumberHelper.number_to_percentage(p.to_f, precision: 1, separator: ',') rescue "#{p.round(1)}%" }
+
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 60], width: pdf.bounds.width do
 
       self.pdf_titulo_formato(pdf, "INFORME DE EVALUACIÓN DE RENDICIÓN DE GASTOS") rescue nil
@@ -2045,25 +2048,250 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 25) rescue nil
 
-      # 5. RESUMEN FINANCIERO UNIFICADO
+      # =========================================================================
+      # 5. ESTRUCTURA DE COSTOS Y RESUMEN FINANCIERO CONSOLIDADO DEL PROYECTO
+      # =========================================================================
       self.pdf_sub_titulo_formato(pdf, "RESUMEN FINANCIERO DEL PROYECTO") rescue nil
+      self.pdf_separador(pdf, 10) rescue nil
 
-      fmt_clp = lambda { |m| ActiveSupport::NumberHelper.number_to_currency(m.to_f, delimiter: '.', precision: 0, format: "%u%n", unit: "$") }
-
-      tabla_resumen = [
-        [ "ÍTEM DE GASTOS", "RENDIDO FPL", "RENDIDO APORTE" ],
-        [ "Recursos Humanos Propios", fmt_clp.call(totales_resumen[:rrhh_propios][:fpl]), fmt_clp.call(totales_resumen[:rrhh_propios][:aporte]) ],
-        [ "Recursos Humanos Externos", fmt_clp.call(totales_resumen[:rrhh_externos][:fpl]), fmt_clp.call(totales_resumen[:rrhh_externos][:aporte]) ],
-        [ "Gastos de Operación", fmt_clp.call(totales_resumen[:operaciones][:fpl]), fmt_clp.call(totales_resumen[:operaciones][:aporte]) ],
-        [ "Gastos de Administración", fmt_clp.call(totales_resumen[:administracion][:fpl]), fmt_clp.call(totales_resumen[:administracion][:aporte]) ],
-        [ { content: "<b>TOTAL</b>", inline_format: true }, "<b>#{fmt_clp.call(total_fpl)}</b>", "<b>#{fmt_clp.call(total_aporte)}</b>" ]
+      items_costo = [
+        { key: :rrhh_propios, nombre: 'RR HH Propios' },
+        { key: :rrhh_externos, nombre: 'RR HH Externos' },
+        { key: :gastos_operacion, nombre: 'Gastos de Operación' },
+        { key: :gastos_administracion, nombre: 'Gastos de Administración' }
       ]
 
-      pdf.table(tabla_resumen, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', align: :center, inline_format: true }) do
+      base_presupuesto_fpl = Hash.new(0.0)
+      base_presupuesto_apo = Hash.new(0.0)
+
+      # Sumar presupuestos aprobados por actividad para todo el proyecto
+      all_plan_acts = PlanActividad.where(flujo_id: flujo_actual_id)
+      all_plan_acts.each do |p_act|
+        act_id = p_act.actividad_id.presence || p_act.id
+        g_fpl = obtener_gastos.call(act_id, ['solicitado al fondo', 'solicitado_al_fondo'])
+        g_apo = obtener_gastos.call(act_id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
+
+        [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_k|
+          k_std = cat_k == :operaciones ? :gastos_operacion : (cat_k == :administracion ? :gastos_administracion : cat_k)
+
+          g_fpl[cat_k].to_a.each do |item|
+            v_u = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+            cant = (item.try(:hh) || item.try(:cantidad)).to_f
+            costo = item.try(:costo).presence || item.try(:total).presence || (v_u * cant)
+            base_presupuesto_fpl[k_std] += costo.to_f
+          end
+
+          g_apo[cat_k].to_a.each do |item|
+            v_u = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+            cant = (item.try(:hh) || item.try(:cantidad)).to_f
+            costo = item.try(:costo).presence || item.try(:total).presence || (v_u * cant)
+            base_presupuesto_apo[k_std] += costo.to_f
+          end
+        end
+      end
+
+      # Gastos rendidos acumulados de todas las rendiciones del proyecto
+      rend_ids_todas = RendicionFpl.where(flujo_id: flujo_actual_id).pluck(:id)
+      todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_todas).to_a rescue []
+
+      cat_key_map = { 
+        'rrhh_propios' => :rrhh_propios, 
+        'rrhh_externos' => :rrhh_externos, 
+        'operaciones' => :gastos_operacion, 
+        'gastos_operacion' => :gastos_operacion, 
+        'administracion' => :gastos_administracion, 
+        'gastos_administracion' => :gastos_administracion 
+      }
+
+      ren_acum_fpl = Hash.new(0.0)
+      ren_acum_apo = Hash.new(0.0)
+
+      todos_los_gastos.each do |g|
+        c_key = cat_key_map[g.categoria.to_s.downcase] || g.categoria.to_s.to_sym
+        val_rend = g.costo_rendido.to_f
+        es_fpl_item = g.tipo_aporte.to_s.downcase.include?('solicitado') || g.tipo_aporte.to_s.downcase.include?('fondo')
+
+        if es_fpl_item
+          ren_acum_fpl[c_key] += val_rend
+        else
+          ren_acum_apo[c_key] += val_rend
+        end
+      end
+
+      data_costos = { total: {}, fpl: {}, aporte: {} }
+      items_costo.each do |item|
+        k = item[:key]
+
+        tot_f = base_presupuesto_fpl[k].to_f
+        ren_f = ren_acum_fpl[k].to_f
+
+        tot_a = base_presupuesto_apo[k].to_f
+        ren_a = ren_acum_apo[k].to_f
+
+        data_costos[:fpl][k] = { tot: tot_f, ren: ren_f }
+        data_costos[:aporte][k] = { tot: tot_a, ren: ren_a }
+        data_costos[:total][k] = { tot: tot_f + tot_a, ren: ren_f + ren_a }
+      end
+
+      ancho_medio = (pdf.bounds.width - 10) / 2.0
+      y_pos_tablas = pdf.cursor
+
+      # TABLA 5.1: A Cargo del Fondo PL
+      pdf.bounding_box([pdf.bounds.left, y_pos_tablas], width: ancho_medio) do
+        header_fpl_box = [ [ { content: "<b>A Cargo del Fondo PL</b>", inline_format: true } ] ]
+        pdf.table(header_fpl_box, width: ancho_medio, cell_style: { size: 8, padding: 4, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+
+        nodes_fpl = data_costos[:fpl]
+        rows_fpl = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
+
+        items_costo.each do |item|
+          k = item[:key]
+          node = nodes_fpl[k] || { tot: 0.0, ren: 0.0 }
+          tot = node[:tot].to_f
+          ren = node[:ren].to_f
+          por_ren = tot - ren
+          pct = tot > 0 ? (ren / tot * 100) : 0.0
+
+          rows_fpl << [
+            item[:nombre],
+            fmt_clp.call(tot),
+            fmt_clp.call(ren),
+            fmt_clp.call(por_ren),
+            fmt_pct.call(pct)
+          ]
+        end
+
+        tot_gen_f = nodes_fpl.values.sum { |v| v[:tot].to_f }
+        ren_gen_f = nodes_fpl.values.sum { |v| v[:ren].to_f }
+        por_ren_f = tot_gen_f - ren_gen_f
+        pct_gen_f = tot_gen_f > 0 ? (ren_gen_f / tot_gen_f * 100) : 0.0
+
+        rows_fpl << [
+          "<b>TOTAL</b>",
+          "<b>#{fmt_clp.call(tot_gen_f)}</b>",
+          "<b>#{fmt_clp.call(ren_gen_f)}</b>",
+          "<b>#{fmt_clp.call(por_ren_f)}</b>",
+          "<b>#{fmt_pct.call(pct_gen_f)}</b>"
+        ]
+
+        pdf.table(rows_fpl, width: ancho_medio, cell_style: { size: 6.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+          row(0).background_color = 'E0EFF6'
+          row(0).font_style = :bold
+          column(0).width = 85
+          column(1).align = :right
+          column(2).align = :right
+          column(3).align = :right
+          column(4).align = :center
+          row(-1).background_color = 'F0F0F0'
+        end
+      end
+
+      height_fpl = y_pos_tablas - pdf.cursor
+
+      # TABLA 5.2: A Cargo del Beneficiario
+      pdf.bounding_box([pdf.bounds.left + ancho_medio + 10, y_pos_tablas], width: ancho_medio) do
+        header_apo_box = [ [ { content: "<b>A Cargo del Beneficiario</b>", inline_format: true } ] ]
+        pdf.table(header_apo_box, width: ancho_medio, cell_style: { size: 8, padding: 4, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+
+        nodes_apo = data_costos[:aporte]
+        rows_apo = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
+
+        items_costo.each do |item|
+          k = item[:key]
+          node = nodes_apo[k] || { tot: 0.0, ren: 0.0 }
+          tot = node[:tot].to_f
+          ren = node[:ren].to_f
+          por_ren = tot - ren
+          pct = tot > 0 ? (ren / tot * 100) : 0.0
+
+          rows_apo << [
+            item[:nombre],
+            fmt_clp.call(tot),
+            fmt_clp.call(ren),
+            fmt_clp.call(por_ren),
+            fmt_pct.call(pct)
+          ]
+        end
+
+        tot_gen_a = nodes_apo.values.sum { |v| v[:tot].to_f }
+        ren_gen_a = nodes_apo.values.sum { |v| v[:ren].to_f }
+        por_ren_a = tot_gen_a - ren_gen_a
+        pct_gen_a = tot_gen_a > 0 ? (ren_gen_a / tot_gen_a * 100) : 0.0
+
+        rows_apo << [
+          "<b>TOTAL</b>",
+          "<b>#{fmt_clp.call(tot_gen_a)}</b>",
+          "<b>#{fmt_clp.call(ren_gen_a)}</b>",
+          "<b>#{fmt_clp.call(por_ren_a)}</b>",
+          "<b>#{fmt_pct.call(pct_gen_a)}</b>"
+        ]
+
+        pdf.table(rows_apo, width: ancho_medio, cell_style: { size: 6.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+          row(0).background_color = 'E0EFF6'
+          row(0).font_style = :bold
+          column(0).width = 85
+          column(1).align = :right
+          column(2).align = :right
+          column(3).align = :right
+          column(4).align = :center
+          row(-1).background_color = 'F0F0F0'
+        end
+      end
+
+      pdf.move_cursor_to(y_pos_tablas - height_fpl)
+      self.pdf_separador(pdf, 12) rescue nil
+
+      # TABLA 5.3: Total del Proyecto (Consolidado)
+      header_total_box = [
+        [
+          { content: "<b>Total del Proyecto (Consolidado)</b>", inline_format: true },
+          { content: "Resumen General", align: :right, inline_format: true }
+        ]
+      ]
+      pdf.table(header_total_box, width: pdf.bounds.width, cell_style: { size: 8.5, padding: 4, background_color: '5D759E', text_color: 'FFFFFF', border_color: '5D759E' })
+
+      rows_tot = [ [ "Ítem de Gasto", "Presupuesto Total", "Gastos Rendidos", "Pendiente por Rendir", "% Ejecución Acumulada" ] ]
+
+      nodes_tot = data_costos[:total]
+      items_costo.each do |item|
+        k = item[:key]
+        node = nodes_tot[k] || { tot: 0.0, ren: 0.0 }
+        tot = node[:tot].to_f
+        ren = node[:ren].to_f
+        por_ren = tot - ren
+        pct = tot > 0 ? (ren / tot * 100) : 0.0
+
+        rows_tot << [
+          "<b>#{item[:nombre]}</b>",
+          fmt_clp.call(tot),
+          fmt_clp.call(ren),
+          fmt_clp.call(por_ren),
+          fmt_pct.call(pct)
+        ]
+      end
+
+      tot_gen_t = nodes_tot.values.sum { |v| v[:tot].to_f }
+      ren_gen_t = nodes_tot.values.sum { |v| v[:ren].to_f }
+      por_ren_t = tot_gen_t - ren_gen_t
+      pct_gen_t = tot_gen_t > 0 ? (ren_gen_t / tot_gen_t * 100) : 0.0
+
+      rows_tot << [
+        "<color rgb='004085'><b>TOTAL CONSOLIDADO PROYECTO</b></color>",
+        "<color rgb='004085'><b>#{fmt_clp.call(tot_gen_t)}</b></color>",
+        "<color rgb='28A745'><b>#{fmt_clp.call(ren_gen_t)}</b></color>",
+        "<color rgb='DC3545'><b>#{fmt_clp.call(por_ren_t)}</b></color>",
+        "<b>#{fmt_pct.call(pct_gen_t)}</b>"
+      ]
+
+      pdf.table(rows_tot, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
         row(0).background_color = 'E0EFF6'
         row(0).font_style = :bold
-        column(0).align = :left
-        row(-1).background_color = 'F0F0F0'
+        column(0).width = 150
+        column(1).align = :right
+        column(2).align = :right
+        column(3).align = :right
+        column(4).align = :center
+        row(-1).background_color = 'E0EFF6'
       end
 
       self.pdf_separador(pdf, 25) rescue nil
@@ -2381,8 +2609,7 @@ class FondoProduccionLimpia < ApplicationRecord
     end
 
     pdf.table(tabla_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
-      row(0).background_color = '003DA6'
-      row(0).text_color = 'FFFFFF'
+      row(0).background_color = 'E0EFF6'
       row(0).font_style = :bold
       column(0).width = 25
       column(0).align = :center
