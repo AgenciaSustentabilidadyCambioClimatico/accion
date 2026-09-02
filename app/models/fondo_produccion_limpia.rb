@@ -1673,6 +1673,18 @@ class FondoProduccionLimpia < ApplicationRecord
     titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
     programa_texto = fpl.try(:programa).presence || "--"
 
+    # =========================================================================
+    # LÓGICA DE VALIDACIÓN DE IMPUTACIÓN
+    # =========================================================================
+    prog_clean = programa_texto.to_s.strip
+    imputacion_texto = if prog_clean.include?('01 - Ley Presupuesto') || prog_clean.include?('07 - DPS') || prog_clean =~ /^01|^07|Ley Presupuesto|DPS/i
+                         '24.01.070'
+                       elsif prog_clean.downcase.include?('extrapresupuestario')
+                         '92.01.618'
+                       else
+                         programa_texto
+                       end
+
     postulante = User.find_by(id: fpl.try(:usuario_entregables_id))
     nombre_postulante = postulante.try(:nombre_completo)
 
@@ -1693,6 +1705,10 @@ class FondoProduccionLimpia < ApplicationRecord
     map_planes_by_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:id)
     map_planes_by_act_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:actividad_id)
     get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+    # IDENTIFICACIÓN ROBUSTA DE ACTIVIDADES REITIMIZADAS
+    arr_planes = map_planes_by_id.values
+    reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
 
     # FECHAS TAREAS
     tarea_fondo_fpl_14 = Tarea.find_by_codigo(Tarea::COD_FPL_14) rescue nil
@@ -1775,7 +1791,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       tabla_antecedentes = [
         [ { content: "<b>Código:</b>", inline_format: true }, fpl&.codigo_proyecto.to_s, { content: "<b>Programa:</b>", inline_format: true }, programa_texto ],
-        [ { content: "<b>Título del proyecto:</b>", inline_format: true }, { content: titulo_proyecto, colspan: 3 } ],
+        [ { content: "<b>Título del proyecto:</b>", inline_format: true }, titulo_proyecto, { content: "<b>Imputación:</b>", inline_format: true }, imputacion_texto ],
         [ { content: "<b>Nombre Entidad Beneficiaria:</b>", inline_format: true }, { content: razon_social, colspan: 3 } ],
         [ { content: "<b>N° de informe:</b>", inline_format: true }, { content: texto_mes_display, colspan: 3 } ],
         [ { content: "<b>Fecha aprobación informe evaluación actividades:</b>", inline_format: true }, fecha_recepcion, { content: "<b>Fecha de evaluación de gastos:</b>", inline_format: true }, fecha_evaluacion ]
@@ -1801,6 +1817,15 @@ class FondoProduccionLimpia < ApplicationRecord
       if actividades.present?
         actividades.each do |act|
           act_id_num = act.id.to_i
+          plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
+          pk_id_num = plan_act.try(:id).to_i
+          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+          es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+          nombre_actividad_display = act.try(:nombre) || "Actividad"
+          if es_reitimizada
+            nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
+          end
 
           detalle_tecnico = rendicion.rendicion_detalles_fpl.find do |d|
             act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
@@ -1812,7 +1837,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
           tabla_actividades << [
             act.try(:correlativo) || "-",
-            act.try(:nombre) || "Actividad",
+            nombre_actividad_display,
             detalle_tecnico&.observacion.presence || "--",
             estado_label
           ]
@@ -1849,6 +1874,13 @@ class FondoProduccionLimpia < ApplicationRecord
           act_id_num = actividad.id.to_i
           plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
           pk_id_num = plan_act.try(:id).to_i
+          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+          es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+          nombre_actividad_display = actividad.nombre.to_s
+          if es_reitimizada
+            nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
+          end
 
           gastos_fpl = obtener_gastos.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
@@ -1867,7 +1899,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
               filas_fpl << [
                 actividad.correlativo.to_s,
-                actividad.nombre,
+                nombre_actividad_display,
                 cat_key.to_s.humanize.titleize,
                 item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
                 item.try(:tipo_aporte).to_s,
@@ -1908,6 +1940,13 @@ class FondoProduccionLimpia < ApplicationRecord
           act_id_num = actividad.id.to_i
           plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
           pk_id_num = plan_act.try(:id).to_i
+          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+          es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+          nombre_actividad_display = actividad.nombre.to_s
+          if es_reitimizada
+            nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
+          end
 
           gastos_aporte = obtener_gastos.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
@@ -1926,7 +1965,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
               filas_ben << [
                 actividad.correlativo.to_s,
-                actividad.nombre,
+                nombre_actividad_display,
                 cat_key.to_s.humanize.titleize,
                 item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
                 item.try(:tipo_aporte).to_s,
@@ -2134,6 +2173,10 @@ class FondoProduccionLimpia < ApplicationRecord
     map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_ref).index_by(&:id)
     get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
+    # IDENTIFICACIÓN ROBUSTA DE ACTIVIDADES REITIMIZADAS
+    arr_planes = map_planes_by_id.values
+    reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
     tarea_fondo_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)
 
     extraer_mes_data = lambda do |tp|
@@ -2211,6 +2254,17 @@ class FondoProduccionLimpia < ApplicationRecord
     if actividades.present?
       actividades.each do |act|
         act_id_num = act.id.to_i
+        
+        # Recuperar ID interno y validación de reitimización
+        plan_act = map_planes_by_id.values.find { |p| p.actividad_id.to_i == act_id_num || p.id.to_i == act_id_num }
+        pk_id_num = plan_act.try(:id).to_i
+        mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+        es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+        nombre_actividad_display = act.try(:nombre).to_s
+        if es_reitimizada
+          nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
+        end
 
         # BÚSQUEDA TRADUCIDA DEL DETALLE TÉCNICO
         detalle_tecnico = detalles_fpl_array.find do |d|
@@ -2265,7 +2319,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
         tabla_act << [
           act.try(:correlativo).to_s,
-          act.try(:nombre).to_s,
+          nombre_actividad_display,
           f_inicio_str,
           f_termino_str,
           monto_fmt,
@@ -2316,9 +2370,9 @@ class FondoProduccionLimpia < ApplicationRecord
 
     tabla_funcionarios = [
       [ "Nombre del Responsable", "___________________________", "", "Nombre del Responsable", "___________________________" ],
-      [ "RUT",                     "___________________________", "", "RUT",                     "___________________________" ],
-      [ "Cargo",                   "___________________________", "", "Cargo",                   "___________________________" ],
-      [ "Dependencia",             "___________________________", "", "Dependencia",             "___________________________" ]
+      [ "RUT",                    "___________________________", "", "RUT",                    "___________________________" ],
+      [ "Cargo",                  "___________________________", "", "Cargo",                  "___________________________" ],
+      [ "Dependencia",            "___________________________", "", "Dependencia",            "___________________________" ]
     ]
 
     pdf.table(tabla_funcionarios, cell_style: { size: 7.5, padding: 2, borders: [] }) do
@@ -2448,6 +2502,10 @@ class FondoProduccionLimpia < ApplicationRecord
     get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
     detalles_hash = PlanActividad.where(flujo_id: flujo_id_ref).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
+    # IDENTIFICACIÓN ROBUSTA DE ACTIVIDADES REITIMIZADAS
+    arr_planes = map_planes_by_id.values
+    reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
     tarea_fondo_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)
     tarea_fondo_fpl_15 = Tarea.find_by_codigo(Tarea::COD_FPL_15)
 
@@ -2524,6 +2582,10 @@ class FondoProduccionLimpia < ApplicationRecord
           act_id_num = act.id.to_i
 
           plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || act
+          pk_id_num = plan_act.try(:id).to_i
+          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+          es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
           obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
           obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: flujo_id_ref).pluck(:objetivos_especifico_id).first if plan_act.present?
           obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
@@ -2537,10 +2599,10 @@ class FondoProduccionLimpia < ApplicationRecord
           end
 
           val_cumple = if detalle_tecnico.present?
-                          (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
-                        else
-                          0
-                        end
+                         (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
+                       else
+                         0
+                       end
 
           es_observado = false
           estado_html = if val_cumple == 1
@@ -2575,9 +2637,14 @@ class FondoProduccionLimpia < ApplicationRecord
                         end
           nom_archivo = nom_archivo.presence || "Sin adjuntos"
 
+          nombre_actividad_display = act.try(:nombre).to_s
+          if es_reitimizada
+            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
+          end
+
           header_card = [
             [
-              { content: "<color rgb='003DA6'><b>#{act.try(:correlativo)}</b></color> <b>#{act.try(:nombre)}</b>", inline_format: true },
+              { content: "<color rgb='003DA6'><b>#{act.try(:correlativo)}</b></color> <b>#{nombre_actividad_display}</b>", inline_format: true },
               { content: estado_html, align: :right, inline_format: true }
             ]
           ]
@@ -2611,11 +2678,11 @@ class FondoProduccionLimpia < ApplicationRecord
 
           if es_observado
             comentario_revisor = detalle_tecnico.try(:comentario_revisor).presence ||
-                                detalle_tecnico.try(:comentario_evaluacion).presence ||
-                                detalle_tecnico.try(:comentario_tecnico).presence ||
-                                detalle_tecnico.try(:comentario).presence ||
-                                detalle_tecnico.try(:observacion_revisor).presence ||
-                                "Actividad observada durante la revisión técnica."
+                                 detalle_tecnico.try(:comentario_evaluacion).presence ||
+                                 detalle_tecnico.try(:comentario_tecnico).presence ||
+                                 detalle_tecnico.try(:comentario).presence ||
+                                 detalle_tecnico.try(:observacion_revisor).presence ||
+                                 "Actividad observada durante la revisión técnica."
 
             tabla_comentario = [
               [ { content: "<color rgb='721C24'><b>Comentario del Revisor:</b> #{comentario_revisor}</color>", inline_format: true } ]

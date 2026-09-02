@@ -4974,7 +4974,8 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendiente.reload
       end
 
-      # 4. Procesar documentos FPL y Aporte
+      # 4. PROCESAR DESGLOSE DE GASTOS (HH, VALORES Y COMPROBANTES) Y DOCUMENTOS
+      procesar_gastos_rendidos(params[:gastos_rendidos]) if params[:gastos_rendidos].present?
       procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
       procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
 
@@ -7809,5 +7810,48 @@ class FondoProduccionLimpiasController < ApplicationController
     @tiene_permisos = solo_lectura.nil?
 
     set_actividades_x_linea
+  end
+
+  # Método auxiliar para guardar o actualizar el desglose de gastos (RendicionGastoFpl)
+  def procesar_gastos_rendidos(gastos_params)
+    return if gastos_params.blank? || @rendicion.blank?
+
+    gastos_params.each do |_key, datos|
+      next if datos[:plan_actividad_id].blank? || datos[:categoria].blank? || datos[:item_origen_id].blank?
+
+      plan_act_id = datos[:plan_actividad_id].to_i
+      cat_str     = datos[:categoria].to_s.strip.downcase
+      item_id     = datos[:item_origen_id].to_i
+
+      # Buscar o crear la fila correspondiente en rendicion_gastos_fpl
+      gasto = @rendicion.rendicion_gastos_fpl.find_or_initialize_by(
+        plan_actividad_id: plan_act_id,
+        categoria: cat_str,
+        item_origen_id: item_id
+      )
+
+      # Sanitización de montos y cantidades enviados desde el formulario
+      cant  = datos[:cantidad_rendida].to_s.tr('.', '').tr(',', '.').to_f
+      val_u = datos[:valor_unitario].to_s.tr('.', '').tr(',', '.').to_f
+
+      if val_u.zero? && datos[:valor_unitario_postulado].present?
+        val_u = datos[:valor_unitario_postulado].to_s.tr('.', '').tr(',', '.').to_f
+      end
+
+      costo_tot = (cant * val_u).round(2)
+
+      gasto.tipo_aporte      = datos[:tipo_aporte] if datos[:tipo_aporte].present?
+      gasto.cantidad_rendida  = cant
+      
+      if gasto.respond_to?(:valor_unitario_rendido=)
+        gasto.valor_unitario_rendido = val_u
+      end
+      
+      gasto.valor_unitario   = val_u
+      gasto.costo_rendido    = costo_tot
+      gasto.comprobante_ref  = datos[:comprobante_ref].to_s.strip.upcase if datos.key?(:comprobante_ref)
+
+      gasto.save!
+    end
   end
 end

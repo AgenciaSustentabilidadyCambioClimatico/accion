@@ -101,7 +101,7 @@
     $('#form-autorizar-reitimizacion').on('submit', function(e) {
       let valido = true;
 
-      $('.chk-autorizar:checked').each(function() {
+      $('.chk-autorizar:checked:not(:disabled)').each(function() {
         const actId = $(this).data('act-id');
         const tieneArchivo = $(this).data('tiene-archivo') === true || $(this).data('tiene-archivo') === 'true';
         const $fileInput = $('#file_actividad_' + actId);
@@ -234,10 +234,10 @@
                         - else
                           %span{style: "font-size: 12px; color: #5d759e;"}= "0%"
 
-                      -# COLUMNA 1: CHECKEO AUTORIZACIÓN (Persistente con Hidden Field)
+                      -# COLUMNA 1: CHECKEO AUTORIZACIÓN (Persistente con Hidden Field y Deshabilitado si ya está autorizado)
                       %td.contenido-form.text-center{style: "vertical-align: middle;"}
-                        = hidden_field_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "0"
-                        = check_box_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "1", is_autorizado, id: "chk_autorizar_#{id_pk}", class: "chk-autorizar", data: { act_id: id_pk, tiene_archivo: tiene_archivo ? 'true' : 'false' }
+                        = hidden_field_tag "reitimizacion[actividades][#{id_pk}][autorizado]", (is_autorizado ? "1" : "0")
+                        = check_box_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "1", is_autorizado, id: "chk_autorizar_#{id_pk}", class: "chk-autorizar", disabled: is_autorizado, data: { act_id: id_pk, tiene_archivo: tiene_archivo ? 'true' : 'false' }
 
                       -# COLUMNA 2: CARGAR DOCUMENTO Y MOSTRAR EXISTENTE VIA PROXY
                       %td.contenido-form.text-center
@@ -265,9 +265,9 @@
                   %tr
                     %th.encabezado-form Estado Rendiciones
                     %th.encabezado-form Estado
-                    %th.encabezado-form Actividades
-                    %th.encabezado-form Técnico
-                    %th.encabezado-form Financiero
+                    %th.encabezado-form Postulación
+                    %th.encabezado-form Evaluación Técnica
+                    %th.encabezado-form Gastos
                 %tbody
                   - rendiciones_todas.each do |r|
                     - estado_desc = estados_map[get_estado_num.call(r)] || 'En proceso'

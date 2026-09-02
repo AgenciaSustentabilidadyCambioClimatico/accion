@@ -185,7 +185,7 @@
                           - if es_reitimizada
                             %span.badge.d-block.mt-1{style: "font-size: 10px; background-color: #6f42c1; color: #ffffff; width: fit-content;", title: "Reitimización Autorizada"}
                               %i.fa.fa-refresh.mr-1
-                              Reitimizada
+                              Reitimización autorizada
                         %td.contenido-form.text-center
                           - if es_en_proceso
                             %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
@@ -226,9 +226,9 @@
                     %tr
                       %th.encabezado-form Estado Rendiciones
                       %th.encabezado-form Estado
-                      %th.encabezado-form Actividades
-                      %th.encabezado-form Técnico
-                      %th.encabezado-form Financiero
+                      %th.encabezado-form Postulación
+                      %th.encabezado-form Evaluación Técnica
+                      %th.encabezado-form Gastos
                   %tbody
                     - rendiciones_todas.each do |r|
                       - estado_desc = estados_map[get_estado_num.call(r)] || 'En proceso'
@@ -419,15 +419,16 @@
 
   .d-flex.justify-content-between.align-items-center.mt-4.mb-5
     .left-actions
-      - tiene_tp_14_actual = meses_con_tp_14.include?(@rendicion&.mes_a_rendir.to_i)
-      - if @rendicion.present? && tiene_tp_14_actual
-        = link_to descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Gastos PDF" do
-          %i.fa.fa-file-pdf-o.mr-1
-          Descargar Informe de Gastos
-      - elsif @rendicion.present?
-        %button.btn.btn-sm.btn-secondary{type: "button", disabled: true, title: "No disponible: No existe tarea pendiente FPL-14 asociada al mes de esta rendición"}
-          %i.fa.fa-file-pdf-o.mr-1
-          Descargar Informe de Gastos
+      -#
+        - tiene_tp_14_actual = meses_con_tp_14.include?(@rendicion&.mes_a_rendir.to_i)
+        - if @rendicion.present? && tiene_tp_14_actual
+          = link_to descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Gastos PDF" do
+            %i.fa.fa-file-pdf-o.mr-1
+            Descargar Informe de Gastos
+        - elsif @rendicion.present?
+          %button.btn.btn-sm.btn-secondary{type: "button", disabled: true, title: "No disponible: No existe tarea pendiente FPL-14 asociada al mes de esta rendición"}
+            %i.fa.fa-file-pdf-o.mr-1
+            Descargar Informe de Gastos
 
     .right-actions
       = volver_root

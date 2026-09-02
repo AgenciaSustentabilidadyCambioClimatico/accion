@@ -88,6 +88,12 @@
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 - detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
+-# ==========================================================
+-# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
+-# ==========================================================
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
 -# -------------------------------------------------------------
 -# CÁLCULO SINTÁCTICAMENTE CORRECTO DEL MES EN CURSO
 -# -------------------------------------------------------------
@@ -180,7 +186,12 @@
 
                 - if actividades_filtradas.present?
                   - actividades_filtradas.each do |actividad|
-                    - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+                    - act_id_num = actividad.id.to_i
+                    - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+                    - plan_act_id_num = plan_act.try(:id).to_i
+                    - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+                    - es_reitimizada = (mis_ids & reitimizadas_ids).any?
                     
                     - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
                     - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
@@ -202,6 +213,10 @@
                         .d-flex.align-items-center
                           %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                           %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                          - if es_reitimizada
+                            %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                              %i.fa.fa-refresh.mr-1
+                              Reitimización autorizada
                         %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                           %i.fa.fa-chevron-down.mr-1
                           Ver / Ocultar
@@ -268,6 +283,12 @@
 
                 - if actividades_fpl_filtradas.present?
                   - actividades_fpl_filtradas.each do |actividad|
+                    - act_id_num = actividad.id.to_i
+                    - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+                    - plan_act_id_num = plan_act.try(:id).to_i
+                    - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+                    - es_reitimizada = (mis_ids & reitimizadas_ids).any?
                     - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
                     - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
@@ -276,13 +297,17 @@
                         .d-flex.align-items-center
                           %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                           %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                          - if es_reitimizada
+                            %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                              %i.fa.fa-refresh.mr-1
+                              Reitimización autorizada
                         %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                           %i.fa.fa-chevron-down.mr-1
                           Ver / Ocultar
 
                       .collapse.show{id: "collapse_fpl_read_#{actividad.id}"}
                         .card-body.p-2
-                          = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map
+                          = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
                           .table-responsive.mt-2
                             %table.table.table-striped.no-margin
@@ -310,6 +335,12 @@
 
                 - if actividades_aporte_filtradas.present?
                   - actividades_aporte_filtradas.each do |actividad|
+                    - act_id_num = actividad.id.to_i
+                    - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+                    - plan_act_id_num = plan_act.try(:id).to_i
+                    - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+                    - es_reitimizada = (mis_ids & reitimizadas_ids).any?
                     - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
                     - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
@@ -318,13 +349,17 @@
                         .d-flex.align-items-center
                           %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                           %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                          - if es_reitimizada
+                            %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                              %i.fa.fa-refresh.mr-1
+                              Reitimización autorizada
                         %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                           %i.fa.fa-chevron-down.mr-1
                           Ver / Ocultar
 
                       .collapse.show{id: "collapse_aporte_read_#{actividad.id}"}
                         .card-body.p-2
-                          = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map
+                          = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
                           .table-responsive.mt-2
                             %table.table.table-striped.no-margin

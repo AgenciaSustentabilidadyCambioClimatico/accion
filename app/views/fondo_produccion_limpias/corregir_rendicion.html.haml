@@ -195,6 +195,7 @@
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
   .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
   .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
+  .header-actividad-observada { background-color: #f8d7da !important; border-bottom: 2px solid #dc3545 !important; }
 
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new  
 - titulo t(:rendicion_por_actividad)
@@ -206,6 +207,12 @@
 
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 - detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+
+-# ==========================================================
+-# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
+-# ==========================================================
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
 
 -# -------------------------------------------------------------
 -# CÁLCULO DE NIVELES DE AVANCE Y FECHA MES DISPLAY
@@ -285,7 +292,12 @@
 
         - if actividades_filtradas.present?
           - actividades_filtradas.each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+            - act_id_num = actividad.id.to_i
+            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
             
             - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
             - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
@@ -296,6 +308,10 @@
             - duracion_act = plan_act.try(:duracion).to_s
             - detalle_tecnico = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i] || @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
             
+            - raw_cumple = detalle_tecnico ? (detalle_tecnico.read_attribute_before_type_cast(:cumple) || detalle_tecnico.cumple) : nil
+            - val_cumple_str = raw_cumple.to_s.downcase
+            - es_actividad_observada = ['2', 'no', 'false'].include?(val_cumple_str)
+
             - fecha_inicio_raw = detalle_tecnico&.try(:fecha_inicio)
             - fecha_termino_raw = detalle_tecnico&.try(:fecha_termino)
             - fecha_inicio_valor = fecha_inicio_raw&.try(:strftime, '%d-%m-%Y') || '--'
@@ -303,9 +319,6 @@
             - fecha_inicio_input = fecha_inicio_raw&.try(:strftime, '%Y-%m-%d') || fecha_inicio_raw
             - fecha_termino_input = fecha_termino_raw&.try(:strftime, '%Y-%m-%d') || fecha_termino_raw
 
-            - act_id_num = actividad.id.to_i
-            - plan_act_id_num = plan_act.try(:id).to_i
-            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
             - max_avance_aprobado = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
             - min_avance = max_avance_aprobado > 0 ? [max_avance_aprobado + 1, 100].min : 1
 
@@ -321,11 +334,19 @@
             - archivo = detalle_tecnico&.archivo
             - tiene_archivo = detalle_tecnico&.archivo&.url.present?
 
-            .card.mb-3.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, style: "border: 2px solid #dee2e6;"}
-              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
-                .d-flex.align-items-center
+            .card.mb-3.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, style: (es_actividad_observada ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada)}
+                .d-flex.align-items-center.flex-wrap
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitimización autorizada
+                  - if es_actividad_observada
+                    %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada por el revisor"}
+                      %i.fa.fa-exclamation-triangle.mr-1
+                      Observada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
@@ -333,6 +354,13 @@
               .collapse.show{id: "collapse_tecnica_#{actividad.id}"}
                 .card-body.p-2
                   = hidden_field_tag "actividades_ids[]", actividad.id
+
+                  - if es_actividad_observada
+                    .alert.alert-danger.d-flex.align-items-center.py-2.px-3.mb-2{style: "border-radius: 4px; font-size: 12px; background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;"}
+                      %i.fa.fa-exclamation-circle.fa-lg.mr-2
+                      %span
+                        %strong Actividad Observada por el Revisor:
+                        Revise los comentarios en la **Bitácora** y aplique los cambios requeridos.
 
                   .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
                     %i.fa.fa-question-circle.mr-2{style: "font-size: 15px; color: #004085;"}
@@ -400,11 +428,11 @@
                               = hidden_field_tag "comentario_revisor_act_#{actividad.id}", comentario_revisor_val, id: "comentario_revisor_act_#{actividad.id}"
                               = hidden_field_tag "comentario_postulante_actividad_#{actividad.id}", comentario_postulante_val, id: "comentario_postulante_actividad_#{actividad.id}"
                               
-                              %button.btn.btn-sm.btn-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{actividad.id}', '#{j actividad.nombre}', 'comentario_postulante_actividad_', 'comentario_revisor_act_', false)"}
+                              %button.btn.btn-sm.w-100{class: (es_actividad_observada ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{actividad.id}', '#{j actividad.nombre}', 'comentario_postulante_actividad_', 'comentario_revisor_act_', false)"}
                                 %i.fa.fa-comments.mr-1
                                 Bitácora
                               .mt-1{id: "preview_comentario_postulante_actividad_#{actividad.id}"}
-                                %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : 'badge-secondary'}
+                                %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : (es_actividad_observada ? 'badge-danger' : 'badge-secondary')}
                                   %i.fa.fa-comments
                                   = "#{num_comentarios_post} registro(s)"
                           - else
@@ -412,11 +440,11 @@
                               = hidden_field_tag "comentario_revisor_act_#{actividad.id}", comentario_revisor_val, id: "comentario_revisor_act_#{actividad.id}"
                               = hidden_field_tag "comentario_postulante_actividad_#{actividad.id}", comentario_postulante_val, id: "comentario_postulante_actividad_#{actividad.id}"
                               
-                              %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{actividad.id}', '#{j actividad.nombre}', 'comentario_postulante_actividad_', 'comentario_revisor_act_', true)"}
+                              %button.btn.btn-sm.w-100{class: (es_actividad_observada ? 'btn-outline-danger' : 'btn-outline-primary'), type: 'button', onclick: "abrirModalComentarios('#{actividad.id}', '#{j actividad.nombre}', 'comentario_postulante_actividad_', 'comentario_revisor_act_', true)"}
                                 %i.fa.fa-comments.mr-1
                                 Bitácora
                               .mt-1{id: "preview_comentario_postulante_actividad_#{actividad.id}"}
-                                %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : 'badge-secondary'}
+                                %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : (es_actividad_observada ? 'badge-danger' : 'badge-secondary')}
                                   %i.fa.fa-comments
                                   = "#{num_comentarios_post} registro(s)"
         - else
@@ -436,21 +464,44 @@
 
         - if actividades_fpl_filtradas.present?
           - actividades_fpl_filtradas.each do |actividad|
+            - act_id_num = actividad.id.to_i
+            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
             - docs_act = docs_fpl_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
+            
+            - es_actividad_observada_fpl = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
-            .card.mb-3.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
-              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
-                .d-flex.align-items-center
+            .card.mb-3.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: (es_actividad_observada_fpl ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada_fpl)}
+                .d-flex.align-items-center.flex-wrap
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitimización autorizada
+                  - if es_actividad_observada_fpl
+                    %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión financiera"}
+                      %i.fa.fa-exclamation-triangle.mr-1
+                      Observada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_corr_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
               .collapse.show{id: "collapse_fpl_corr_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false), map_base: @rendicion_gastos_map
+                  - if es_actividad_observada_fpl
+                    .alert.alert-danger.d-flex.align-items-center.py-2.px-3.mb-2{style: "border-radius: 4px; font-size: 12px; background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;"}
+                      %i.fa.fa-exclamation-circle.fa-lg.mr-2
+                      %span
+                        %strong Actividad Observada por el Revisor:
+                        Existen respaldos o ítems observados. Revise las notas en la **Bitácora** y reemplace los documentos necesarios.
+
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false), map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
                   - if !@es_correccion_tecnica
                     .table-responsive.mt-3
@@ -467,6 +518,8 @@
                               - comentario_revisor_val = doc.comentario_revisor
                               - comentario_postulante_val = doc.try(:comentario_postulante)
                               - num_comentarios_post = comentario_postulante_val.to_s.split("\n").reject(&:blank?).count
+                              - doc_cumple_raw = (doc.read_attribute_before_type_cast(:cumple) || doc.cumple).to_s.downcase
+                              - es_doc_observado = ['2', 'no', 'false'].include?(doc_cumple_raw)
 
                               %tr
                                 = hidden_field_tag "documentos_fpl[][id]", doc.id
@@ -477,11 +530,11 @@
                                   = hidden_field_tag "comentario_revisor_fpl_#{doc.id}", comentario_revisor_val, id: "comentario_revisor_fpl_#{doc.id}"
                                   = hidden_field_tag "comentario_postulante_fpl_#{doc.id}", comentario_postulante_val, id: "comentario_postulante_fpl_#{doc.id}", name: "documentos_fpl[][comentario_postulante]"
                                   
-                                  %button.btn.btn-sm.btn-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'comentario_postulante_fpl_', 'comentario_revisor_fpl_', false)"}
+                                  %button.btn.btn-sm.w-100{class: (es_doc_observado ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'comentario_postulante_fpl_', 'comentario_revisor_fpl_', false)"}
                                     %i.fa.fa-comments.mr-1
                                     Bitácora
                                   .mt-1{id: "preview_comentario_postulante_fpl_#{doc.id}"}
-                                    %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : 'badge-secondary'}
+                                    %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : (es_doc_observado ? 'badge-danger' : 'badge-secondary')}
                                       %i.fa.fa-comments
                                       = "#{num_comentarios_post} registro(s)"
                           - else
@@ -531,21 +584,44 @@
 
         - if actividades_aporte_filtradas.present?
           - actividades_aporte_filtradas.each do |actividad|
+            - act_id_num = actividad.id.to_i
+            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
             - docs_act = docs_aporte_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
+            
+            - es_actividad_observada_aporte = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
-            .card.mb-3.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
-              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
-                .d-flex.align-items-center
+            .card.mb-3.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: (es_actividad_observada_aporte ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada_aporte)}
+                .d-flex.align-items-center.flex-wrap
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitimización autorizada
+                  - if es_actividad_observada_aporte
+                    %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión de aporte propio"}
+                      %i.fa.fa-exclamation-triangle.mr-1
+                      Observada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_corr_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
               .collapse.show{id: "collapse_aporte_corr_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false), map_base: @rendicion_gastos_map
+                  - if es_actividad_observada_aporte
+                    .alert.alert-danger.d-flex.align-items-center.py-2.px-3.mb-2{style: "border-radius: 4px; font-size: 12px; background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;"}
+                      %i.fa.fa-exclamation-circle.fa-lg.mr-2
+                      %span
+                        %strong Actividad Observada por el Revisor:
+                        Existen respaldos o ítems observados. Revise la **Bitácora** y reemplace los documentos requeridos.
+
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false), map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
                   - if !@es_correccion_tecnica
                     .table-responsive.mt-3
@@ -562,6 +638,8 @@
                               - comentario_revisor_val = doc.comentario_revisor
                               - comentario_postulante_val = doc.try(:comentario_postulante)
                               - num_comentarios_post = comentario_postulante_val.to_s.split("\n").reject(&:blank?).count
+                              - doc_cumple_raw = (doc.read_attribute_before_type_cast(:cumple) || doc.cumple).to_s.downcase
+                              - es_doc_observado = ['2', 'no', 'false'].include?(doc_cumple_raw)
 
                               %tr
                                 = hidden_field_tag "documentos_aporte[][id]", doc.id
@@ -572,11 +650,11 @@
                                   = hidden_field_tag "comentario_revisor_aporte_#{doc.id}", comentario_revisor_val, id: "comentario_revisor_aporte_#{doc.id}"
                                   = hidden_field_tag "documentos_aporte_obs_#{doc.id}", comentario_postulante_val, id: "documentos_aporte_obs_#{doc.id}", name: "documentos_aporte[][comentario_postulante]"
                                   
-                                  %button.btn.btn-sm.btn-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'documentos_aporte_obs_', 'comentario_revisor_aporte_', false)"}
+                                  %button.btn.btn-sm.w-100{class: (es_doc_observado ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'documentos_aporte_obs_', 'comentario_revisor_aporte_', false)"}
                                     %i.fa.fa-comments.mr-1
                                     Bitácora
                                   .mt-1{id: "preview_documentos_aporte_obs_#{doc.id}"}
-                                    %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : 'badge-secondary'}
+                                    %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : (es_doc_observado ? 'badge-danger' : 'badge-secondary')}
                                       %i.fa.fa-comments
                                       = "#{num_comentarios_post} registro(s)"
                           - else
