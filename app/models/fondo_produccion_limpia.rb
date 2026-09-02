@@ -1687,6 +1687,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
     postulante = User.find_by(id: fpl.try(:usuario_entregables_id))
     nombre_postulante = postulante.try(:nombre_completo)
+    rut_postulante = postulante.try(:rut)
 
     mes_actual_num  = rendicion&.mes_a_rendir.to_i
     flujo_actual_id = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
@@ -1824,7 +1825,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
           nombre_actividad_display = act.try(:nombre) || "Actividad"
           if es_reitimizada
-            nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
+            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
           end
 
           detalle_tecnico = rendicion.rendicion_detalles_fpl.find do |d|
@@ -1833,12 +1834,14 @@ class FondoProduccionLimpia < ApplicationRecord
             (d.tecnica? rescue false) && act_ids.include?(act_id_num)
           end rescue nil
 
-          estado_label = "#{detalle_tecnico&.nivel_avance.to_i}%"
+          avance_num = detalle_tecnico&.nivel_avance.to_i
+          estado_label = "#{avance_num}%"
+          descripcion_avance = avance_num >= 100 ? "Finalizado" : "en Ejecución"
 
           tabla_actividades << [
             act.try(:correlativo) || "-",
             nombre_actividad_display,
-            detalle_tecnico&.observacion.presence || "--",
+            descripcion_avance,
             estado_label
           ]
         end
@@ -1847,8 +1850,7 @@ class FondoProduccionLimpia < ApplicationRecord
       end
 
       pdf.table(tabla_actividades, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
-        row(0).background_color = '003DA6'
-        row(0).text_color = 'FFFFFF'
+        row(0).background_color = 'E0EFF6'
         row(0).font_style = :bold
         column(0).width = 30
         column(0).align = :center
@@ -1858,16 +1860,12 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 20) rescue nil
 
-      # 3. PLANILLA DE RENDICIÓN DE GASTOS - FPL
+      # 3. PLANILLA DE RENDICIÓN DE GASTOS - FPL (ESTILO EVALUACIÓN TÉCNICA)
       pdf.start_new_page
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DEL FPL") rescue nil
+      self.pdf_separador(pdf, 10) rescue nil
 
-      header_fpl = [
-        [ { content: "N°", rowspan: 2 }, { content: "Etapa/Actividades", rowspan: 2 }, { content: "Categoría", rowspan: 2 }, { content: "Ítem/Nombre", rowspan: 2 }, { content: "Detalle/Aporte", rowspan: 2 }, { content: "Valores", colspan: 2 }, { content: "Gasto [$]", rowspan: 2 } ],
-        [ "Valor Un.", "Cantidad" ]
-      ]
-
-      filas_fpl = []
+      filas_fpl_presentes = false
 
       if actividades.present?
         actividades.each do |actividad|
@@ -1877,13 +1875,9 @@ class FondoProduccionLimpia < ApplicationRecord
           mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
           es_reitimizada = (mis_ids & reitimizadas_ids).any?
 
-          nombre_actividad_display = actividad.nombre.to_s
-          if es_reitimizada
-            nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
-          end
-
           gastos_fpl = obtener_gastos.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
+          items_actividad = []
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_fpl[cat_key].to_a.each do |item|
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
@@ -1897,43 +1891,73 @@ class FondoProduccionLimpia < ApplicationRecord
               totales_resumen[cat_key][:fpl] += monto_rendido
               total_fpl += monto_rendido
 
-              filas_fpl << [
-                actividad.correlativo.to_s,
-                nombre_actividad_display,
+              items_actividad << [
                 cat_key.to_s.humanize.titleize,
                 item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
                 item.try(:tipo_aporte).to_s,
-                ActiveSupport::NumberHelper.number_to_currency(v_unitario, delimiter: '.', separator: ',', precision: 0, format: "%u%n", unit: "$"),
+                ActiveSupport::NumberHelper.number_to_currency(v_unitario, delimiter: '.', precision: 0, format: "%u%n", unit: "$"),
                 cant_rendida.to_s,
-                ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', separator: ',', precision: 0, format: "%u%n", unit: "$")
+                ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', precision: 0, format: "%u%n", unit: "$")
               ]
             end
+          end
+
+          if items_actividad.present?
+            filas_fpl_presentes = true
+            
+            header_act_text = "<color rgb='003DA6'><b>#{actividad.correlativo}</b></color> <b>#{actividad.nombre}</b>"
+            if es_reitimizada
+              header_act_text += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
+            end
+
+            header_tabla_act = [ [ { content: header_act_text, inline_format: true } ] ]
+            pdf.table(header_tabla_act, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
+
+            tabla_items_act = [
+              [ "Categoría", "Ítem / Nombre", "Detalle / Aporte", "Valor Un.", "Cantidad", "Gasto [$]" ]
+            ] + items_actividad
+
+            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+              row(0).background_color = 'F8F9FA'
+              row(0).font_style = :bold
+              column(0).width = 95
+              column(1).width = 155
+              column(2).width = 110
+              column(3).width = 65
+              column(3).align = :right
+              column(4).width = 45
+              column(4).align = :center
+              column(5).width = 82
+              column(5).align = :right
+            end
+
+            pdf.move_down 8
           end
         end
       end
 
-      if filas_fpl.empty?
-        filas_fpl << [ { content: "<i>No hay gastos registrados.</i>", colspan: 8, align: :center } ]
-      else
-        filas_fpl << [ { content: "<b>TOTAL FPL</b>", colspan: 7, align: :right, inline_format: true }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_fpl, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+      unless filas_fpl_presentes
+        pdf.text "<i>No hay gastos a cargo del FPL registrados.</i>", size: 8, style: :italic, align: :center
+        pdf.move_down 10
       end
 
-      pdf.table(header_fpl + filas_fpl, width: pdf.bounds.width, cell_style: { size: 6.5, padding: 3, border_color: 'CCCCCC', align: :center, inline_format: true }) do
-        row(0).background_color = '003DA6'
-        row(0).text_color = 'FFFFFF'
-        row(0).font_style = :bold
-        row(1).background_color = '003DA6'
-        row(1).text_color = 'FFFFFF'
-        row(1).font_style = :bold
-        row(-1).background_color = 'F0F0F0'
+      # TOTALIZADOR FPL
+      tabla_total_fpl = [
+        [ { content: "<b>TOTAL RENDICIÓN FPL:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_fpl, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+      ]
+      pdf.table(tabla_total_fpl, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+        column(0).width = pdf.bounds.width - 100
+        column(1).width = 100
+        column(1).align = :right
       end
 
       self.pdf_separador(pdf, 20) rescue nil
 
-      # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA
+      # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA (ESTILO EVALUACIÓN TÉCNICA)
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DE LA BENEFICIARIA") rescue nil
+      self.pdf_separador(pdf, 10) rescue nil
 
-      filas_ben = []
+      filas_ben_presentes = false
 
       if actividades.present?
         actividades.each do |actividad|
@@ -1943,13 +1967,9 @@ class FondoProduccionLimpia < ApplicationRecord
           mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
           es_reitimizada = (mis_ids & reitimizadas_ids).any?
 
-          nombre_actividad_display = actividad.nombre.to_s
-          if es_reitimizada
-            nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
-          end
-
           gastos_aporte = obtener_gastos.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
+          items_actividad = []
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_aporte[cat_key].to_a.each do |item|
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
@@ -1963,35 +1983,64 @@ class FondoProduccionLimpia < ApplicationRecord
               totales_resumen[cat_key][:aporte] += monto_rendido
               total_aporte += monto_rendido
 
-              filas_ben << [
-                actividad.correlativo.to_s,
-                nombre_actividad_display,
+              items_actividad << [
                 cat_key.to_s.humanize.titleize,
                 item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
                 item.try(:tipo_aporte).to_s,
                 ActiveSupport::NumberHelper.number_to_currency(v_unitario, delimiter: '.', precision: 0, format: "%u%n", unit: "$"),
                 cant_rendida.to_s,
-                ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', separator: ',', precision: 0, format: "%u%n", unit: "$")
+                ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', precision: 0, format: "%u%n", unit: "$")
               ]
             end
+          end
+
+          if items_actividad.present?
+            filas_ben_presentes = true
+            
+            header_act_text = "<color rgb='003DA6'><b>#{actividad.correlativo}</b></color> <b>#{actividad.nombre}</b>"
+            if es_reitimizada
+              header_act_text += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
+            end
+
+            header_tabla_act = [ [ { content: header_act_text, inline_format: true } ] ]
+            pdf.table(header_tabla_act, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
+
+            tabla_items_act = [
+              [ "Categoría", "Ítem / Nombre", "Detalle / Aporte", "Valor Un.", "Cantidad", "Gasto [$]" ]
+            ] + items_actividad
+
+            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+              row(0).background_color = 'F8F9FA'
+              row(0).font_style = :bold
+              column(0).width = 95
+              column(1).width = 155
+              column(2).width = 110
+              column(3).width = 65
+              column(3).align = :right
+              column(4).width = 45
+              column(4).align = :center
+              column(5).width = 82
+              column(5).align = :right
+            end
+
+            pdf.move_down 8
           end
         end
       end
 
-      if filas_ben.empty?
-        filas_ben << [ { content: "<i>No hay aportes registrados.</i>", colspan: 8, align: :center } ]
-      else
-        filas_ben << [ { content: "<b>TOTAL APORTE PROPIO</b>", colspan: 7, align: :right, inline_format: true }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_aporte, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+      unless filas_ben_presentes
+        pdf.text "<i>No hay aportes a cargo de la beneficiaria registrados.</i>", size: 8, style: :italic, align: :center
+        pdf.move_down 10
       end
 
-      pdf.table(header_fpl + filas_ben, width: pdf.bounds.width, cell_style: { size: 6.5, padding: 3, border_color: 'CCCCCC', align: :center, inline_format: true }) do
-        row(0).background_color = '003DA6'
-        row(0).text_color = 'FFFFFF'
-        row(0).font_style = :bold
-        row(1).background_color = '003DA6'
-        row(1).text_color = 'FFFFFF'
-        row(1).font_style = :bold
-        row(-1).background_color = 'F0F0F0'
+      # TOTALIZADOR APORTE PROPIO
+      tabla_total_ben = [
+        [ { content: "<b>TOTAL APORTE PROPIO BENEFICIARIA:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_aporte, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+      ]
+      pdf.table(tabla_total_ben, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+        column(0).width = pdf.bounds.width - 100
+        column(1).width = 100
+        column(1).align = :right
       end
 
       self.pdf_separador(pdf, 25) rescue nil
@@ -2011,34 +2060,15 @@ class FondoProduccionLimpia < ApplicationRecord
       ]
 
       pdf.table(tabla_resumen, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', align: :center, inline_format: true }) do
-        row(0).background_color = '003DA6'
-        row(0).text_color = 'FFFFFF'
+        row(0).background_color = 'E0EFF6'
         row(0).font_style = :bold
         column(0).align = :left
         row(-1).background_color = 'F0F0F0'
       end
 
-      self.pdf_separador(pdf, 30) rescue nil
-
-      # 6. CONCLUSIONES Y FIRMAS
-      self.pdf_sub_titulo_formato(pdf, "CONCLUSIONES Y RESULTADOS") rescue nil
-
-      pdf.font_size(8) do
-        pdf.text "<b>Resultado de las actividades realizadas:</b>", inline_format: true
-        pdf.text rendicion&.resultado_actividades_realizadas.presence || "No especificado.", color: '333333'
-        pdf.move_down 10
-
-        pdf.text "<b>Información Adicional:</b>", inline_format: true
-        pdf.text rendicion&.informacion_adicional.presence || "No especificada.", color: '333333'
-        pdf.move_down 10
-
-        pdf.text "<b>Conclusión general:</b>", inline_format: true
-        pdf.text rendicion&.conclusion.presence || "No especificada.", color: '333333'
-      end
-
       self.pdf_separador(pdf, 25) rescue nil
 
-      texto_declaracion = "La información que respalda esta rendición de gastos, se encuentra disponible en las dependencias de <b>#{razon_social}</b>, para consulta o revisión del Consejo Nacional de Producción Limpia u otro organismo fiscalizador.\n\nDeclaro bajo juramento que los datos contenidos en esta rendición de gastos son verídicos. Asimismo, declaro conocer las disposiciones relativas a sanciones en caso de suministrar información incompleta, falsa o errónea."
+      texto_declaracion = "La información que respalda esta rendición de gastos, se encuentra disponible en las dependencias de <b>#{razon_social}</b>, para consulta o revisión del Agencia de Sustentabilidad y Cambio Climático u otro organismo fiscalizador.\n\nDeclaro bajo juramento que los datos contenidos en esta rendición de gastos son verídicos. Asimismo, declaro conocer las disposiciones relativas a sanciones en caso de suministrar información incompleta, falsa o errónea."
       pdf.font_size(7) do
         pdf.text texto_declaracion, inline_format: true, align: :justify, color: '333333'
       end
@@ -2048,18 +2078,35 @@ class FondoProduccionLimpia < ApplicationRecord
       ancho_firma = 220
       posicion_x = pdf.bounds.width - ancho_firma
 
-      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma) do
+      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
+        logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+        
+        if File.exist?(logo_firma_path)
+          y_inicio = pdf.cursor
+          # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
+          pdf.transparent(0.25) do
+            pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+          end
+        end
+
+        # Posicionar la línea a la mitad del logo para que quede sobrepuesto
+        pdf.move_down 35
+
         pdf.stroke_color '333333'
         pdf.line_width 0.8
-        pdf.stroke_horizontal_line 0, ancho_firma
+
         pdf.move_down 4
 
         pdf.font "DejaVuSans", style: :bold do
           pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
+        pdf.font "DejaVuSans", style: :bold do
+          pdf.text rut_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+        end
+
         pdf.font "DejaVuSans", style: :normal do
-          pdf.text "Responsable del Informe", size: 7.5, align: :center, color: '555555'
+          pdf.text "Revisor Contable", size: 7.5, align: :center, color: '555555'
         end
       end
 
@@ -2156,6 +2203,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
     postulante = User.find_by(id: (fpl.try(:usuario_entregables_id)))
     nombre_postulante = postulante.try(:nombre_completo)
+    rut_postulante = postulante.try(:rut)
     
     mes_actual_num = rendicion&.mes_a_rendir.to_i
     fecha_res = fpl.try(:fecha_resolucion)
@@ -2386,18 +2434,35 @@ class FondoProduccionLimpia < ApplicationRecord
     ancho_firma = 220
     posicion_x = pdf.bounds.width - ancho_firma
 
-    pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma) do
+    pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
+      logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+      
+      if File.exist?(logo_firma_path)
+        y_inicio = pdf.cursor
+        # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
+        pdf.transparent(0.25) do
+          pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+        end
+      end
+
+      # Posicionar la línea a la mitad del logo para que quede sobrepuesto
+      pdf.move_down 35
+
       pdf.stroke_color '333333'
       pdf.line_width 0.8
-      pdf.stroke_horizontal_line 0, ancho_firma
+      
       pdf.move_down 4
 
       pdf.font "DejaVuSans", style: :bold do
         pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
       end
 
+      pdf.font "DejaVuSans", style: :bold do
+        pdf.text rut_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+      end
+
       pdf.font "DejaVuSans", style: :normal do
-        pdf.text "Responsable del Informe", size: 7.5, align: :center, color: '555555'
+        pdf.text "Responsable Postulante", size: 7.5, align: :center, color: '555555'
       end
     end
 
@@ -2477,6 +2542,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
     revisor = User.find_by(id: (rendicion.try(:revisor_tecnico_id)))
     nombre_revisor = revisor.try(:nombre_completo)
+    rut_revisor = revisor.try(:rut)
 
     mes_actual_num = rendicion&.mes_a_rendir.to_i
     fecha_res = fpl.try(:fecha_resolucion)
@@ -2702,14 +2768,31 @@ class FondoProduccionLimpia < ApplicationRecord
       ancho_firma = 220
       posicion_x = pdf.bounds.width - ancho_firma
 
-      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma) do
+      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
+        logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+        
+        if File.exist?(logo_firma_path)
+          y_inicio = pdf.cursor
+          # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
+          pdf.transparent(0.25) do
+            pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+          end
+        end
+
+        # Posicionar la línea a la mitad del logo para que quede sobrepuesto
+        pdf.move_down 35
+
         pdf.stroke_color '333333'
         pdf.line_width 0.8
-        pdf.stroke_horizontal_line 0, ancho_firma
+        
         pdf.move_down 4
 
         pdf.font "DejaVuSans", style: :bold do
           pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
+        end
+
+        pdf.font "DejaVuSans", style: :bold do
+          pdf.text rut_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
         pdf.font "DejaVuSans", style: :normal do
