@@ -9,18 +9,43 @@
     }
   }
 
+  function formatearMascaraMiles(valStr) {
+    if (valStr === null || valStr === undefined) return '';
+    let str = valStr.toString().trim();
+    if (str === '') return '';
+
+    // Separar parte entera y decimales (usando coma para decimales)
+    let partes = str.replace(/\./g, '').replace(/[^0-9,]/g, '').split(',');
+    let entera = partes[0] || '0';
+    let decimal = partes[1] !== undefined ? partes[1].substring(0, 2) : null;
+
+    // Formatear separador de miles con puntos
+    entera = entera.replace(/^0+(?=\d)/, '');
+    if (entera === '') entera = '0';
+    entera = entera.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    return decimal !== null ? `${entera},${decimal}` : entera;
+  }
+
   function sanitizarDecimalesYCalcular(input) {
-    let valor = input.value.replace(/[^0-9,]/g, '');
-    const partes = valor.split(',');
-    if (partes.length > 2) {
-      valor = partes[0] + ',' + partes.slice(1).join('').replace(/,/g, '');
+    if (!input || input.value === undefined) return;
+
+    let cursorPosition = input.selectionStart || 0;
+    let valorOriginal = input.value;
+    let valorFormateado = formatearMascaraMiles(valorOriginal);
+
+    if (valorOriginal !== valorFormateado) {
+      let puntosAntes = (valorOriginal.substring(0, cursorPosition).match(/\./g) || []).length;
+      input.value = valorFormateado;
+      let puntosDespues = (valorFormateado.substring(0, cursorPosition).match(/\./g) || []).length;
+      let ajusteCursor = puntosDespues - puntosAntes;
+      let nuevaPos = Math.max(0, cursorPosition + ajusteCursor);
+      
+      try {
+        input.setSelectionRange(nuevaPos, nuevaPos);
+      } catch (e) {}
     }
-    if (partes.length === 2 && partes[1].length > 2) {
-      valor = partes[0] + ',' + partes[1].substring(0, 2);
-    }
-    if (input.value !== valor) {
-      input.value = valor;
-    }
+
     calcularCostoRendidoFila(input);
   }
 
@@ -35,10 +60,13 @@
     const $hiddenCantidad = $tr.find('.real-cantidad-rendida');
     const $hiddenValorUnitario = $tr.find('.real-valor-unitario-rendido');
 
-    let cantidad = parseFloat($inputVisCantidad.val().replace(',', '.'));
+    // Limpiar puntos de miles y reemplazar comas por puntos para operaciones numéricas Float
+    let cantStr = $inputVisCantidad.val() ? $inputVisCantidad.val().replace(/\./g, '').replace(',', '.') : '0';
+    let cantidad = parseFloat(cantStr);
     if (isNaN(cantidad) || cantidad < 0) { cantidad = 0; }
 
-    let valorUnitario = parseFloat($inputVisValorUnitario.val().replace(',', '.'));
+    let valUniStr = $inputVisValorUnitario.val() ? $inputVisValorUnitario.val().replace(/\./g, '').replace(',', '.') : '0';
+    let valorUnitario = parseFloat(valUniStr);
     if (isNaN(valorUnitario) || valorUnitario < 0) { valorUnitario = 0; }
 
     $hiddenCantidad.val(cantidad);
@@ -58,15 +86,17 @@
 
     const costoSolicitado = parseFloat($tr.find('.cell-costo-solicitado').data('val-solicitado')) || 0;
     
-    // PERMITE SALDO NEGATIVO SI EL MONTO RENDIDO SUPERA AL DISPONIBLE
+    // Cálculo de saldo permitiendo valores negativos
     let saldo = costoSolicitado - costoRendido;
 
-    // Validación individual de fila si NO es reitimizada
+    // Validación individual de fila cuando NO es reitimizada
     if (!esReitimizada && costoRendido > costoSolicitado) {
       $cellCosto.addClass('text-danger font-weight-bold').removeClass('text-dark');
+      $inputVisCantidad.addClass('is-invalid');
       $tr.addClass('has-row-exceso');
     } else {
       $cellCosto.removeClass('text-danger').addClass('text-dark');
+      $inputVisCantidad.removeClass('is-invalid');
       $tr.removeClass('has-row-exceso');
     }
 
@@ -108,7 +138,7 @@
       $cellTotalSaldo.removeClass('text-danger');
     }
 
-    // VALIDACIÓN EXCESO DE MONTO RENDIDO
+    // CONTROL BLOQUEO FORMULARIO POR EXCESO INDIVIDUAL O GLOBAL
     const $msgExceso = $table.closest('.table-responsive-container').find('.msg-exceso-monto');
     const tieneExcesoFila = $table.find('.has-row-exceso').length > 0;
 
@@ -143,10 +173,40 @@
     }
   }
 
+  function aplicarMascarasGlobales() {
+    $('.input-cantidad-rendida, .input-valor-unitario-rendido').each(function() {
+      sanitizarDecimalesYCalcular(this);
+    });
+  }
+
+  $(document).ready(function() {
+    aplicarMascarasGlobales();
+
+    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function() {
+      aplicarMascarasGlobales();
+    });
+
+    $(document).on('focusout change blur keyup', '.input-valor-unitario-rendido, .input-cantidad-rendida', function() {
+      sanitizarDecimalesYCalcular(this);
+    });
+  });
+
 - gastos = local_assigns[:gastos] || {}
 - actividad_id_param = local_assigns[:actividad_id]
 - es_editable = local_assigns.key?(:es_editable) ? local_assigns[:es_editable] : true
 - es_reitimizada = local_assigns.key?(:es_reitimizada) ? local_assigns[:es_reitimizada] : false
+
+-# HELPER RUBY ROBUSTO PARA FORMATEAR MILES DIRECTO AL CONSTRUIR EL HTML
+- formatear_miles_ruby = lambda do |num|
+  - return '' if num.blank?
+  - val_f = num.to_f
+  - if val_f % 1 == 0
+    - val_f.to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
+  - else
+    - partes = val_f.round(2).to_s.split('.')
+    - entera = partes[0].to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
+    - decimal = partes[1].to_s.ljust(2, '0')
+    - "#{entera},#{decimal}"
 
 -# OBTENCIÓN ROBUSTA DE PARÁMETROS Y FLUJO
 - mes_a_rendir_num = (params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir) || 1).to_i
@@ -228,7 +288,7 @@
                   %th.encabezado-form{style: "width: 8%;"} Valor Unitario
                   %th.encabezado-form{style: "width: 8%;", title: "Saldo restante para esta rendición"} Monto Disponible
                   %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
-                  %th.encabezado-form{style: "width: 8%;"} Valor Und. Rendido
+                  %th.encabezado-form{style: "width: 9%;"} Valor Und. Rendido
                   %th.encabezado-form{style: "width: 8%;"} Monto Rendido
                   %th.encabezado-form{style: "width: 6%;"} Saldo
                   %th.encabezado-form{style: "width: 7%;"} N° Documento Respaldo
@@ -275,15 +335,15 @@
                       - v_unitario_rendido = v_unitario_solicitado
                       - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
 
-                    -# CALCULA EL SALDO PERMITIENDO VALORES NEGATIVOS
                     - saldo_actual = monto_postulado - monto_rendido
 
                     - total_costo_postulado += monto_postulado
                     - total_costo_rendido += monto_rendido
                     - total_saldo_general += saldo_actual
 
-                    - cantidad_rendida_str = (cantidad_rendida % 1 == 0 ? cantidad_rendida.to_i : cantidad_rendida.round(2)).to_s.tr('.', ',')
-                    - v_unitario_rendido_str = (v_unitario_rendido % 1 == 0 ? v_unitario_rendido.to_i : v_unitario_rendido.round(2)).to_s.tr('.', ',')
+                    -# MÁSCARAS DE FORMATO CON SEPARADOR DE MILES EN RUBY
+                    - cantidad_rendida_str = formatear_miles_ruby.call(cantidad_rendida)
+                    - v_unitario_rendido_str = formatear_miles_ruby.call(v_unitario_rendido)
 
                     - es_gasto_oper_adm = [:operaciones, :administracion].include?(cat_key)
                     - row_key = "#{real_plan_act_id}_#{cat_key_str}_#{item.id}"
@@ -312,12 +372,15 @@
                           = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario_postulado]", v_unitario_solicitado
 
                           = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "real-cantidad-rendida"
-                          = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
+                          = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida #{'is-invalid' if tiene_exceso_fila}", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
                         
                         %td.contenido-form.text-center
                           = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario_rendido, class: "real-valor-unitario-rendido"
                           - if es_gasto_oper_adm
-                            = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-center input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", readonly: !es_reitimizada, style: "width: 90px; margin: 0 auto; #{'background-color: #e9ecef; cursor: not-allowed;' unless es_reitimizada}", autocomplete: "off"
+                            .input-group{style: "width: 105px; margin: 0 auto;"}
+                              .input-group-prepend
+                                %span.input-group-text.border-text{style: "padding: 2px 6px; font-size: 11px; background-color: #e9ecef;"} $
+                              = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-right input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", readonly: !es_reitimizada, style: "padding-right: 5px; #{'background-color: #e9ecef; cursor: not-allowed;' unless es_reitimizada}", autocomplete: "off"
                           - else
                             = hidden_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "input-valor-unitario-rendido"
                             %span.font-weight-bold= number_to_currency(v_unitario_rendido)
@@ -329,7 +392,6 @@
 
                       %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{class: (tiene_exceso_fila ? 'text-danger' : ''), data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
                       
-                      -# FORMATO DE SALDO NEGATIVO (EN ROJO SI ES NEGATIVO)
                       %td.contenido-form.text-right.font-weight-bold.cell-saldo{class: (saldo_actual < 0 ? 'text-danger' : ''), data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
 
                       %td.contenido-form.text-center
@@ -350,7 +412,10 @@
 
           .msg-exceso-monto.alert.alert-danger.py-1.px-2.mt-1.mb-0.font-weight-bold{style: "font-size: 11px; #{'display: none;' unless tiene_exceso}"}
             %i.fa.fa-exclamation-triangle.mr-1
-            El total del Monto Rendido no puede superar al Monto Disponible restante.
+            - if es_reitimizada
+              El total del Monto Rendido no puede superar al Monto Disponible restante.
+            - else
+              En rendiciones sin reitimización, el Monto Rendido de cada ítem no puede superar su Monto Disponible individual.
 
         - gran_total_costo_postulado += total_costo_postulado
         - gran_total_costo_rendido += total_costo_rendido
