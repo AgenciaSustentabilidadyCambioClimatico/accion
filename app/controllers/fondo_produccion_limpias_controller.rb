@@ -4992,7 +4992,7 @@ class FondoProduccionLimpiasController < ApplicationController
         estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
         @tarea_pendiente.update(estado_tarea_pendiente_id: estado_enviada)
 
-        flash[:notice] = "Correcciones financieras (Mes #{@rendicion.mes_a_rendir}) enviadas para re-evaluación (FPL-14)."
+        flash[:notice] = "Correcciones financieras (Mes #{@rendicion.mes_a_rendir}) enviadas para re-evaluación."
         url_destino = root_path
       else
         flash[:notice] = "Avance de corrección financiera (Mes #{@rendicion.mes_a_rendir}) guardado."
@@ -5181,7 +5181,7 @@ class FondoProduccionLimpiasController < ApplicationController
         flash[:alert] = "Algunas actividades no se autorizaron porque faltaba adjuntar el documento obligatorio."
       elsif params[:commit_type] == 'enviar'
         # NOTA: Aquí iría @tarea_pendiente.pasar_a_siguiente_tarea si decides avanzar el flujo.
-        flash[:notice] = "Reitimización autorizada y guardada exitosamente."
+        flash[:notice] = "Reitemización autorizada y guardada exitosamente."
       else
         flash[:notice] = "Avance de autorización de reitimización guardado."
       end
@@ -7812,7 +7812,22 @@ class FondoProduccionLimpiasController < ApplicationController
     set_actividades_x_linea
   end
 
-  # Método auxiliar para guardar o actualizar el desglose de gastos (RendicionGastoFpl)
+  # Helper para convertir texto a Float reconociendo miles y decimales
+  def parse_monto_float(val)
+    return 0.0 if val.blank?
+    str = val.to_s.strip
+    if str.include?('.') && str.include?(',')
+      if str.index('.') < str.index(',')
+        str = str.tr('.', '').tr(',', '.')
+      else
+        str = str.tr(',', '')
+      end
+    elsif str.include?(',')
+      str = str.tr(',', '.')
+    end
+    str.to_f
+  end
+
   def procesar_gastos_rendidos(gastos_params)
     return if gastos_params.blank? || @rendicion.blank?
 
@@ -7823,19 +7838,18 @@ class FondoProduccionLimpiasController < ApplicationController
       cat_str     = datos[:categoria].to_s.strip.downcase
       item_id     = datos[:item_origen_id].to_i
 
-      # Buscar o crear la fila correspondiente en rendicion_gastos_fpl
       gasto = @rendicion.rendicion_gastos_fpl.find_or_initialize_by(
         plan_actividad_id: plan_act_id,
         categoria: cat_str,
         item_origen_id: item_id
       )
 
-      # Sanitización de montos y cantidades enviados desde el formulario
-      cant  = datos[:cantidad_rendida].to_s.tr('.', '').tr(',', '.').to_f
-      val_u = datos[:valor_unitario].to_s.tr('.', '').tr(',', '.').to_f
+      # Parseo seguro con soporte para decimales (ej: 0.5 o 0,5)
+      cant  = parse_monto_float(datos[:cantidad_rendida])
+      val_u = parse_monto_float(datos[:valor_unitario])
 
       if val_u.zero? && datos[:valor_unitario_postulado].present?
-        val_u = datos[:valor_unitario_postulado].to_s.tr('.', '').tr(',', '.').to_f
+        val_u = parse_monto_float(datos[:valor_unitario_postulado])
       end
 
       costo_tot = (cant * val_u).round(2)

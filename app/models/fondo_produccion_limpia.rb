@@ -2539,7 +2539,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
         nombre_actividad_display = act.try(:nombre).to_s
         if es_reitimizada
-          nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
+          nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
         end
 
         # BÚSQUEDA TRADUCIDA DEL DETALLE TÉCNICO
