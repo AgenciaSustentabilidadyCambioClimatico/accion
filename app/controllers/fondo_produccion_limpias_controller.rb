@@ -7572,7 +7572,7 @@ class FondoProduccionLimpiasController < ApplicationController
       cant = gasto[:cantidad_rendida].to_s.tr(',', '.').to_f.clamp(0, 999.99)
       v_orig = gasto[:valor_unitario_postulado].to_s.tr(',', '.').to_f
       v_rend = gasto[:valor_unitario].to_s.tr(',', '.').to_f
-      ref_clean = gasto[:comprobante_ref].to_s.gsub(/[^a-zA-Z0-9]/, '').upcase.first(10)
+      ref_clean = gasto[:comprobante_ref].to_s
 
       registro.assign_attributes(
         tipo_aporte: gasto[:tipo_aporte], valor_unitario: v_orig, valor_unitario_rendido: v_rend,

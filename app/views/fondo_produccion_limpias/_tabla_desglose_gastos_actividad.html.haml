@@ -1,18 +1,27 @@
 :javascript
   function sanitizarComprobante(input) {
-    let valor = input.value.replace(/[^a-zA-Z0-9]/g, '');
-    if (valor.length > 10) {
-      valor = valor.substring(0, 10);
+    if (input.value) {
+      input.value = input.value.toUpperCase();
     }
-    if (input.value !== valor) {
-      input.value = valor;
+  }
+
+  function guardarComprobanteModal(rowKey) {
+    const $modalInput = $('#modal_input_comprobante_' + rowKey);
+    const val = $modalInput.val().trim();
+    $('#hidden_comprobante_' + rowKey).val(val);
+    const $btn = $('#btn_comprobante_' + rowKey);
+    
+    if (val !== '') {
+      $btn.html('<i class="fa fa-file-text-o mr-1"></i>Ver').removeClass('btn-outline-secondary').addClass('btn-outline-primary font-weight-bold');
+    } else {
+      $btn.html('<i class="fa fa-plus mr-1"></i>Ingresar').removeClass('btn-outline-primary font-weight-bold').addClass('btn-outline-secondary');
     }
   }
 
   function formatearMascaraMiles(valStr) {
     if (valStr === null || valStr === undefined) return '';
     let str = valStr.toString().trim();
-    if (str === '') return '';
+    if (str === '') return '0'; // Forzar que no quede vacío
 
     // Separar parte entera y decimales (usando coma para decimales)
     let partes = str.replace(/\./g, '').replace(/[^0-9,]/g, '').split(',');
@@ -32,6 +41,14 @@
 
     let cursorPosition = input.selectionStart || 0;
     let valorOriginal = input.value;
+
+    // Si el usuario vacía el campo, forzamos un cero numérico.
+    if (valorOriginal.trim() === '') {
+      input.value = '0';
+      calcularCostoRendidoFila(input);
+      return;
+    }
+
     let valorFormateado = formatearMascaraMiles(valorOriginal);
 
     if (valorOriginal !== valorFormateado) {
@@ -288,15 +305,15 @@
                 %tr.bg-light
                   %th.encabezado-form{style: "width: 13%;"} Categoría
                   %th.encabezado-form{style: "width: 14%;"} Nombre / Ítem
-                  %th.encabezado-form{style: "width: 12%;"} Tipo Aporte
-                  %th.encabezado-form{style: "width: 8%;", title: "Saldo restante para esta rendición"} HH / Und. Disponible
+                  %th.encabezado-form{style: "width: 14%;"} Tipo Aporte
+                  %th.encabezado-form{style: "width: 7%;", title: "Saldo restante para esta rendición"} HH / Und. Disponible
                   %th.encabezado-form{style: "width: 8%;"} Valor Unitario
-                  %th.encabezado-form{style: "width: 8%;", title: "Saldo restante para esta rendición"} Monto Disponible
+                  %th.encabezado-form{style: "width: 7%;", title: "Saldo restante para esta rendición"} Monto Disponible
                   %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
                   %th.encabezado-form{style: "width: 9%;"} Valor Und. Rendido
                   %th.encabezado-form{style: "width: 8%;"} Monto Rendido
                   %th.encabezado-form{style: "width: 6%;"} Saldo
-                  %th.encabezado-form{style: "width: 7%;"} N° Documento Respaldo
+                  %th.encabezado-form{style: "width: 8%;"} N° Comprobante
               %tbody
                 - categorias_def.each do |cat_key, cat_label|
                   - cat_key_str = cat_key.to_s.strip.downcase
@@ -399,11 +416,37 @@
                       
                       %td.contenido-form.text-right.font-weight-bold.cell-saldo{class: (saldo_actual < 0 ? 'text-danger' : ''), data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
 
-                      %td.contenido-form.text-center
-                        - if es_editable
-                          = text_field_tag "gastos_rendidos[#{row_key}][comprobante_ref]", comprobante_ref_val, class: "form-control smaller-text border-text text-center input-comprobante-ref", oninput: "sanitizarComprobante(this)", maxlength: 10, style: "width: 80px; margin: 0 auto; text-transform: uppercase;", autocomplete: "off", placeholder: "Ej: F1234"
-                        - else
-                          %span.font-weight-bold= comprobante_ref_val.presence || '--'
+                      %td.contenido-form.text-center{style: "vertical-align: middle;"}
+                        = hidden_field_tag "gastos_rendidos[#{row_key}][comprobante_ref]", comprobante_ref_val, id: "hidden_comprobante_#{row_key}"
+                        - btn_class = comprobante_ref_val.present? ? "btn-outline-primary font-weight-bold" : "btn-outline-secondary"
+                        - btn_icon = comprobante_ref_val.present? ? "fa-file-text-o" : "fa-plus"
+                        - btn_text = comprobante_ref_val.present? ? "Ver" : "Ingresar"
+                        
+                        %button.btn.btn-sm.smaller-text.py-0.px-2{type: "button", id: "btn_comprobante_#{row_key}", class: btn_class, style: "width: 85px;", data: {toggle: "modal", target: "#modal_comprobante_#{row_key}"}}
+                          %i.fa{class: "#{btn_icon} mr-1"}
+                          = btn_text
+
+                        -# Modal emergente amplio para la fila
+                        .modal.fade{id: "modal_comprobante_#{row_key}", tabindex: "-1", role: "dialog", aria: {hidden: "true"}}
+                          .modal-dialog.modal-dialog-centered.modal-lg{role: "document"}
+                            .modal-content.text-left
+                              .modal-header.py-2.bg-light
+                                %h6.modal-title.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+                                  %i.fa.fa-file-text-o.mr-1.text-info
+                                  N° Comprobante / Documento de Respaldo
+                                %button.close{type: "button", data: {dismiss: "modal"}, aria: {label: "Cerrar"}}
+                                  %span{aria: {hidden: "true"}} &times;
+                              .modal-body.p-3
+                                .form-group.mb-2
+                                  %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Ítem / Nombre:
+                                  .text-dark.font-weight-bold{style: "font-size: 13px;"}= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                                .form-group.mb-0
+                                  %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Detalle de N° Factura / Boleta / Comprobante de Respaldo:
+                                  = text_area_tag "modal_input_comprobante_#{row_key}", comprobante_ref_val, id: "modal_input_comprobante_#{row_key}", class: "form-control border-text", rows: 4, oninput: "sanitizarComprobante(this); guardarComprobanteModal('#{row_key}')", style: "font-size: 13px;", placeholder: "Ingrese N° de documento, detalles, observaciones de respaldo, etc...", disabled: !es_editable
+                              .modal-footer.py-2.px-3.bg-light
+                                %button.btn.btn-sm.btn-primary{type: "button", style: "min-width: 120px;", onclick: "guardarComprobanteModal('#{row_key}')", data: {dismiss: "modal"}}
+                                  %i.fa.fa-check.mr-1
+                                  Guardar y Cerrar
 
                 - tiene_exceso = (!es_reitimizada && total_costo_rendido > total_costo_postulado) || tiene_exceso_tabla
                 - tiene_exceso_global_reitimizacion = es_reitimizada && total_costo_rendido > total_costo_postulado

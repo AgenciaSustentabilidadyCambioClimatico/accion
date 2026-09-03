@@ -6,10 +6,7 @@ class RendicionGastoFpl < ApplicationRecord
 
   validates :categoria, presence: true
   validates :cantidad_rendida, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 999 }
-  validates :comprobante_ref, length: { maximum: 10 }, 
-                              format: { with: /\A[a-zA-Z0-9]*\z/, message: "solo permite letras y números" }, 
-                              allow_blank: true
-
+ 
   before_save :calcular_costo_rendido
 
   private
