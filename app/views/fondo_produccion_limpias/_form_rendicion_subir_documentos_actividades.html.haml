@@ -99,7 +99,7 @@
 
         const mensajeHtml = `
           <div class="mensaje-archivo-listo text-success mt-1" style="font-size: 10px; font-weight: bold; line-height: 1.2;">
-            <i class="fa fa-check-circle mr-1"></i> ¡Archivo listo para adjuntar!<br>
+            <i class="fa fa-check-circle mr-1"></i> Archivo listo para adjuntar<br>
           </div>
         `;
         input.after(mensajeHtml);
@@ -279,6 +279,7 @@
     }
 
     const esSinMovimientos = $('#chk_sin_movimientos_paso1').is(':checked');
+    const pendientes = [];
 
     let tabTecnicaValido = true;
     let tieneActividadesTecnicas = false;
@@ -291,35 +292,98 @@
         const id = block.id.replace('tecnica_actividad_card_', '');
         const selectRealizada = document.getElementById('realizada_actividad_' + id);
         const observacionInput = document.getElementById('observacion_actividad_' + id);
+        const fechaInicioInput = document.getElementById('fecha_inicio_actividad_' + id);
+        const fechaTerminoInput = document.getElementById('fecha_termino_actividad_' + id);
         const fileInput = document.getElementById('archivo_rendicion_' + id);
         const tdArchivo = document.getElementById('archivo_cargado_actividad_' + id);
-        
+        const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || ('Actividad ' + id);
+
         if (selectRealizada && tdArchivo) {
           const realizada = selectRealizada.value.trim();
           const observacion = observacionInput ? observacionInput.value.trim() : '';
+          const fechaInicio = fechaInicioInput ? fechaInicioInput.value.trim() : '';
+          const fechaTermino = fechaTerminoInput ? fechaTerminoInput.value.trim() : '';
           const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
           const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
           const tieneArchivo = tieneArchivoPrevio || tieneArchivoNuevo;
+          let resumenValido = true;
+          const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
+          const inputConclusion = document.getElementById('rendicion_conclusion');
 
-          if (realizada === '' || observacion === '' || !tieneArchivo) {
+          if (inputResultado) {
+            if (inputResultado.value.trim() === '') {
+              resumenValido = false;
+              $(inputResultado).addClass('is-invalid');
+            } else {
+              $(inputResultado).removeClass('is-invalid');
+            }
+          }
+
+          if (inputConclusion) {
+            if (inputConclusion.value.trim() === '') {
+              resumenValido = false;
+              $(inputConclusion).addClass('is-invalid');
+            } else {
+              $(inputConclusion).removeClass('is-invalid');
+            }
+          }
+
+          if (fechaInicio === '') {
             tabTecnicaValido = false;
+            $(fechaInicioInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Ingresar Fecha de Inicio.');
+          } else {
+            $(fechaInicioInput).removeClass('is-invalid');
+          }
+
+          if (fechaTermino === '') {
+            tabTecnicaValido = false;
+            $(fechaTerminoInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Ingresar Fecha de Término.');
+          } else {
+            $(fechaTerminoInput).removeClass('is-invalid');
+          }
+
+          if (realizada === '') {
+            tabTecnicaValido = false;
+            $(selectRealizada).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Seleccionar Nivel de Avance.');
+          } else {
+            $(selectRealizada).removeClass('is-invalid');
+          }
+
+          if (observacion === '') {
+            tabTecnicaValido = false;
+            $(observacionInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Ingresar Descripción del Avance.');
+          } else {
+            $(observacionInput).removeClass('is-invalid');
+          }
+
+          if (!tieneArchivo) {
+            tabTecnicaValido = false;
+            $(fileInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Adjuntar Documento de Respaldo Técnico.');
+          } else {
+            $(fileInput).removeClass('is-invalid');
           }
         }
       });
 
       if (!tieneActividadesTecnicas) {
         tabTecnicaValido = false;
+        pendientes.push('<b>Pestaña Técnica:</b> No se han seleccionado actividades para rendir.');
       }
     }
 
-    let tieneBloquesFpl = false;
-    let tieneDocFpl = false;
+    let tabFinancieraFplValido = true;
 
     if (!esSinMovimientos) {
       document.querySelectorAll('.actividad-fpl-block').forEach(block => {
         if (block.style.display === 'none') return;
-        tieneBloquesFpl = true;
+        const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'FPL';
 
+        let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
           if (fila.style.display === 'none') return;
           const destroyFlag = fila.querySelector('input.destroy-flag');
@@ -331,22 +395,28 @@
           const tieneArchivoPrevio = tdArchivoPrevio && tdArchivoPrevio.querySelector('a') !== null;
 
           if (tieneArchivoNuevo || tieneArchivoPrevio) {
-            tieneDocFpl = true;
+            tieneDocEnBlock = true;
+            if (fileInput) $(fileInput).removeClass('is-invalid');
+          } else if (fileInput) {
+            $(fileInput).addClass('is-invalid');
           }
         });
+
+        if (!tieneDocEnBlock) {
+          tabFinancieraFplValido = false;
+          pendientes.push('<b>Pestaña Financiera FPL [' + actNombre + ']:</b> Adjuntar Documento de Rendición.');
+        }
       });
     }
 
-    const tabFinancieraFplValido = esSinMovimientos ? true : (tieneBloquesFpl ? tieneDocFpl : true);
-
-    let tieneBloquesAporte = false;
-    let tieneDocAporte = false;
+    let tabFinancieraAporteValido = true;
 
     if (!esSinMovimientos) {
       document.querySelectorAll('.actividad-aporte-block').forEach(block => {
         if (block.style.display === 'none') return;
-        tieneBloquesAporte = true;
+        const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'Aporte Propio';
 
+        let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
           if (fila.style.display === 'none') return;
           const destroyFlag = fila.querySelector('input.destroy-flag');
@@ -358,13 +428,19 @@
           const tieneArchivoPrevio = tdArchivoPrevio && tdArchivoPrevio.querySelector('a') !== null;
 
           if (tieneArchivoNuevo || tieneArchivoPrevio) {
-            tieneDocAporte = true;
+            tieneDocEnBlock = true;
+            if (fileInput) $(fileInput).removeClass('is-invalid');
+          } else if (fileInput) {
+            $(fileInput).addClass('is-invalid');
           }
         });
+
+        if (!tieneDocEnBlock) {
+          tabFinancieraAporteValido = false;
+          pendientes.push('<b>Pestaña Financiera Aporte [' + actNombre + ']:</b> Adjuntar Documento de Rendición.');
+        }
       });
     }
-
-    const tabFinancieraAporteValido = esSinMovimientos ? true : (tieneBloquesAporte ? tieneDocAporte : true);
 
     let resumenValido = true;
     const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
@@ -442,6 +518,24 @@
     }
     validarFormulario();
   }
+
+  // Lógica para mostrar la sección Información Complementaria solo en la pestaña "tecnica"
+  $(document).ready(function() {
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      if ($(e.target).attr('href') === '#tecnica') {
+        $('#info-complementaria-section').show();
+      } else {
+        $('#info-complementaria-section').hide();
+      }
+    });
+
+    // Validar estado inicial
+    if ($('#tecnica').hasClass('active')) {
+      $('#info-complementaria-section').show();
+    } else {
+      $('#info-complementaria-section').hide();
+    }
+  });
 
 :css
   .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -697,10 +791,18 @@
                     %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
                       %thead
                         %tr.bg-light
-                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Inicio
-                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Término
-                          %th.encabezado-form{style: 'width: 15%;'} Nivel de avance
-                          %th.encabezado-form{style: 'width: 55%;'} Descripción del Avance
+                          %th.encabezado-form{style: 'width: 15%;'} 
+                            Fecha de Inicio
+                            %span.text-danger *
+                          %th.encabezado-form{style: 'width: 15%;'} 
+                            Fecha de Término
+                            %span.text-danger *
+                          %th.encabezado-form{style: 'width: 15%;'} 
+                            Nivel de avance
+                            %span.text-danger *
+                          %th.encabezado-form{style: 'width: 55%;'} 
+                            Descripción del Avance
+                            %span.text-danger *
                       %tbody
                         %tr
                           %td.contenido-form
@@ -780,7 +882,9 @@
                         %tr
                           %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
                           - if es_editable
-                            %th.encabezado-form{style: 'width: 55%;'} Subir Documento Rendición
+                            %th.encabezado-form{style: 'width: 55%;'}
+                              Subir Documento Rendición
+                              %span.text-danger *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-fpl-#{actividad.id}"}
                         - if docs_act.present?
@@ -861,7 +965,9 @@
                         %tr
                           %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
                           - if es_editable
-                            %th.encabezado-form{style: 'width: 55%;'} Subir Documento Rendición
+                            %th.encabezado-form{style: 'width: 55%;'}
+                              Subir Documento Rendición
+                              %span.text-danger *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-aporte-#{actividad.id}"}
                         - if docs_act.present?
@@ -902,7 +1008,7 @@
         %h5.no-margin.font-weight-bold{style: 'font-size: 14px; color: #5d759e;'}
           %i.fa.fa-file-text-o.mr-2.text-info
           Información Complementaria de la Rendición
-      .card-body.p-3
+      .card-body.p-3.border-0{style: 'border: none !important;'}
         .row
           .col-12.mb-3
             %label.label-estilo{for: 'rendicion_resultado_actividades_realizadas'}
