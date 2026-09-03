@@ -69,6 +69,7 @@
     let valorUnitario = parseFloat(valUniStr);
     if (isNaN(valorUnitario) || valorUnitario < 0) { valorUnitario = 0; }
 
+    // Almacena el valor numérico float limpio en el campo oculto
     $hiddenCantidad.val(cantidad);
     $hiddenValorUnitario.val(valorUnitario);
 
@@ -142,7 +143,11 @@
     const $msgExceso = $table.closest('.table-responsive-container').find('.msg-exceso-monto');
     const tieneExcesoFila = $table.find('.has-row-exceso').length > 0;
 
-    if (totalRendido > totalSolicitado || (!esReitimizada && tieneExcesoFila)) {
+    if (!esReitimizada && (totalRendido > totalSolicitado || tieneExcesoFila)) {
+      $cellTotalRendido.removeClass('text-success').addClass('text-danger');
+      $table.addClass('has-exceso-error');
+      $msgExceso.slideDown(200);
+    } else if (esReitimizada && totalRendido > totalSolicitado) {
       $cellTotalRendido.removeClass('text-success').addClass('text-danger');
       $table.addClass('has-exceso-error');
       $msgExceso.slideDown(200);
@@ -205,7 +210,8 @@
   - else
     - partes = val_f.round(2).to_s.split('.')
     - entera = partes[0].to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
-    - decimal = partes[1].to_s.ljust(2, '0')
+    - decimal = partes[1].to_s.gsub(/0+$/, '')
+    - decimal = '0' if decimal.empty?
     - "#{entera},#{decimal}"
 
 -# OBTENCIÓN ROBUSTA DE PARÁMETROS Y FLUJO
@@ -232,7 +238,6 @@
 
 - categorias_def = [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ]
 
--# BÚSQUEDA EN MAPA SOPORTANDO BÚSQUEDA POR 711 O POR 101
 - rendicion_gastos_map = {}
 - if @rendicion.present?
   - @rendicion.rendicion_gastos_fpl.each do |g|
@@ -400,20 +405,21 @@
                         - else
                           %span.font-weight-bold= comprobante_ref_val.presence || '--'
 
-                - tiene_exceso = (total_costo_rendido > total_costo_postulado) || tiene_exceso_tabla
+                - tiene_exceso = (!es_reitimizada && total_costo_rendido > total_costo_postulado) || tiene_exceso_tabla
+                - tiene_exceso_global_reitimizacion = es_reitimizada && total_costo_rendido > total_costo_postulado
 
                 %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
                   %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL TABLA:
                   %td.contenido-form.text-right.font-weight-bold.text-primary.cell-total-costo-solicitado= number_to_currency(total_costo_postulado)
                   %td.contenido-form{colspan: 2}
-                  %td.contenido-form.text-right.font-weight-bold.cell-total-costo-rendido{class: (tiene_exceso ? 'text-danger' : 'text-success')}= number_to_currency(total_costo_rendido)
+                  %td.contenido-form.text-right.font-weight-bold.cell-total-costo-rendido{class: (tiene_exceso || tiene_exceso_global_reitimizacion ? 'text-danger' : 'text-success')}= number_to_currency(total_costo_rendido)
                   %td.contenido-form.text-right.font-weight-bold.cell-total-saldo{class: (total_saldo_general < 0 ? 'text-danger' : '')}= number_to_currency(total_saldo_general)
                   %td.contenido-form
 
-          .msg-exceso-monto.alert.alert-danger.py-1.px-2.mt-1.mb-0.font-weight-bold{style: "font-size: 11px; #{'display: none;' unless tiene_exceso}"}
+          .msg-exceso-monto.alert.alert-danger.py-1.px-2.mt-1.mb-0.font-weight-bold{style: "font-size: 11px; #{'display: none;' unless (tiene_exceso || tiene_exceso_global_reitimizacion)}"}
             %i.fa.fa-exclamation-triangle.mr-1
             - if es_reitimizada
-              El total del Monto Rendido no puede superar al Monto Disponible restante.
+              El total del Monto Rendido de esta tabla no puede superar al Monto Disponible global.
             - else
               En rendiciones sin reitimización, el Monto Rendido de cada ítem no puede superar su Monto Disponible individual.
 
