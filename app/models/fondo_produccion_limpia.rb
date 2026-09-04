@@ -1688,6 +1688,13 @@ class FondoProduccionLimpia < ApplicationRecord
                        else
                          programa_texto
                        end
+     origen_texto = if prog_clean.include?('01 - Ley Presupuesto') || prog_clean.include?('07 - DPS') || prog_clean =~ /^01|^07|Ley Presupuesto|DPS/i
+                         'ASCC'
+                       elsif prog_clean.downcase.include?('extrapresupuestario')
+                         'Gobierno Regional'
+                       else
+                         programa_texto
+                       end
 
     postulante = User.find_by(id: fpl.try(:usuario_entregables_id))
     nombre_postulante = postulante.try(:nombre_completo)
@@ -1801,7 +1808,7 @@ class FondoProduccionLimpia < ApplicationRecord
         [ { content: "<b>Código:</b>", inline_format: true }, fpl&.codigo_proyecto.to_s, { content: "<b>Programa:</b>", inline_format: true }, programa_texto ],
         [ { content: "<b>Título del proyecto:</b>", inline_format: true }, titulo_proyecto, { content: "<b>Imputación:</b>", inline_format: true }, imputacion_texto ],
         [ { content: "<b>Nombre Entidad Beneficiaria:</b>", inline_format: true }, { content: razon_social, colspan: 3 } ],
-        [ { content: "<b>N° de informe:</b>", inline_format: true }, { content: texto_mes_display, colspan: 3 } ],
+        [ { content: "<b>N° de informe:</b>", inline_format: true }, texto_mes_display, { content: "<b>Origen:</b>", inline_format: true }, origen_texto],  
         [ { content: "<b>Fecha aprobación informe evaluación actividades:</b>", inline_format: true }, fecha_recepcion, { content: "<b>Fecha de evaluación de gastos:</b>", inline_format: true }, fecha_evaluacion ]
       ]
 
@@ -2936,7 +2943,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
           nombre_actividad_display = act.try(:nombre).to_s
           if es_reitimizada
-            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
+            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
           end
 
           header_card = [
