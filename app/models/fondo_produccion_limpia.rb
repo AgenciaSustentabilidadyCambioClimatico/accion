@@ -1839,7 +1839,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
           nombre_actividad_display = act.try(:nombre) || "Actividad"
           if es_reitimizada
-            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
+            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
           end
 
           detalle_tecnico = rendicion.rendicion_detalles_fpl.find do |d|
@@ -1921,7 +1921,7 @@ class FondoProduccionLimpia < ApplicationRecord
             
             header_act_text = "<color rgb='003DA6'><b>#{actividad.correlativo}</b></color> <b>#{actividad.nombre}</b>"
             if es_reitimizada
-              header_act_text += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
+              header_act_text += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
             end
 
             header_tabla_act = [ [ { content: header_act_text, inline_format: true } ] ]
@@ -2013,7 +2013,7 @@ class FondoProduccionLimpia < ApplicationRecord
             
             header_act_text = "<color rgb='003DA6'><b>#{actividad.correlativo}</b></color> <b>#{actividad.nombre}</b>"
             if es_reitimizada
-              header_act_text += " <color rgb='6F42C1'><b>(Reitimizada)</b></color>"
+              header_act_text += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
             end
 
             header_tabla_act = [ [ { content: header_act_text, inline_format: true } ] ]

@@ -683,11 +683,11 @@
               %td.contenido-form.text-right{style: 'font-weight: bold;'}
                 = number_to_currency(total_total_suma)
               %td.contenido-form
-
-      .d-flex.justify-content-end.mt-3
-        %button.btn.btn-primary#btn-continuar-paso2{type: "button"}
-          Continuar a Rendición
-          %i.fa.fa-arrow-right.ml-1
+      - if es_editable
+        .d-flex.justify-content-end.mt-3
+          %button.btn.btn-primary#btn-continuar-paso2{type: "button"}
+            Continuar a Rendición
+            %i.fa.fa-arrow-right.ml-1
 
 -# ==========================================
 -# PASO 2: FORMULARIO DE RENDICIÓN POR PESTAÑAS
