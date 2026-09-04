@@ -443,10 +443,11 @@
                                 .form-group.mb-0
                                   %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Detalle de N° Factura / Boleta / Comprobante de Respaldo:
                                   = text_area_tag "modal_input_comprobante_#{row_key}", comprobante_ref_val, id: "modal_input_comprobante_#{row_key}", class: "form-control border-text", rows: 4, oninput: "sanitizarComprobante(this); guardarComprobanteModal('#{row_key}')", style: "font-size: 13px;", placeholder: "Ingrese N° de documento, detalles, observaciones de respaldo, etc...", disabled: !es_editable
-                              .modal-footer.py-2.px-3.bg-light
-                                %button.btn.btn-sm.btn-primary{type: "button", style: "min-width: 120px;", onclick: "guardarComprobanteModal('#{row_key}')", data: {dismiss: "modal"}}
-                                  %i.fa.fa-check.mr-1
-                                  Guardar y Cerrar
+                              - if es_editable
+                                .modal-footer.py-2.px-3.bg-light
+                                  %button.btn.btn-sm.btn-primary{type: "button", style: "min-width: 120px;", onclick: "guardarComprobanteModal('#{row_key}')", data: {dismiss: "modal"}}
+                                    %i.fa.fa-check.mr-1
+                                    Guardar y Cerrar
 
                 - tiene_exceso = (!es_reitimizada && total_costo_rendido > total_costo_postulado) || tiene_exceso_tabla
                 - tiene_exceso_global_reitimizacion = es_reitimizada && total_costo_rendido > total_costo_postulado

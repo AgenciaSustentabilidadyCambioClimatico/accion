@@ -361,11 +361,11 @@
                     %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad requiere corrección"}
                       %i.fa.fa-exclamation-triangle.mr-1
                       Observada
-                %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_tecnica_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
-              .collapse.show{id: "collapse_tecnica_eval_#{actividad.id}"}
+              .collapse{id: "collapse_tecnica_eval_#{actividad.id}"}
                 .card-body.p-2
                   .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
                     %span
@@ -567,11 +567,11 @@
                     %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión financiera"}
                       %i.fa.fa-exclamation-triangle.mr-1
                       Observada
-                %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_fpl_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
-              .collapse.show{id: "collapse_fpl_eval_#{actividad.id}"}
+              .collapse{id: "collapse_fpl_eval_#{actividad.id}"}
                 .card-body.p-2
                   = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
@@ -728,11 +728,11 @@
                     %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión de aporte propio"}
                       %i.fa.fa-exclamation-triangle.mr-1
                       Observada
-                %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_aporte_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
-              .collapse.show{id: "collapse_aporte_eval_#{actividad.id}"}
+              .collapse{id: "collapse_aporte_eval_#{actividad.id}"}
                 .card-body.p-2
                   = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 

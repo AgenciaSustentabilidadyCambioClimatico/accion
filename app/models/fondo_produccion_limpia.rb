@@ -1631,12 +1631,16 @@ class FondoProduccionLimpia < ApplicationRecord
     # ---------------------------------------------------------------------------
     # CONFIGURACIÓN DE FAMILIA DE FUENTES
     # ---------------------------------------------------------------------------
-    font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
-    font_path_bold    = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
+    font_path_regular     = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
+    font_path_bold        = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
+    font_path_italic      = Rails.root.join("app/assets/fonts/DejaVuSans-Oblique.ttf").to_s # Ajusta el nombre si tienes el archivo
+    font_path_bold_italic = Rails.root.join("app/assets/fonts/DejaVuSans-BoldOblique.ttf").to_s
 
     pdf.font_families.update("DejaVuSans" => {
-      normal: font_path_regular,
-      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+      normal:      font_path_regular,
+      bold:        File.exist?(font_path_bold) ? font_path_bold : font_path_regular,
+      italic:      File.exist?(font_path_italic) ? font_path_italic : font_path_regular,
+      bold_italic: File.exist?(font_path_bold_italic) ? font_path_bold_italic : (File.exist?(font_path_bold) ? font_path_bold : font_path_regular)
     })
     pdf.font "DejaVuSans"
 
@@ -1810,7 +1814,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       # 2. DESCRIPCIÓN DE ACTIVIDADES
       self.pdf_titulo_formato(pdf, "DESCRIPCIÓN DE ACTIVIDADES") rescue nil
-      pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado.", size: 8, font_style: :italic
+      pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado.", size: 8, style: :italic
 
       self.pdf_separador(pdf, 8) rescue nil
 

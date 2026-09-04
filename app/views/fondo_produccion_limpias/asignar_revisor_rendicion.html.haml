@@ -217,11 +217,11 @@
                             %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                               %i.fa.fa-refresh.mr-1
                               Reitemización autorizada
-                        %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                        %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_tecnica_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                           %i.fa.fa-chevron-down.mr-1
                           Ver / Ocultar
 
-                      .collapse.show{id: "collapse_tecnica_read_#{actividad.id}"}
+                      .collapse{id: "collapse_tecnica_read_#{actividad.id}"}
                         .card-body.p-2
                           -# CAJA INFORMATIVA DEL INDICADOR
                           .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
@@ -301,11 +301,11 @@
                             %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                               %i.fa.fa-refresh.mr-1
                               Reitemización autorizada
-                        %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                        %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_fpl_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                           %i.fa.fa-chevron-down.mr-1
                           Ver / Ocultar
 
-                      .collapse.show{id: "collapse_fpl_read_#{actividad.id}"}
+                      .collapse{id: "collapse_fpl_read_#{actividad.id}"}
                         .card-body.p-2
                           = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
@@ -353,11 +353,11 @@
                             %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                               %i.fa.fa-refresh.mr-1
                               Reitemización autorizada
-                        %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                        %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_aporte_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                           %i.fa.fa-chevron-down.mr-1
                           Ver / Ocultar
 
-                      .collapse.show{id: "collapse_aporte_read_#{actividad.id}"}
+                      .collapse{id: "collapse_aporte_read_#{actividad.id}"}
                         .card-body.p-2
                           = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
