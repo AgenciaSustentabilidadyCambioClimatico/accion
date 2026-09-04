@@ -1821,15 +1821,29 @@ class FondoProduccionLimpia < ApplicationRecord
 
       # 2. DESCRIPCIÓN DE ACTIVIDADES
       self.pdf_titulo_formato(pdf, "DESCRIPCIÓN DE ACTIVIDADES") rescue nil
-      pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado.", size: 8, style: :italic
+  
+      # Comprobar si la rendición fue marcada sin movimientos
+      es_sin_movimientos = rendicion.present? && (
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+      )
 
-      self.pdf_separador(pdf, 8) rescue nil
+      if es_sin_movimientos
+        tabla_sin_mov = [
+          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+        ]
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+      elsif actividades.present?
+        pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado.", size: 8, style: :italic
 
-      tabla_actividades = [
-        [ "Nº", "Etapa / Actividades", "Descripción de las actividades realizadas", "Estado\n(Nivel de avance)" ]
-      ]
+        self.pdf_separador(pdf, 8) rescue nil
 
-      if actividades.present?
+        tabla_actividades = [
+          [ "Nº", "Etapa / Actividades", "Descripción de las actividades realizadas", "Estado\n(Nivel de avance)" ]
+        ]
+
         actividades.each do |act|
           act_id_num = act.id.to_i
           plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
@@ -1859,29 +1873,46 @@ class FondoProduccionLimpia < ApplicationRecord
             estado_label
           ]
         end
-      else
-        tabla_actividades << [ "-", "-", "-", "-" ]
-      end
 
-      pdf.table(tabla_actividades, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
+        pdf.table(tabla_actividades, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
         row(0).background_color = 'E0EFF6'
         row(0).font_style = :bold
         column(0).width = 30
         column(0).align = :center
         column(3).width = 80
         column(3).align = :center
+
       end
+      else
+          pdf.text "Sin movimientos.", size: 8, style: :italic, align: :center
+          pdf.move_down 10
+      end
+
+      
 
       self.pdf_separador(pdf, 20) rescue nil
 
       # 3. PLANILLA DE RENDICIÓN DE GASTOS - FPL (ESTILO EVALUACIÓN TÉCNICA)
       pdf.start_new_page
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DEL FPL") rescue nil
-      self.pdf_separador(pdf, 10) rescue nil
 
       filas_fpl_presentes = false
 
-      if actividades.present?
+      # Comprobar si la rendición fue marcada sin movimientos
+      es_sin_movimientos = rendicion.present? && (
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+      )
+
+      if es_sin_movimientos
+        tabla_sin_mov = [
+          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+        ]
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+      elsif actividades.present?
+        self.pdf_separador(pdf, 10) rescue nil
         actividades.each do |actividad|
           act_id_num = actividad.id.to_i
           plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
@@ -1950,30 +1981,41 @@ class FondoProduccionLimpia < ApplicationRecord
         end
       end
 
-      unless filas_fpl_presentes
-        pdf.text "<i>No hay gastos a cargo del FPL registrados.</i>", size: 8, style: :italic, align: :center
-        pdf.move_down 10
+      # TOTALIZADOR FPL
+      if filas_fpl_presentes
+        tabla_total_fpl = [
+          [ { content: "<b>TOTAL RENDICIÓN FPL:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_fpl, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+        ]
+        pdf.table(tabla_total_fpl, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+          column(0).width = pdf.bounds.width - 100
+          column(1).width = 100
+          column(1).align = :right
+        end
       end
 
-      # TOTALIZADOR FPL
-      tabla_total_fpl = [
-        [ { content: "<b>TOTAL RENDICIÓN FPL:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_fpl, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
-      ]
-      pdf.table(tabla_total_fpl, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
-        column(0).width = pdf.bounds.width - 100
-        column(1).width = 100
-        column(1).align = :right
-      end
 
       self.pdf_separador(pdf, 20) rescue nil
 
       # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA (ESTILO EVALUACIÓN TÉCNICA)
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DE LA BENEFICIARIA") rescue nil
-      self.pdf_separador(pdf, 10) rescue nil
-
+      
       filas_ben_presentes = false
 
-      if actividades.present?
+      # Comprobar si la rendición fue marcada sin movimientos
+      es_sin_movimientos = rendicion.present? && (
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+      )
+
+      if es_sin_movimientos
+        tabla_sin_mov = [
+          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+        ]
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+      elsif actividades.present?
+        self.pdf_separador(pdf, 10) rescue nil
         actividades.each do |actividad|
           act_id_num = actividad.id.to_i
           plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
@@ -2042,19 +2084,16 @@ class FondoProduccionLimpia < ApplicationRecord
         end
       end
 
-      unless filas_ben_presentes
-        pdf.text "<i>No hay aportes a cargo de la beneficiaria registrados.</i>", size: 8, style: :italic, align: :center
-        pdf.move_down 10
-      end
-
       # TOTALIZADOR APORTE PROPIO
-      tabla_total_ben = [
-        [ { content: "<b>TOTAL APORTE PROPIO BENEFICIARIA:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_aporte, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
-      ]
-      pdf.table(tabla_total_ben, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
-        column(0).width = pdf.bounds.width - 100
-        column(1).width = 100
-        column(1).align = :right
+      if filas_fpl_presentes
+        tabla_total_ben = [
+          [ { content: "<b>TOTAL APORTE PROPIO BENEFICIARIA:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_aporte, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+        ]
+        pdf.table(tabla_total_ben, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+          column(0).width = pdf.bounds.width - 100
+          column(1).width = 100
+          column(1).align = :right
+        end
       end
 
       self.pdf_separador(pdf, 25) rescue nil
@@ -2531,14 +2570,28 @@ class FondoProduccionLimpia < ApplicationRecord
     # Sección III
     self.pdf_sub_titulo_formato(pdf, "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
 
-    tabla_act = [
-      [ "N°", "Nombre de la Actividad", "Fecha Inicio", "Fecha Término", "Monto Rendido", "%", "Descripción del Avance", "Medio de Verificación" ]
-    ]
+    
+    # Comprobar si la rendición fue marcada sin movimientos
+    es_sin_movimientos = rendicion.present? && (
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+      (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+      (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+    )
 
-    detalles_fpl_array = (rendicion.present? && rendicion.respond_to?(:rendicion_detalles_fpl)) ? rendicion.rendicion_detalles_fpl.to_a : []
-    gastos_fpl_array   = (rendicion.present? && rendicion.respond_to?(:rendicion_gastos_fpl)) ? rendicion.rendicion_gastos_fpl.to_a : []
+    if es_sin_movimientos
+      tabla_sin_mov = [
+        [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+      ]
+      pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+    elsif actividades.present?
+      tabla_act = [
+        [ "N°", "Nombre de la Actividad", "Fecha Inicio", "Fecha Término", "Monto Rendido", "%", "Descripción del Avance", "Medio de Verificación" ]
+      ]
 
-    if actividades.present?
+      detalles_fpl_array = (rendicion.present? && rendicion.respond_to?(:rendicion_detalles_fpl)) ? rendicion.rendicion_detalles_fpl.to_a : []
+      gastos_fpl_array   = (rendicion.present? && rendicion.respond_to?(:rendicion_gastos_fpl)) ? rendicion.rendicion_gastos_fpl.to_a : []
+
       actividades.each do |act|
         act_id_num = act.id.to_i
         
@@ -2615,11 +2668,8 @@ class FondoProduccionLimpia < ApplicationRecord
           nombres_archivos
         ]
       end
-    else
-      tabla_act << [ "-", "Sin actividades reportadas", "-", "-", "$0", "0%", "-", "-" ]
-    end
 
-    pdf.table(tabla_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+      pdf.table(tabla_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
       row(0).background_color = 'E0EFF6'
       row(0).font_style = :bold
       column(0).width = 25
@@ -2633,6 +2683,11 @@ class FondoProduccionLimpia < ApplicationRecord
       column(5).width = 30
       column(5).align = :center
     end
+    else
+      tabla_act << [ "-", "Sin actividades reportadas", "-", "-", "$0", "0%", "-", "-" ]
+    end
+
+    
 
     pdf.move_down 6
 
@@ -2879,7 +2934,20 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
       pdf.move_down 6
 
-      if actividades.present?
+      # Comprobar si la rendición fue marcada sin movimientos
+      es_sin_movimientos = rendicion.present? && (
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+      )
+
+      if es_sin_movimientos
+        tabla_sin_mov = [
+          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+        ]
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+      elsif actividades.present?
         est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
 
         actividades.each do |act|
@@ -2998,7 +3066,7 @@ class FondoProduccionLimpia < ApplicationRecord
           pdf.move_down 8
         end
       else
-        pdf.text "Sin actividades reportadas.", size: 8, style: :italic
+        pdf.text "Rendición Sin Movimientos", size: 8, style: :italic
       end
 
       pdf.move_down 15
