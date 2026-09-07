@@ -202,6 +202,9 @@
                           - elsif est_r == 0
                             - max_avance_borrador = [max_avance_borrador, av].max
 
+                    -# RESTRICCIÓN: Actividades completadas al 100% no se pueden reitemizar
+                    - es_finalizada = max_avance_aprobado >= 100 || max_avance_proceso >= 100 || act_info[:avance] >= 100
+
                     %tr
                       %td.contenido-form
                         = "#{act_info[:correlativo]} #{act_info[:nombre]}"
@@ -217,7 +220,7 @@
                         - elsif es_observada
                           %span.badge.badge-danger.text-white{style: "font-size: 11px; padding: 6px; background-color: #dc3545; display: block; width: 100%;"}
                             = "Observada (#{max_avance_observado}%)"
-                        - elsif max_avance_aprobado >= 100 || max_avance_proceso >= 100
+                        - elsif es_finalizada
                           - if max_avance_proceso >= 100 && max_avance_aprobado < 100
                             %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
                               = "En revision ASCC (100%)"
@@ -234,20 +237,25 @@
                         - else
                           %span{style: "font-size: 12px; color: #5d759e;"}= "0%"
 
-                      -# COLUMNA 1: CHECKEO AUTORIZACIÓN (Persistente con Hidden Field y Deshabilitado si ya está autorizado)
+                      -# COLUMNA 1: CHECKEO AUTORIZACIÓN
                       %td.contenido-form.text-center{style: "vertical-align: middle;"}
-                        = hidden_field_tag "reitimizacion[actividades][#{id_pk}][autorizado]", (is_autorizado ? "1" : "0")
-                        = check_box_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "1", is_autorizado, id: "chk_autorizar_#{id_pk}", class: "chk-autorizar", disabled: is_autorizado, data: { act_id: id_pk, tiene_archivo: tiene_archivo ? 'true' : 'false' }
+                        - if es_finalizada
+                          %span.badge.badge-secondary{style: "font-size: 10px; padding: 4px 6px; background-color: #6c757d;", title: "Actividad completada al 100%, no disponible para reitemizar"}
+                            %i.fa.fa-lock.mr-1
+                            No disponible
+                        - else
+                          = hidden_field_tag "reitimizacion[actividades][#{id_pk}][autorizado]", (is_autorizado ? "1" : "0")
+                          = check_box_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "1", is_autorizado, id: "chk_autorizar_#{id_pk}", class: "chk-autorizar", disabled: is_autorizado, data: { act_id: id_pk, tiene_archivo: tiene_archivo ? 'true' : 'false' }
 
-                      -# COLUMNA 2: CARGAR DOCUMENTO Y MOSTRAR EXISTENTE VIA PROXY
+                      -# COLUMNA 2: CARGAR DOCUMENTO
                       %td.contenido-form.text-center
                         - if tiene_archivo
                           .mb-1
                             = link_to descargar_archivo_reitimizacion_fondo_produccion_limpia_path(@tarea_pendiente, plan_actividad_id: id_pk), target: "_blank", class: "badge badge-info text-white p-1", style: "font-size: 11px; text-decoration: none;" do
                               %i.fa.fa-paperclip.mr-1
                               Ver archivo guardado
-                        = file_field_tag "reitimizacion[actividades][#{id_pk}][archivo]", id: "file_actividad_#{id_pk}", class: "form-control smaller-text border-text"
-
+                        - unless es_finalizada
+                          = file_field_tag "reitimizacion[actividades][#{id_pk}][archivo]", id: "file_actividad_#{id_pk}", class: "form-control smaller-text border-text"
                   %tr.bg-light
                     %td.contenido-form.font-weight-bold.text-right Porcentaje Avance Proyecto:
                     %td.contenido-form.text-center.font-weight-bold
