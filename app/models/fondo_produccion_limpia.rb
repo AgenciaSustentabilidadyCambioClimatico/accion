@@ -2710,10 +2710,10 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf.move_down 5
 
     tabla_funcionarios = [
-      [ "Nombre del Responsable", "___________________________", "", "Nombre del Responsable", "___________________________" ],
-      [ "RUT",                    "___________________________", "", "RUT",                    "___________________________" ],
-      [ "Cargo",                  "___________________________", "", "Cargo",                  "___________________________" ],
-      [ "Dependencia",            "___________________________", "", "Dependencia",            "___________________________" ]
+      [ "Nombre del Responsable", nombre_postulante.to_s.upcase ],
+      [ "RUT",                    rut_postulante.to_s.upcase ],
+      [ "Cargo",                  "Responsable Informe" ],
+      [ "Dependencia",            razon_social ]
     ]
 
     pdf.table(tabla_funcionarios, cell_style: { size: 7.5, padding: 2, borders: [] }) do
@@ -2755,7 +2755,7 @@ class FondoProduccionLimpia < ApplicationRecord
       end
 
       pdf.font "DejaVuSans", style: :normal do
-        pdf.text "Responsable Postulante", size: 7.5, align: :center, color: '555555'
+        pdf.text "Responsable Informe", size: 7.5, align: :center, color: '555555'
       end
     end
 
