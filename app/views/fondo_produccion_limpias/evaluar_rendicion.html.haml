@@ -6,19 +6,21 @@
 
   function toggleComentariosRevisor(selectElement, id) {
     const $select = $(selectElement);
-    const val = $select.val();
+    const val = $select.val().toString().toLowerCase();
     const $tr = $select.closest('tr');
-    const $btnBitacora = $tr.find('button[onclick*="abrirModalComentarios"]');
 
-    if (val === '2' || val.toLowerCase() === 'no') {
-      const comentarioInput = document.getElementById('comentario_revisor_' + id);
-      const tieneComentario = comentarioInput && comentarioInput.value.trim() !== '';
+    // Detecta cualquier representación de rechazo/No ("0", "2", "no", "false")
+    const esNo = (val === '0' || val === '2' || val === 'no' || val === 'false');
 
-      if (!tieneComentario) {
-        // Abrir el modal de bitácora automáticamente al seleccionar NO si aún no hay comentarios
-        const tituloActividad = $tr.closest('.card').find('.header-actividad-fpl .font-weight-bold').text().trim() || 'Evaluación de Rendición';
-        abrirModalComentarios(id, tituloActividad, 'comentario_revisor_', 'comentario_postulante_', false);
+    if (esNo) {
+      // Obtiene el título de la actividad o de la declaración sin movimientos
+      let tituloActividad = $tr.closest('.card').find('.header-actividad-fpl .font-weight-bold').text().trim();
+      if (!tituloActividad) {
+        tituloActividad = $tr.find('td:first').text().replace(/\s+/g, ' ').trim() || 'Declaración Sin Movimientos';
       }
+
+      // Despliega automáticamente el modal de bitácora para ingresar la observación
+      abrirModalComentarios(id, tituloActividad, 'comentario_revisor_', 'comentario_postulante_', false);
     }
 
     validarFormulario();
@@ -470,7 +472,7 @@
 
         - else
           .card.mt-2
-            .card-body.text-center.text-muted No hay actividades registradas en esta rendición.
+            .card-body.text-center.text-muted Rendición Sin Movimientos
       - else
         .card.mt-2
           .card-body.text-center.text-muted No hay actividades configuradas para esta línea.
@@ -480,7 +482,7 @@
     / ----------------------------------------------------
     .tab-pane.fade#financiera-fpl{class: ('show active' if @es_revision_financiera), :role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
       - if es_sin_mov
-        - detalle_eval = @rendicion.rendicion_detalles_fpl.first_or_create!(tipo_tab: 1) if @rendicion.present?
+        - detalle_eval = @rendicion.rendicion_detalles_fpl.find_or_create_by!(tipo_tab: 1) if @rendicion.present?
         - if detalle_eval.present?
           - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
           - val_str = raw_cumple.to_s.downcase
@@ -641,7 +643,7 @@
     / ----------------------------------------------------
     .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
       - if es_sin_mov
-        - detalle_eval = @rendicion.rendicion_detalles_fpl.first_or_create!(tipo_tab: 2) if @rendicion.present?
+        - detalle_eval = @rendicion.rendicion_detalles_fpl.find_or_create_by!(tipo_tab: 2) if @rendicion.present?
         - if detalle_eval.present?
           - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
           - val_str = raw_cumple.to_s.downcase

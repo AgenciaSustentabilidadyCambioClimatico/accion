@@ -2934,6 +2934,22 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
       pdf.move_down 6
 
+      # Determinación del estado global de la rendición
+      est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
+      es_aprobado_global  = [5, 6].include?(est_global)
+      es_observado_global = [3, 4].include?(est_global)
+
+      # Leyenda dinámica de dictamen de la Subdirección
+      if es_aprobado_global
+        texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático <b>APRUEBA</b> el informe de actividades asociado a la rendición del mes de <b>#{texto_mes_display}</b>."
+        pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'D4EDDA', border_color: 'C3E6CB', text_color: '155724' })
+        pdf.move_down 8
+      elsif es_observado_global
+        texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático informa que existen <b>OBSERVACIONES</b> en el informe de actividades asociado a la rendición de <b>#{texto_mes_display}</b>. Le solicitamos revisarlas y subsanarlas."
+        pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'F8D7DA', border_color: 'F5C6CB', text_color: '721C24' })
+        pdf.move_down 8
+      end
+
       # Comprobar si la rendición fue marcada sin movimientos
       es_sin_movimientos = rendicion.present? && (
         [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
@@ -2948,7 +2964,6 @@ class FondoProduccionLimpia < ApplicationRecord
         ]
         pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
       elsif actividades.present?
-        est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
 
         actividades.each do |act|
           act_id_num = act.id.to_i

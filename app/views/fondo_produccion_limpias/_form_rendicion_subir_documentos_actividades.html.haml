@@ -25,6 +25,32 @@
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
 - es_sin_movimientos = ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos)) || params[:sin_movimientos].to_s == '1'
 
+-# Explicitación inteligente de observaciones activas (Solo detalles con cumple en estado 2 u 0)
+- obs_tecnica = nil
+- obs_financiera_fpl = nil
+- obs_financiera_aporte = nil
+
+- if @rendicion.present? && @rendicion.respond_to?(:rendicion_detalles_fpl)
+  - detalles_activos = @rendicion.rendicion_detalles_fpl.to_a
+  
+  - det_tec = detalles_activos.find { |d| (d.read_attribute_before_type_cast(:tipo_tab) || d.tipo_tab).to_i == 0 }
+  - if det_tec.present?
+    - raw_c = (det_tec.read_attribute_before_type_cast(:cumple) || det_tec.cumple).to_s.downcase
+    - if ['2', '0', 'false', 'no'].include?(raw_c)
+      - obs_tecnica = det_tec.try(:comentario_revisor).presence || det_tec.try(:observacion_revisor).presence || det_tec.try(:observacion).presence || det_tec.try(:comentario).presence
+
+  - det_fin_fpl = detalles_activos.find { |d| (d.read_attribute_before_type_cast(:tipo_tab) || d.tipo_tab).to_i == 1 }
+  - if det_fin_fpl.present?
+    - raw_c = (det_fin_fpl.read_attribute_before_type_cast(:cumple) || det_fin_fpl.cumple).to_s.downcase
+    - if ['2', '0', 'false', 'no'].include?(raw_c)
+      - obs_financiera_fpl = det_fin_fpl.try(:comentario_revisor).presence || det_fin_fpl.try(:observacion_revisor).presence || det_fin_fpl.try(:observacion).presence || det_fin_fpl.try(:comentario).presence
+
+  - det_fin_aporte = detalles_activos.find { |d| (d.read_attribute_before_type_cast(:tipo_tab) || d.tipo_tab).to_i == 2 }
+  - if det_fin_aporte.present?
+    - raw_c = (det_fin_aporte.read_attribute_before_type_cast(:cumple) || det_fin_aporte.cumple).to_s.downcase
+    - if ['2', '0', 'false', 'no'].include?(raw_c)
+      - obs_financiera_aporte = det_fin_aporte.try(:comentario_revisor).presence || det_fin_aporte.try(:observacion_revisor).presence || det_fin_aporte.try(:observacion).presence || det_fin_aporte.try(:comentario).presence
+
 - fecha_res = fpl_objeto.try(:fecha_resolucion)
 - mes_nombre = nil
 - if fecha_res.present?
@@ -568,6 +594,36 @@
 -# PASO 1: MATRIZ / RESUMEN DE ACTIVIDADES
 -# ==========================================
 #paso1_resumen{style: ("display: none;" if paso_actual == 2)}
+
+  -# Mensaje dinámico de observación para Rendición Sin Movimientos
+  - if es_sin_movimientos && [3, 4].include?(estado_rend_actual)
+    .alert.alert-danger.mb-3{style: "border-left: 5px solid #dc3545; background-color: #f8d7da; color: #721c24; border-radius: 4px; padding: 12px 15px;"}
+      .d-flex.align-items-start
+        %i.fa.fa-exclamation-triangle.fa-2x.mr-3.mt-1{style: "color: #dc3545;"}
+        .w-100
+          %h6.font-weight-bold.mb-2{style: "font-size: 14px; color: #721c24;"}
+            Observaciones a la Rendición Sin Movimientos
+
+          - if obs_tecnica.present?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Revisor Técnico:
+              %span= obs_tecnica
+
+          - if obs_financiera_fpl.present?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Revisor Financiero FPL:
+              %span= obs_financiera_fpl
+
+          - if obs_financiera_aporte.present?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Revisor Financiero Aporte Propio:
+              %span= obs_financiera_aporte
+
+          - if obs_tecnica.blank? && obs_financiera_fpl.blank? && obs_financiera_aporte.blank?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Observación del Revisor:
+              %span La rendición sin movimientos presenta observaciones que deben ser subsanadas.
+
   .card.mb-3
     .card-header.bg-light
       .d-flex.justify-content-between.align-items-center.flex-wrap
@@ -589,7 +645,13 @@
               %i.fa.fa-flag.mr-1
               Última rendición
 
-    .card-body
+      .card-body
+      -# =========================================================================
+      -# MENSAJE INFORMATIVO DE DEMO CON ÍCONO DE EXCLAMACIÓN
+      -# =========================================================================
+      .alert.d-flex.align-items-center.py-2.px-3.mb-3{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 13px;"}
+        %i.fa.fa-exclamation-circle.mr-2{style: "font-size: 16px; color: #004085;"}
+        %span Texto demo informativo: Ingrese aquí las instrucciones o mensaje de advertencia.
       .table-responsive
         %table.table.table-bordered.table-striped.no-margin
           %thead

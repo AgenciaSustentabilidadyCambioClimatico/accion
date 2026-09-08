@@ -4273,12 +4273,21 @@ class FondoProduccionLimpiasController < ApplicationController
           @rendicion.rendicion_gastos_fpl.destroy_all
           RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl).where(rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id }).destroy_all
 
-          tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
-          detalle_general = @rendicion.rendicion_detalles_fpl.find_or_initialize_by(tipo_tab: tipo_tec_num)
-          detalle_general.observacion = "Rendición Sin Movimientos para el período #{mes_seleccionado}."
-          detalle_general.nivel_avance = 0
-          detalle_general.save!
-          @rendicion.rendicion_detalles_fpl.where.not(id: detalle_general.id).destroy_all
+          # Crear/Mantener las cabeceras para las 3 pestañas (Técnica = 0, Financiera FPL = 1, Financiera Aporte = 2)
+          detalles_ids = []
+          
+          [:tecnica, :financiera_fpl, :financiera_aporte].each do |tipo_enum|
+            tipo_num = RendicionDetalleFpl.tipo_tabs[tipo_enum.to_s] rescue (tipo_enum == :tecnica ? 0 : (tipo_enum == :financiera_fpl ? 1 : 2))
+            
+            detalle = @rendicion.rendicion_detalles_fpl.find_or_initialize_by(tipo_tab: tipo_num)
+            detalle.observacion = "Rendición Sin Movimientos para el período #{mes_seleccionado}."
+            detalle.nivel_avance = 0
+            detalle.save!
+            detalles_ids << detalle.id
+          end
+
+          # Eliminar cualquier otro detalle huérfano que no corresponda a los 3 tipos principales
+          @rendicion.rendicion_detalles_fpl.where.not(id: detalles_ids).destroy_all
         else
           if actividades_pks.present?
             @rendicion.rendicion_gastos_fpl.where.not(plan_actividad_id: actividades_pks).destroy_all
@@ -4656,20 +4665,21 @@ class FondoProduccionLimpiasController < ApplicationController
 
           # --- BIFURCACIÓN DE FLUJO SEGÚN MOVIMIENTOS ---
           es_sin_mov = @rendicion.try(:sin_movimientos?) || ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos))
-          camino_salida = es_sin_mov ? 'C' : 'B'
 
-          if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-            @tarea_pendiente.pasar_a_siguiente_tarea(camino_salida, extra_data)
+          if es_sin_mov
+            # Para Sin Movimientos (C) NO se abre nueva tarea, solo se envía el mensaje
+            flash[:notice] = "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} (Sin movimientos) enviada con observaciones. Se devolvió a la tarea (FPL-12)."
+          else
+            # Para Con Movimientos (B) se pasa a la tarea de corrección técnica (FPL-18)
+            if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+              @tarea_pendiente.pasar_a_siguiente_tarea('B', extra_data)
+            end
+            flash[:notice] = "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se ha devuelto la rendición para corrección técnica (FPL-18)."
           end
 
+          # En ambos casos se cierra la tarea pendiente actual
           estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
           @tarea_pendiente.update(estado_tarea_pendiente_id: estado_enviada)
-
-          flash[:notice] = if es_sin_mov
-            "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} (Sin movimientos) enviada con observaciones. Se devolvió a la tarea (FPL-12)."
-          else
-            "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se ha devuelto la rendición para corrección técnica (FPL-18)."
-          end
         else
           @rendicion.update!(estado: :en_evaluacion)
           if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
@@ -4770,27 +4780,17 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def guardar_revision_financiera_rendicion # FPL-14
-      # 1. Buscar prioritariamente la rendición vinculada a la tarea activa o por params
       if @tarea_pendiente.respond_to?(:determina_rendicion) && @tarea_pendiente.determina_rendicion.present?
         @rendicion = @tarea_pendiente.determina_rendicion
       elsif params[:mes_a_rendir].present?
         @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
       end
 
-      # 2. Fallbacks de búsqueda
       unless @rendicion.present?
         estados_evaluacion = RendicionFpl.estados.slice('en_evaluacion', 'enviada_a_revision').values.presence || [1, 2]
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
                                 .where(estado: estados_evaluacion)
                                 .order(mes_a_rendir: :asc)
-                                .first
-      end
-
-      unless @rendicion.present?
-        estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
-        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .where.not(estado: estado_aprobado_val)
-                                .order(mes_a_rendir: :desc)
                                 .first
       end
 
@@ -4801,36 +4801,32 @@ class FondoProduccionLimpiasController < ApplicationController
         return
       end
 
-      # 3. Actualizar los estados 'cumple' y 'comentario_revisor' en los detalles de ESTA rendición
       guardar_respuestas_evaluacion(params[:detalles])
 
       if params[:commit_type] == 'enviar'
         hay_rechazo_financiero = evaluar_rechazos(params[:detalles])
-
-        # HASH DE IDENTIFICACIÓN PARA PROPAGAR A SIGUIENTES TAREAS
         extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir }
 
         if hay_rechazo_financiero
           @rendicion.update!(estado: :observada_financiera)
 
-          # --- BIFURCACIÓN DE FLUJO SEGÚN MOVIMIENTOS ---
           es_sin_mov = @rendicion.try(:sin_movimientos?) || ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos))
-          camino_salida = es_sin_mov ? 'C' : 'B'
 
-          if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-            @tarea_pendiente.pasar_a_siguiente_tarea(camino_salida, extra_data)
+          if es_sin_mov
+            # Para Sin Movimientos NO se pasa a FPL-17; se devuelve a la tarea FPL-12
+            flash[:notice] = "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} (Sin movimientos) enviada con observaciones. Se devolvió a la tarea (FPL-12)."
+          else
+            if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+              @tarea_pendiente.pasar_a_siguiente_tarea('B', extra_data)
+            end
+            flash[:notice] = "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se devolvió a corrección financiera (FPL-17)."
           end
 
+          # Cerrar la tarea actual de revisión financiera
           estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
           @tarea_pendiente.update(estado_tarea_pendiente_id: estado_enviada)
-
-          flash[:notice] = if es_sin_mov
-            "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} (Sin movimientos) enviada con observaciones. Se devolvió a la tarea (FPL-12)."
-          else
-            "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se devolvió a corrección financiera (FPL-17)."
-          end
         else
-          # Si CUMPLE en Financiera, para avanzar a FPL-16
+          # Si APRUEBA, pasa a Verificación Contable (FPL-16)
           @rendicion.update!(estado: :pendiente_verificacion_contable)
           if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
             @tarea_pendiente.pasar_a_siguiente_tarea('A')
@@ -4847,7 +4843,6 @@ class FondoProduccionLimpiasController < ApplicationController
           format.js   { render js: "window.location.href = '#{root_path}';" }
         end
       else
-        # Grabar avance conservando el parámetro del mes
         flash[:notice] = "Avance de evaluación financiera (Mes #{@rendicion.mes_a_rendir}) guardado correctamente."
         url_retorno = revision_financiera_rendicion_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir)
 
@@ -7204,7 +7199,10 @@ class FondoProduccionLimpiasController < ApplicationController
       detalles_hash = detalles_params.respond_to?(:permit!) ? detalles_params.permit!.to_h : detalles_params.to_h
       detalles_hash = detalles_hash.with_indifferent_access
 
-      detalles_hash.values.any? { |d| d[:cumple].to_s == '2' || d[:cumple].to_s.downcase == 'no' }
+      detalles_hash.values.any? do |d|
+        val = d[:cumple].to_s.strip.downcase
+        ['0', '2', 'false', 'no'].include?(val)
+      end
     end
 
   # Valida que la evaluación FINANCIERA del mes actual esté 100% aprobada
