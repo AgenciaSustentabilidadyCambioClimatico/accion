@@ -1,0 +1,133 @@
+- titulo "Completar Datos FPL"
+
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin Seleccione Flujo FPL a Modificar
+      .card-body
+        .row
+          -# 1. Selección previa del Flujo FPL
+          .col-12.col-md-6.mb-3
+            %label.control-label.required
+              %abbr{title: "Requerido"} *
+              Flujo FPL
+            = select_tag :flujo_fpl_id, options_for_select(@flujos_fpl.map { |f| ["ID #{f.flujo_id} - FPL - #{f.codigo_proyecto}", f.id] }), prompt: 'Seleccione un Fondo de Producción Limpia', class: 'form-control chosen-control', onchange: 'cargarDatosFPL(this.value);'
+        
+        .row#seccion_campos_fpl{style: 'display: none;'}
+          %input#fpl_id_hidden{type: 'hidden'}
+
+          -# 2. Campo Programa
+          .col-12.col-md-6.mb-3
+            %label.control-label.required
+              %abbr{title: "Requerido"} *
+              Programa
+            = select_tag "programa", options_for_select([['Seleccionar Programa...', ''], ['01 - Ley Presupuesto', '01 - Ley Presupuesto'], ['07 - DPS', '07 - DPS'], ['Extrapresupuestario', 'Extrapresupuestario']]), id: 'fpl_programa', class: 'form-control chosen-control'
+
+          -# 3. Campo Fecha Resolución
+          .col-12.col-md-6.mb-3
+            %label.control-label.required
+              %abbr{title: "Requerido"} *
+              Fecha Resolución
+            = date_field_tag 'fecha_resolucion', nil, id: 'fpl_fecha_resolucion', class: 'form-control border-text'
+
+  -# Alineación de botones a la derecha mediante flexbox
+  .col-12.d-flex.justify-content-end.mt-3
+    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning mr-2'
+    %button.btn.btn-sm.btn-primary#btnGuardarFPL{type: 'button', disabled: true, onclick: 'guardarCamposFPL();'}
+      = t(:save)
+
+:css
+  #fpl_fecha_resolucion {
+    height: 34px !important;
+    padding: 4px 8px !important;
+    font-size: 13px !important;
+    line-height: 1.5;
+  }
+
+:javascript
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      width: '100%'
+    });
+  });
+
+  // Carga los datos del Flujo FPL seleccionado
+  function cargarDatosFPL(fplId) {
+    if (!fplId) {
+      $('#seccion_campos_fpl').hide();
+      $('#btnGuardarFPL').prop('disabled', true);
+      return;
+    }
+
+    $.ajax({
+      url: '#{cargar_fpl_fondo_produccion_limpia_path}',
+      method: 'GET',
+      data: { fpl_id: fplId },
+      success: function(response) {
+        if (response.success && response.fpl) {
+          $('#fpl_id_hidden').val(response.fpl.id);
+          
+          // Asignar Programa
+          $('#fpl_programa').val(response.fpl.programa || '').trigger('chosen:updated');
+          
+          // Asignar Fecha Resolución
+          $('#fpl_fecha_resolucion').val(response.fpl.fecha_resolucion || '');
+
+          $('#seccion_campos_fpl').fadeIn();
+          $('#btnGuardarFPL').prop('disabled', false);
+        }
+      },
+      error: function() {
+        alert("Error al cargar los datos del Flujo FPL.");
+      }
+    });
+  }
+
+  // Guarda los valores de Programa y Fecha Resolución
+  function guardarCamposFPL() {
+    const fplId = $('#fpl_id_hidden').val();
+    const programa = $('#fpl_programa').val();
+    const fechaResolucion = $('#fpl_fecha_resolucion').val();
+
+    if (!programa) {
+      alert("Debe seleccionar un Programa.");
+      return;
+    }
+
+    if (!fechaResolucion) {
+      alert("Debe ingresar la Fecha de Resolución.");
+      return;
+    }
+
+    if (confirm("¿Está seguro de actualizar estos campos para el Flujo FPL seleccionado?")) {
+      $('#btnGuardarFPL').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+
+      $.ajax({
+        url: '#{actualizar_fpl_fondo_produccion_limpia_path}',
+        method: 'POST',
+        data: {
+          fpl_id: fplId,
+          fondo_produccion_limpia: {
+            programa: programa,
+            fecha_resolucion: fechaResolucion
+          }
+        },
+        headers: {
+          'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+          $('#btnGuardarFPL').prop('disabled', false).html('Guardar');
+          if (response.success) {
+            alert(response.message);
+          }
+        },
+        error: function(xhr) {
+          $('#btnGuardarFPL').prop('disabled', false).html('Guardar');
+          const res = xhr.responseJSON;
+          alert("Error al guardar: " + (res && res.errors ? res.errors.join(', ') : 'No se pudo guardar.'));
+        }
+      });
+    }
+  }

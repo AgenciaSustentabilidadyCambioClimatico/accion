@@ -391,6 +391,11 @@ Rails.application.routes.draw do
   patch ':id/guardar_autorizar_reitimizacion_rendicion', to: 'fondo_produccion_limpias#guardar_autorizar_reitimizacion_rendicion', as: :guardar_autorizar_reitimizacion_rendicion_fondo_produccion_limpia
   get ':id/descargar_archivo_reitimizacion/:plan_actividad_id', to: 'fondo_produccion_limpias#descargar_archivo_reitimizacion', as: :descargar_archivo_reitimizacion_fondo_produccion_limpia
   
+  # Mantenedor de proyecto y fecha resolución
+  get  'datos_rendicion_fpl', to: 'fondo_produccion_limpias#datos_rendicion_fpl', as: :datos_rendicion_fpl_fondo_produccion_limpia
+  get  'cargar_fpl',     to: 'fondo_produccion_limpias#cargar_fpl', as: :cargar_fpl_fondo_produccion_limpia
+  post 'actualizar_fpl', to: 'fondo_produccion_limpias#actualizar_fpl', as: :actualizar_fpl_fondo_produccion_limpia
+
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

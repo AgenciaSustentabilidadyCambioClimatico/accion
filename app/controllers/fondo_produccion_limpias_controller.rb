@@ -4,11 +4,11 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo, :datos_rendicion_fpl, :cargar_fpl, :actualizar_fpl]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo, :datos_rendicion_fpl, :cargar_fpl, :actualizar_fpl]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -95,6 +95,8 @@ class FondoProduccionLimpiasController < ApplicationController
     :evaluacion_general]
 
     before_action :set_tipo_instrumento_valores
+
+    before_action :set_fpl, only: [:cargar_fpl, :actualizar_fpl]
   
     def initialize
       super
@@ -5799,6 +5801,51 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    # Vista principal del mantenedor
+    def datos_rendicion_fpl
+      @flujos_fpl = FondoProduccionLimpia.includes(:flujo).order(id: :desc)
+    end
+
+    # GET /fondo_produccion_limpias/cargar_fpl
+    # Carga los datos del Flujo FPL seleccionado
+    def cargar_fpl
+      if @fondo_produccion_limpia.present?
+        render json: {
+          success: true,
+          fpl: {
+            id: @fondo_produccion_limpia.id,
+            flujo_id: @fondo_produccion_limpia.flujo_id,
+            programa: @fondo_produccion_limpia.programa,
+            fecha_resolucion: @fondo_produccion_limpia.fecha_resolucion&.strftime('%Y-%m-%d')
+          }
+        }
+      else
+        render json: { success: false, message: "No se encontró el registro FPL." }, status: :not_found
+      end
+    end
+
+    # POST /fondo_produccion_limpias/actualizar_fpl
+    # Actualiza exclusivamente los campos seleccionados (Programa y Fecha Resolución)
+    def actualizar_fpl
+      if @fondo_produccion_limpia.update(fpl_params)
+        #render json: {
+        #  success: true,
+        #  message: "Flujo FPL actualizado correctamente."
+        #}
+
+        respond_to do |format|
+          flash[:success] = 'Datos para rendición actualizados correctamente.'
+          format.js { render js: "window.location='#{datos_rendicion_fpl_fondo_produccion_limpia_path()}'" }
+          format.html { redirect_to datos_rendicion_fpl_fondo_produccion_limpia_path(), notice: success } 
+        end
+      else
+        render json: {
+          success: false,
+          errors: @fondo_produccion_limpia.errors.full_messages
+        }, status: :unprocessable_entity
+      end
+    end
+
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
       tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
@@ -7866,4 +7913,14 @@ class FondoProduccionLimpiasController < ApplicationController
       gasto.save!
     end
   end
+
+  def set_fpl
+    fpl_id = params[:fpl_id] || params.dig(:fondo_produccion_limpia, :id)
+    @fondo_produccion_limpia = FondoProduccionLimpia.find_by(id: fpl_id)
+  end
+
+  def fpl_params
+    params.require(:fondo_produccion_limpia).permit(:programa, :fecha_resolucion)
+  end
+
 end
