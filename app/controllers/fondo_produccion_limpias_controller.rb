@@ -4397,7 +4397,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       # 1. Carga de revisores
       tipo_inst_id = TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia')&.id
-      @revisores_financieros = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO, tipo_inst_id)
+      @revisores_financieros = Responsable.__personas_responsables(Rol::REVISOR_CONTABLE, tipo_inst_id)
       @revisores_tecnicos    = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, tipo_inst_id)
       @revisor = true
 
@@ -4523,7 +4523,7 @@ class FondoProduccionLimpiasController < ApplicationController
         if revisor_fin_id.present?
           persona_fin = Persona.find_by(user_id: revisor_fin_id)
           if persona_fin.present?
-            mapa_fin = MapaDeActor.find_or_initialize_by(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_FINANCIERO)
+            mapa_fin = MapaDeActor.find_or_initialize_by(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_CONTABLE)
             mapa_fin.update!(persona_id: persona_fin.id)
           end
         end
@@ -4829,7 +4829,7 @@ class FondoProduccionLimpiasController < ApplicationController
           # Si APRUEBA, pasa a Verificación Contable (FPL-16)
           @rendicion.update!(estado: :pendiente_verificacion_contable)
           if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-            @tarea_pendiente.pasar_a_siguiente_tarea('A')
+            @tarea_pendiente.pasar_a_siguiente_tarea('A', { todos_los_actores: true })
           end
           
           estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2

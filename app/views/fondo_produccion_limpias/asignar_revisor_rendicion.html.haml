@@ -406,7 +406,7 @@
                         - if !solo_lectura
                           %label.label-estilo{ for: 'revisor_financiero_id' }
                             %abbr{ title: "Campo requerido" } *
-                            = t(:revisor_financiero)
+                            = t(:revisor_contable)
                           %br
                           - current_fin_id = @rendicion&.revisor_financiero_id
                           = f.select :revisor_financiero_id, options_for_select([['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, current_fin_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }

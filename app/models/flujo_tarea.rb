@@ -76,6 +76,65 @@ class FlujoTarea < ApplicationRecord
 						postulante.user.session[:personas].first[:email_institucional], 
 						rgc.id).deliver_now
 				end
+			elsif extra[:todos_los_actores]
+                flujo = Flujo.find_by(id: flujo_id) || self.flujo
+                actores = MapaDeActor.where(flujo_id: flujo_id).to_a
+
+                # Desduplicamos por persona_id para procesar cada persona una sola vez
+                actores.uniq(&:persona_id).each do |actor|
+                    next if actor.nil? || actor.persona.nil?
+
+                    # Obtención directa del user_id de la persona
+                    u_id = actor.persona.try(:user_id) || actor.persona.try(:user)&.id
+                    next if u_id.blank?
+
+                    # Creación asegurada de la tarea pendiente
+                    tp = TareaPendiente.find_or_create_by({
+                        flujo_id: flujo_id,
+                        tarea_id: sig_tarea.id, 
+                        user_id: u_id,
+                        persona_id: actor.persona.id
+                    }) do |t|
+                        t.estado_tarea_pendiente_id = EstadoTareaPendiente::NO_INICIADA
+                        t.data = extra.presence || {}
+                    end
+
+                    # Envío de correo electrónico
+                    if (!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?)
+                        rgc = RegistroAperturaCorreo.create(
+                            user_id: u_id, 
+                            flujo_tarea_id: self.id, 
+                            fecha_envio_correo: DateTime.now, 
+                            flujo_id: flujo_id
+                        )
+
+                        mdi, fpl = nil, nil
+                        begin
+                            mdi = flujo&.manifestacion_de_interes
+                            fpl = flujo&.fondo_produccion_limpia
+                            if fpl.present?
+                                flujo_mdi = Flujo.find_by(id: fpl.flujo_apl_id)
+                                mdi = flujo_mdi&.manifestacion_de_interes
+                            end
+                        rescue => e
+                            Rails.logger.error "[MAIL_ERROR] #{e.message}"
+                            mdi = nil
+                            fpl = nil
+                        end
+
+                        usr_obj = actor.persona.try(:user)
+                        email_destino = actor.persona.try(:email_institucional).presence || usr_obj&.try(:email)
+
+                        if email_destino.present? && usr_obj.present?
+                            FlujoMailer.enviar(
+                                self.asunto_format(usr_obj, mdi, fpl), 
+                                self.cuerpo_format(usr_obj, mdi, fpl), 
+                                email_destino, 
+                                rgc.id
+                            ).deliver_now
+                        end
+                    end
+                end
 			else
 				if sin_destinatario
 					tp = TareaPendiente.find_or_create_by({

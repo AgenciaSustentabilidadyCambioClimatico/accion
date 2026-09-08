@@ -1,34 +1,47 @@
 :javascript
-  $(document).ready(function() {
-    $('.chosen-control').chosen({
-      allow_single_deselect: true,
-      no_results_text: 'No se encontraron resultados',
-      width: '100%'
-    });
-    $("input:file").on('change',function (){
-      $(this).parent().siblings("label").html($(this)[0].files[0].name);
-    });
-    htmlErrorToTooltip('top');
-  });
-
   let archivosCargados = {
     archivo_resolucion: false,
-    archivo_contrato: false,
-    fecha_resolucion: false
+    archivo_contrato: false
   };
 
+  function validarArchivosCargados() {
+    const $btn = $('#enviar-button');
+    const valFecha = $('#fecha_resolucion').val();
+    const tieneFecha = valFecha && valFecha.trim() !== '';
+
+    // Verifica si hay archivo subido previamente en DB o seleccionado en el input de Resolución
+    const inputRes = document.getElementById('archivo_resolucion');
+    const tieneResDB = $('#archivo_cargado_resolucion').find('a, iframe, embed').length > 0;
+    const tieneResInput = inputRes && inputRes.files && inputRes.files.length > 0;
+    const tieneResolucion = tieneResDB || tieneResInput || archivosCargados.archivo_resolucion;
+
+    // Verifica si hay archivo subido previamente en DB o seleccionado en el input de Contrato
+    const inputCon = document.getElementById('archivo_contrato');
+    const tieneConDB = $('#archivo_cargado_contrato').find('a, iframe, embed').length > 0;
+    const tieneConInput = inputCon && inputCon.files && inputCon.files.length > 0;
+    const tieneContrato = tieneConDB || tieneConInput || archivosCargados.archivo_contrato;
+
+    if (tieneResolucion && tieneContrato && tieneFecha) {
+      $btn.removeClass('btn-disabled').prop('disabled', false);
+    } else {
+      $btn.addClass('btn-disabled').prop('disabled', true);
+    }
+  }
+
   function guardarYActualizar(event, nombreCampo, origen) {
+    validarArchivosCargados();
     guardarArchivos(event, nombreCampo, origen);
   }
 
   function guardarArchivos(event, nombreCampo, origen) {
     const archivoInput = document.getElementById(nombreCampo);
+    if (!archivoInput || !archivoInput.files || archivoInput.files.length === 0) return;
+
     const archivo = archivoInput.files[0];
     const formData = new FormData();
     formData.append('archivo', archivo);
     formData.append('nombre_campo', nombreCampo);
 
-    // ID del flujo
     const Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
     formData.append('id', Id);
 
@@ -36,7 +49,7 @@
       method: 'POST',
       body: formData,
       headers: {
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
       }
     })
     .then(async response => {
@@ -44,57 +57,39 @@
       try {
         const data = JSON.parse(text);
         if (data.success) {
-          marcarArchivoCargado(nombreCampo, true);
-        } else {
-          marcarArchivoCargado(nombreCampo, false);
+          archivosCargados[nombreCampo] = true;
         }
-      } catch {
-        // Si el servidor retorna JS (window.location), lo ejecutamos
-        eval(text);
-        marcarArchivoCargado(nombreCampo, true);
+      } catch (e) {
+        archivosCargados[nombreCampo] = true;
       }
+      validarArchivosCargados();
     })
     .catch(error => {
       console.error("Error al subir archivo:", error);
-      marcarArchivoCargado(nombreCampo, false);
+      validarArchivosCargados();
     });
   }
 
-  function marcarArchivoCargado(nombreCampo, cargado) {
-    archivosCargados[nombreCampo] = cargado;
-    validarArchivosCargados();
-  }
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
 
-  function validarArchivosCargados() {
-    const botonEnviar = document.getElementById('enviar-button');
-    const inputFecha = document.getElementById('fecha_resolucion');
-    
-    // Evaluar si la fecha tiene valor
-    archivosCargados.fecha_resolucion = inputFecha && inputFecha.value !== '';
-
-    if (archivosCargados.archivo_resolucion && archivosCargados.archivo_contrato && archivosCargados.fecha_resolucion) {
-      botonEnviar.classList.remove('btn-disabled');
-      botonEnviar.disabled = false;
-    } else {
-      botonEnviar.classList.add('btn-disabled');
-      botonEnviar.disabled = true;
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", function() {
+    // Carga inicial del estado desde Rails
     archivosCargados.archivo_resolucion = #{@fondo_produccion_limpia.archivo_resolucion.present?};
     archivosCargados.archivo_contrato = #{@fondo_produccion_limpia.archivo_contrato.present?};
-    
-    // Escuchar cambios en la fecha
-    const fechaElem = document.getElementById('fecha_resolucion');
-    if (fechaElem) {
-      fechaElem.addEventListener('change', validarArchivosCargados);
-    }
 
+    // Escucha en tiempo real cualquier cambio en los campos requeridos
+    $(document).on('change keyup input', '#fecha_resolucion, #archivo_resolucion, #archivo_contrato', function() {
+      validarArchivosCargados();
+    });
+
+    htmlErrorToTooltip('top');
     validarArchivosCargados();
   });
 
-%style
 :css
   .table-responsive {
     width: 100%;
@@ -137,7 +132,7 @@
     border-bottom: 2px solid #dee2e6;
     border-right: 2px solid #dee2e6; 
     border-left: 2px solid #dee2e6; 
-    font-size: 14px !important;; 
+    font-size: 14px !important; 
     vertical-align: top;
     background-color: #fff;
     color: #5d759e;
@@ -145,7 +140,8 @@
 
   .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
-  
+  .btn-disabled { opacity: 0.5 !important; cursor: not-allowed !important; pointer-events: none !important; }
+
 - titulo t(:resolucion_contrato)
 = simple_form_for @fondo_produccion_limpia, url: adjuntar_resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
   .row
@@ -169,38 +165,34 @@
                   %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
                   -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                     %th.encabezado-form{style: 'width: 25%;'} Subir Documento
-                %tbody
-                  %tr{id: "fila_fecha_resolucion"}
-                    %td.contenido-form{style: 'vertical-align: middle;'}
-                      %abbr{ title: "Campo requerido" } *
-                      Fecha Resolución
-                    %td.contenido-form{colspan: (@tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 ? 2 : 1)}
-                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                        = f.input :fecha_resolucion, as: :date, html5: true, label: false, input_html: { id: "fecha_resolucion", class: "form-control smaller-text border-text", onchange: "validarArchivosCargados()" }
-                      - else
-                        = l(@fondo_produccion_limpia.fecha_resolucion, format: :default) if @fondo_produccion_limpia.fecha_resolucion.present?
-                  %tr{id: "fila_resolucion", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}
-                      %abbr{ title: "Campo requerido" } *
-                      Archivo Resolución
-                    %td.contenido-form{id: "archivo_cargado_resolucion"} 
-                      = __descargar_archivo_sin_titulo(f.object.send("archivo_resolucion"), f.object)
-                      -#
-                        = __upload_status(f.object,"archivo_resolucion")
-                    -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      %td.contenido-form
-                        = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false
-                  %tr{id: "fila_contrato", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}
-                      %abbr{ title: "Campo requerido" } *
-                      Archivo Contrato
-                    %td.contenido-form{id: "archivo_cargado_contrato"} 
-                      = __descargar_archivo_sin_titulo(f.object.send("archivo_contrato"), f.object)
-                      -#
-                        = __upload_status(f.object,"archivo_contrato")
-                    -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      %td.contenido-form
-                        = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false
+              %tbody
+                %tr{id: "fila_fecha_resolucion"}
+                  %td.contenido-form{style: 'vertical-align: middle;'}
+                    %abbr{ title: "Campo requerido" } *
+                    Fecha Resolución
+                  %td.contenido-form{colspan: (@tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 ? 2 : 1)}
+                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                      = f.input :fecha_resolucion, as: :string, label: false, input_html: { id: "fecha_resolucion", type: "date", class: "form-control smaller-text border-text" }
+                    - else
+                      = l(@fondo_produccion_limpia.fecha_resolucion, format: :default) if @fondo_produccion_limpia.fecha_resolucion.present?
+                %tr{id: "fila_resolucion", data: { original_title: "", title: "" }}
+                  %td.contenido-form{style: 'vertical-align: middle;'}
+                    %abbr{ title: "Campo requerido" } *
+                    Archivo Resolución
+                  %td.contenido-form{id: "archivo_cargado_resolucion"} 
+                    = __descargar_archivo_sin_titulo(f.object.send("archivo_resolucion"), f.object)
+                  -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                    %td.contenido-form
+                      = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false
+                %tr{id: "fila_contrato", data: { original_title: "", title: "" }}
+                  %td.contenido-form{style: 'vertical-align: middle;'}
+                    %abbr{ title: "Campo requerido" } *
+                    Archivo Contrato
+                  %td.contenido-form{id: "archivo_cargado_contrato"} 
+                    = __descargar_archivo_sin_titulo(f.object.send("archivo_contrato"), f.object)
+                  -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                    %td.contenido-form
+                      = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false
   .float-right
     = volver_root
     -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
