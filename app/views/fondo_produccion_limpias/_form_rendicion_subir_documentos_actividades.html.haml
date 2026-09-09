@@ -98,14 +98,6 @@
       - avances_observados_por_actividad[t_id] = [avances_observados_por_actividad[t_id], val_av].max if [3, 4].include?(est_num)
       - avances_borrador_por_actividad[t_id]   = [avances_borrador_por_actividad[t_id], val_av].max if est_num == 0
 
-- obtener_gastos_actividad = lambda do |act_id, tipos_validos|
-  - f_id = @tarea_pendiente&.flujo_id
-  - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
-
 -# Overlay de carga inicial y navegación
 #pantalla-cargando{style: "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.85); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center;"}
   %i.fa.fa-spinner.fa-spin.fa-3x.text-primary.mb-3
@@ -118,18 +110,48 @@
 
   $(document).ready(function() {
 
-    // Oculta la pantalla de carga una vez procesado todo el DOM e imágenes
+    // Oculta la pantalla de carga inicial
     $(window).on('load', function() {
       $('#pantalla-cargando').fadeOut(200);
     });
 
-    // Feedback visual al cambiar entre Paso 1 y Paso 2
+    // Feedback visual al cambiar de paso
     $('#btn-continuar-paso2, #btn-volver-paso1').on('click', function() {
       $('#pantalla-cargando').find('h5').text('Procesando paso...');
       $('#pantalla-cargando').fadeIn(100);
       setTimeout(function() {
         $('#pantalla-cargando').fadeOut(200);
       }, 300);
+    });
+
+    // CARGA LAZY LOADING AL DESPLEGAR EL ACORDEÓN DE CADA ACTIVIDAD
+    $(document).on('show.bs.collapse', '.collapse', function () {
+      const $container = $(this).find('.contenedor-desglose-ajax');
+      
+      if ($container.length > 0 && $container.attr('data-cargado') === 'false') {
+        const urlTarget = $container.data('url');
+        
+        $.ajax({
+          url: urlTarget,
+          type: 'GET',
+          dataType: 'html',
+          success: function(responseHtml) {
+            $container.html(responseHtml);
+            $container.attr('data-cargado', 'true');
+            
+            if (typeof aplicarMascarasGlobales === 'function') {
+              aplicarMascarasGlobales();
+            }
+            if (typeof validarFormulario === 'function') {
+              validarFormulario();
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Error AJAX Desglose:", status, error, xhr.responseText);
+            $container.html('<div class="alert alert-danger py-2 my-2 font-weight-bold" style="font-size: 11px;"><i class="fa fa-exclamation-circle mr-1"></i> Error al cargar el detalle de la actividad. Intente desplegar nuevamente.</div>');
+          }
+        });
+      }
     });
 
     $("input:file").on('change', function () {
@@ -691,7 +713,6 @@
             - total_total_suma = 0
             - if @actividad_x_linea.present?
               - @actividad_x_linea.each do |actividad|
-                -# BÚSQUEDA EXCLUSIVA EN MAPAS DEL FLUJO ACTUAL PARA EVITAR REGISTROS AJENOS
                 - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
                 - act_id_num = actividad.id.to_i
                 - plan_act_id_num = plan_act.try(:id).to_i
@@ -919,7 +940,7 @@
                               = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
 
       / -------------------------------------------------------------
-      / Pestaña 2: Financiera FPL
+      / Pestaña 2: Financiera FPL (CARGA AJAX LAZY LOADING)
       / -------------------------------------------------------------
       .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
         - if @actividad_x_linea.present?
@@ -934,8 +955,6 @@
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
             - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
-            
-            - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
             .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
@@ -952,7 +971,11 @@
 
               .collapse{id: "collapse_fpl_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_reitimizada: es_reitimizada
+                  -# CONTENEDOR AJAX PARA CARGA BAJO DEMANDA AL DESPLEGAR
+                  .contenedor-desglose-ajax{id: "container_fpl_#{actividad.id}", data: { url: cargar_desglose_actividad_fondo_produccion_limpia_path(@tarea_pendiente, actividad_id: actividad.id, tipo: 'fpl', mes_a_rendir: mes_seleccionado_defecto, es_reitimizada: es_reitimizada.to_s, es_editable: es_editable.to_s), cargado: "false" }}
+                    .text-center.py-3.text-muted
+                      %i.fa.fa-spinner.fa-spin.mr-1
+                      Cargando detalle de recursos y gastos...
 
                   .d-flex.justify-content-end.mb-2
                     - if es_editable
@@ -1002,7 +1025,7 @@
                                 %i.fa.fa-trash
 
       / -------------------------------------------------------------
-      / Pestaña 3: Financiera Aporte Propio
+      / Pestaña 3: Financiera Aporte Propio (CARGA AJAX LAZY LOADING)
       / -------------------------------------------------------------
       .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
         - if @actividad_x_linea.present?
@@ -1017,8 +1040,6 @@
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
             - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
-            
-            - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
             .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
@@ -1035,7 +1056,11 @@
 
               .collapse{id: "collapse_aporte_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_reitimizada: es_reitimizada
+                  -# CONTENEDOR AJAX PARA CARGA BAJO DEMANDA AL DESPLEGAR
+                  .contenedor-desglose-ajax{id: "container_aporte_#{actividad.id}", data: { url: cargar_desglose_actividad_fondo_produccion_limpia_path(@tarea_pendiente, actividad_id: actividad.id, tipo: 'aporte', mes_a_rendir: mes_seleccionado_defecto, es_reitimizada: es_reitimizada.to_s, es_editable: es_editable.to_s), cargado: "false" }}
+                    .text-center.py-3.text-muted
+                      %i.fa.fa-spinner.fa-spin.mr-1
+                      Cargando detalle de recursos y gastos...
 
                   .d-flex.justify-content-end.mb-2
                     - if es_editable

@@ -4231,6 +4231,73 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
     end
 
+    def cargar_desglose_actividad #FPL-12 Paso 1 listado de actividades
+      @tarea_pendiente ||= TareaPendiente.find_by(id: params[:id])
+      @tarea_pendiente ||= TareaPendiente.find_by(id: params[:tarea_pendiente_id])
+      flujo_id = @tarea_pendiente&.flujo_id || @flujo&.id || params[:flujo_id]
+      
+      act_id = params[:actividad_id].to_i
+      tipo_tab = params[:tipo].to_s
+
+      mes_a_cargar = (params[:mes_a_rendir].presence || 1).to_i
+      @rendicion = RendicionFpl.find_by(flujo_id: flujo_id, mes_a_rendir: mes_a_cargar)
+
+      tipos_validos = if tipo_tab == 'fpl'
+                        ['solicitado al fondo', 'solicitado_al_fondo']
+                      else
+                        ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido']
+                      end
+
+      rec_int = begin
+                  PlanActividad.recursos_internos(flujo_id, act_id).to_a.select do |r|
+                    str = (r.try(:tipo_aporte) || r.try(:tipo_aporte_nombre)).to_s.downcase
+                    tipos_validos.any? { |t| str.include?(t) }
+                  end
+                rescue => e
+                  Rails.logger.error "[AJAX_DESGLOSE_ERR_INT] #{e.message}"
+                  []
+                end
+
+      rec_ext = begin
+                  PlanActividad.recursos_externos(flujo_id, act_id).to_a.select do |r|
+                    str = (r.try(:tipo_aporte) || r.try(:tipo_aporte_nombre)).to_s.downcase
+                    tipos_validos.any? { |t| str.include?(t) }
+                  end
+                rescue => e
+                  Rails.logger.error "[AJAX_DESGLOSE_ERR_EXT] #{e.message}"
+                  []
+                end
+
+      g_op    = begin
+                  PlanActividad.gastos_operaciones(flujo_id, act_id).to_a.select do |g|
+                    str = (g.try(:tipo_aporte) || g.try(:tipo_aporte_nombre)).to_s.downcase
+                    tipos_validos.any? { |t| str.include?(t) }
+                  end
+                rescue => e
+                  Rails.logger.error "[AJAX_DESGLOSE_ERR_OP] #{e.message}"
+                  []
+                end
+
+      g_adm   = begin
+                  PlanActividad.gastos_administraciones(flujo_id, act_id).to_a.select do |g|
+                    str = (g.try(:tipo_aporte) || g.try(:tipo_aporte_nombre)).to_s.downcase
+                    tipos_validos.any? { |t| str.include?(t) }
+                  end
+                rescue => e
+                  Rails.logger.error "[AJAX_DESGLOSE_ERR_ADM] #{e.message}"
+                  []
+                end
+
+      gastos = { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
+
+      render partial: 'tabla_desglose_gastos_actividad', locals: {
+        gastos: gastos,
+        actividad_id: act_id,
+        es_reitimizada: params[:es_reitimizada].to_s == 'true',
+        es_editable: params[:es_editable].to_s == 'true'
+      }, layout: false
+    end
+
     def adjuntar_rendicion_subir_documentos_actividades # FPL-12 (POST / PATCH)
       commit_accion = params[:commit_type]
       mes_seleccionado = params[:mes_a_rendir].presence || 1

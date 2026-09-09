@@ -359,6 +359,8 @@ Rails.application.routes.draw do
   get ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#rendicion_subir_documentos_actividades", as: :rendicion_subir_documentos_actividades_fondo_produccion_limpia
   patch ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#adjuntar_rendicion_subir_documentos_actividades", as: :adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia
   get ':id/descargar_informe_gastos', to: "fondo_produccion_limpias#descargar_informe_gastos", as: :descargar_informe_gastos_fondo_produccion_limpia
+  get ':id/cargar_desglose_actividad', to: "fondo_produccion_limpias#cargar_desglose_actividad", as: :cargar_desglose_actividad_fondo_produccion_limpia
+
 
   #Tarea FPL-13
   get ':id/asignar_revisor_rendicion', to: "fondo_produccion_limpias#asignar_revisor_rendicion", as: :asignar_revisor_rendicion_fondo_produccion_limpia

@@ -78,23 +78,23 @@ class FlujoTarea < ApplicationRecord
 				end
 			elsif extra[:todos_los_actores]
                 flujo = Flujo.find_by(id: flujo_id) || self.flujo
-                actores = MapaDeActor.where(flujo_id: flujo_id).to_a
+                actores = MapaDeActor.where(flujo_id: flujo_id).includes(persona: :user).to_a
 
-                # Desduplicamos por persona_id para procesar cada persona una sola vez
-                actores.uniq(&:persona_id).each do |actor|
-                    next if actor.nil? || actor.persona.nil?
+                # Filtrar actores válidos y desduplicar por USER_ID para evitar tareas duplicadas por usuario
+                actores_unicos_por_usuario = actores.select { |a| a&.persona.present? }
+                                                    .uniq { |a| a.persona.try(:user_id) || a.persona.try(:user)&.id }
 
-                    # Obtención directa del user_id de la persona
+                actores_unicos_por_usuario.each do |actor|
                     u_id = actor.persona.try(:user_id) || actor.persona.try(:user)&.id
                     next if u_id.blank?
 
-                    # Creación asegurada de la tarea pendiente
+                    # Búsqueda y creación basada únicamente en (flujo_id, tarea_id, user_id)
                     tp = TareaPendiente.find_or_create_by({
                         flujo_id: flujo_id,
                         tarea_id: sig_tarea.id, 
-                        user_id: u_id,
-                        persona_id: actor.persona.id
+                        user_id: u_id
                     }) do |t|
+                        t.persona_id = actor.persona.id
                         t.estado_tarea_pendiente_id = EstadoTareaPendiente::NO_INICIADA
                         t.data = extra.presence || {}
                     end
