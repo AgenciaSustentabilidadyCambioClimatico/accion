@@ -29,6 +29,23 @@
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
 - es_sin_movimientos = ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos)) || params[:sin_movimientos].to_s == '1'
 
+-# ==========================================================
+-# CÁLCULO Y CONTROL DE GASTOS DE ADMINISTRACIÓN TOTAL (LÍMITE 10%)
+-# ==========================================================
+- c_costos_obj = PlanActividad.costos(@tarea_pendiente&.flujo_id) rescue nil
+- tot_gen_proyecto = c_costos_obj.try(:costo_total_de_la_propuesta).to_f
+- if tot_gen_proyecto.zero? && arr_planes.present?
+  - tot_gen_proyecto = arr_planes.sum { |p| p.try(:valor_hh_tipo_3).to_f + p.try(:valor_hh_tipos_1_2).to_f + p.try(:total_gastos_tipo_1).to_f + p.try(:total_gastos_tipo_2).to_f }
+
+- if c_costos_obj.present?
+  - tot_admin_proyecto = c_costos_obj.try(:aporte_solicitado_fondo_gasto_administracion).to_f + c_costos_obj.try(:aporte_propio_valorado_gasto_administracion).to_f + c_costos_obj.try(:aporte_propio_liquido_gasto_administracion).to_f
+- else
+  - tot_admin_proyecto = arr_planes.sum { |p| p.try(:total_gastos_tipo_2).to_f }
+
+- pct_admin_actual = tot_gen_proyecto > 0 ? (tot_admin_proyecto / tot_gen_proyecto * 100.0) : 0.0
+- excede_admin = pct_admin_actual.round(1) > 10.0
+- limite_admin_monto = tot_gen_proyecto * 0.10
+
 -# Explicitación inteligente de observaciones activas (Solo detalles con cumple en estado 2 u 0)
 - obs_tecnica = nil
 - obs_financiera_fpl = nil
@@ -811,6 +828,17 @@
           %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
             = texto_mes_display
 
+  -# ALERTA Y CONTROL DE GASTOS DE ADMINISTRACIÓN (10% SOBRE PRESUPUESTO TOTAL)
+  .alert.py-2.px-3.mb-3{class: (excede_admin ? 'alert-danger' : 'alert-info'), style: "border: 1px solid #{excede_admin ? '#f5c6cb' : '#bee5eb'}; border-radius: 4px; font-size: 13px;"}
+    .d-flex.align-items-center
+      %i.fa.fa-2x.mr-3{class: (excede_admin ? 'fa-exclamation-triangle text-danger' : 'fa-info-circle text-info')}
+      %div
+        %strong.d-block{style: "font-size: 14px;"}= excede_admin ? "Error: Límite de Gastos de Administración Excedido" : "Control de Gastos de Administración"
+        %span
+          El presupuesto asignado a Gastos de Administración no puede superar el <strong>10%</strong> del presupuesto total del proyecto 
+          (#{number_to_currency(limite_admin_monto, unit: '$', precision: 0)}). 
+          El proyecto tiene asignado un <strong class="#{excede_admin ? 'text-danger' : 'text-success'}">#{number_to_percentage(pct_admin_actual, precision: 1)}</strong> 
+          (#{number_to_currency(tot_admin_proyecto, unit: '$', precision: 0)}).
   - tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
 
   #tab-menu-controls.mb-0.mt-2.px-2{:role => "tabpanel"}
