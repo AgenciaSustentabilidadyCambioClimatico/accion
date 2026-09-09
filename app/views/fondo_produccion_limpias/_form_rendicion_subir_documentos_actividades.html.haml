@@ -12,12 +12,16 @@
 - es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && es_borrador_o_observada
 
 - paso_actual = params[:paso].to_s == '2' ? 2 : 1
-- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+
+-# MAPEO EXCLUSIVO DEL FLUJO ACTUAL PARA EVITAR FILTRADO DE OTROS PROYECTOS
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- map_planes_by_id = arr_planes.index_by(&:id)
+- map_planes_by_act_id = arr_planes.select { |p| p.try(:actividad_id).to_i > 0 }.index_by { |p| p.actividad_id.to_i }
+- detalles_hash = (@actividad_detalle.presence || arr_planes).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
 -# ==========================================================
 -# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
 -# ==========================================================
-- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
 - reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
 
 - valor_duracion = @duracion.presence || (@duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : fpl_objeto.try(:duracion))
@@ -59,7 +63,6 @@
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
 
 -# TRADUCTOR VISTA
-- map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
 - get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
 -# LÓGICA DE ESTADOS Y EVALUACIÓN DEL MES ACTUAL CON TRADUCCIÓN
@@ -103,12 +106,32 @@
   - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
 
+-# Overlay de carga inicial y navegación
+#pantalla-cargando{style: "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.85); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center;"}
+  %i.fa.fa-spinner.fa-spin.fa-3x.text-primary.mb-3
+  %h5.font-weight-bold.text-secondary Cargando datos de rendición...
+
 :javascript
   const ES_EDITABLE = #{es_editable ? 'true' : 'false'};
   const PASO_ACTUAL = #{paso_actual.to_i};
   const ACTIVIDADES_GUARDADAS = #{raw act_ids_editables_actuales.map(&:to_s).to_json};
 
   $(document).ready(function() {
+
+    // Oculta la pantalla de carga una vez procesado todo el DOM e imágenes
+    $(window).on('load', function() {
+      $('#pantalla-cargando').fadeOut(200);
+    });
+
+    // Feedback visual al cambiar entre Paso 1 y Paso 2
+    $('#btn-continuar-paso2, #btn-volver-paso1').on('click', function() {
+      $('#pantalla-cargando').find('h5').text('Procesando paso...');
+      $('#pantalla-cargando').fadeIn(100);
+      setTimeout(function() {
+        $('#pantalla-cargando').fadeOut(200);
+      }, 300);
+    });
+
     $("input:file").on('change', function () {
       const input = $(this);
       const celda = input.closest('td');
@@ -668,7 +691,8 @@
             - total_total_suma = 0
             - if @actividad_x_linea.present?
               - @actividad_x_linea.each do |actividad|
-                - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+                -# BÚSQUEDA EXCLUSIVA EN MAPAS DEL FLUJO ACTUAL PARA EVITAR REGISTROS AJENOS
+                - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
                 - act_id_num = actividad.id.to_i
                 - plan_act_id_num = plan_act.try(:id).to_i
                 - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
@@ -796,7 +820,7 @@
 
         - if @actividad_x_linea.present?
           - @actividad_x_linea.uniq(&:id).each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
             - act_id_num = actividad.id.to_i
             - plan_act_id_num = plan_act.try(:id).to_i
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
@@ -804,8 +828,6 @@
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
 
             - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
-            - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
-            
             - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
             - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
 
@@ -902,7 +924,7 @@
       .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
         - if @actividad_x_linea.present?
           - @actividad_x_linea.each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
             - act_id_num = actividad.id.to_i
             - plan_act_id_num = plan_act.try(:id).to_i
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
@@ -985,7 +1007,7 @@
       .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
         - if @actividad_x_linea.present?
           - @actividad_x_linea.each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
             - act_id_num = actividad.id.to_i
             - plan_act_id_num = plan_act.try(:id).to_i
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
