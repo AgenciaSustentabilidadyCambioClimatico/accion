@@ -63,6 +63,11 @@ Rails.application.routes.draw do
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
 
+  # =================================================================
+  # RUTA PROXY PARA DESCARGA DE ARCHIVOS AZURE
+  # =================================================================
+  get 'descargar_archivo/:modelo/:id/:campo', to: 'archivos#descargar', as: :archivo_generico
+
   get 'hitos-de-prensa' => 'admin/hitos_de_prensa#index'
 
   #DZC agregado como reemplazo de APL-027
@@ -349,6 +354,50 @@ Rails.application.routes.draw do
   patch ':id/resolucion_contrato', to: "fondo_produccion_limpias#adjuntar_resolucion_contrato", as: :adjuntar_resolucion_contrato_fondo_produccion_limpia
   get ':id/descargar_contrato_pdf', to: "fondo_produccion_limpias#descargar_contrato_pdf", as: :descargar_contrato_pdf_fondo_produccion_limpia
   get ':id/descargar_resolucion_pdf', to: "fondo_produccion_limpias#descargar_resolucion_pdf", as: :descargar_resolucion_pdf_fondo_produccion_limpia
+  
+  #Tarea FPL-12
+  get ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#rendicion_subir_documentos_actividades", as: :rendicion_subir_documentos_actividades_fondo_produccion_limpia
+  patch ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#adjuntar_rendicion_subir_documentos_actividades", as: :adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia
+  get ':id/descargar_informe_gastos', to: "fondo_produccion_limpias#descargar_informe_gastos", as: :descargar_informe_gastos_fondo_produccion_limpia
+  get ':id/cargar_desglose_actividad', to: "fondo_produccion_limpias#cargar_desglose_actividad", as: :cargar_desglose_actividad_fondo_produccion_limpia
+
+
+  #Tarea FPL-13
+  get ':id/asignar_revisor_rendicion', to: "fondo_produccion_limpias#asignar_revisor_rendicion", as: :asignar_revisor_rendicion_fondo_produccion_limpia
+  patch ':id/asignar_revisor_rendicion', to: "fondo_produccion_limpias#guardar_asignar_revisor_rendicion", as: :guardar_asignar_revisor_rendicion_fondo_produccion_limpia
+  
+  # Tarea FPL-14 - Revisión Financiera de Rendición
+  get ':id/revision_financiera_rendicion', to: "fondo_produccion_limpias#revision_financiera_rendicion", as: :revision_financiera_rendicion_fondo_produccion_limpia
+  patch ':id/revision_financiera_rendicion', to: "fondo_produccion_limpias#guardar_revision_financiera_rendicion", as: :guardar_revision_financiera_rendicion_fondo_produccion_limpia
+  
+  # Tarea FPL-15 - Revisión Técnica de Rendición
+  get ':id/revision_tecnica_rendicion', to: "fondo_produccion_limpias#revision_tecnica_rendicion", as: :revision_tecnica_rendicion_fondo_produccion_limpia
+  patch ':id/revision_tecnica_rendicion', to: "fondo_produccion_limpias#guardar_revision_tecnica_rendicion", as: :guardar_revision_tecnica_rendicion_fondo_produccion_limpia
+  
+  # Tarea FPL-16 - Verificación Contable de Rendición
+  get ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#verificacion_contable_rendicion", as: :verificacion_contable_rendicion_fondo_produccion_limpia
+  patch ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#guardar_verificacion_contable_rendicion", as: :guardar_verificacion_contable_rendicion_fondo_produccion_limpia
+  get ':id/descargar_informe_actividades', to: "fondo_produccion_limpias#descargar_informe_actividades", as: :descargar_informe_actividades_fondo_produccion_limpia
+  get ':id/descargar_informe_evaluacion_tecnica', to: "fondo_produccion_limpias#descargar_informe_evaluacion_tecnica", as: :descargar_informe_evaluacion_tecnica_fondo_produccion_limpia
+
+  # Tarea FPL-17 - Respuesta Observaciones Rendición Financiera
+  get ':id/corregir_rendicion_financiera', to: "fondo_produccion_limpias#corregir_rendicion_financiera", as: :corregir_rendicion_financiera_fondo_produccion_limpia
+  patch ':id/corregir_rendicion_financiera', to: "fondo_produccion_limpias#guardar_correccion_financiera_rendicion", as: :guardar_correccion_financiera_rendicion_fondo_produccion_limpia
+
+  # Tarea FPL-18 - Respuesta Observaciones Rendición Técnica
+  get ':id/corregir_rendicion_tecnica', to: "fondo_produccion_limpias#corregir_rendicion_tecnica", as: :corregir_rendicion_tecnica_fondo_produccion_limpia
+  patch ':id/corregir_rendicion_tecnica', to: "fondo_produccion_limpias#guardar_correccion_tecnica_rendicion", as: :guardar_correccion_tecnica_rendicion_fondo_produccion_limpia
+  
+  # Tarea FPL-11.1 - Respuesta Observaciones Rendición Técnica
+  get  ':id/autorizar_reitimizacion_rendicion',        to: 'fondo_produccion_limpias#autorizar_reitimizacion_rendicion',        as: :autorizar_reitimizacion_rendicion_fondo_produccion_limpia
+  patch ':id/guardar_autorizar_reitimizacion_rendicion', to: 'fondo_produccion_limpias#guardar_autorizar_reitimizacion_rendicion', as: :guardar_autorizar_reitimizacion_rendicion_fondo_produccion_limpia
+  get ':id/descargar_archivo_reitimizacion/:plan_actividad_id', to: 'fondo_produccion_limpias#descargar_archivo_reitimizacion', as: :descargar_archivo_reitimizacion_fondo_produccion_limpia
+  
+  # Mantenedor de proyecto y fecha resolución
+  get  'datos_rendicion_fpl', to: 'fondo_produccion_limpias#datos_rendicion_fpl', as: :datos_rendicion_fpl_fondo_produccion_limpia
+  get  'cargar_fpl',     to: 'fondo_produccion_limpias#cargar_fpl', as: :cargar_fpl_fondo_produccion_limpia
+  post 'actualizar_fpl', to: 'fondo_produccion_limpias#actualizar_fpl', as: :actualizar_fpl_fondo_produccion_limpia
+
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'
@@ -583,7 +632,7 @@ Rails.application.routes.draw do
         get ':manifestacion_de_interes_id/descargar_respuesta_encuesta/:tarea_id', to: "historial_instrumentos#descargar_respuesta_encuesta", as: :descargar_respuesta_encuesta
         get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_auditoria/:tarea_id/:auditoria_id', to: "historial_instrumentos#descargar_respuesta_encuesta_auditoria", as: :descargar_respuesta_encuesta_auditoria
         get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
-        post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
+        get ':manifestacion_de_interes_id/descargar_manifestacion_pdf_archivo', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
         get ':manifestacion_de_interes_id/descargar_informe_acuerdo_pdf', to: "historial_instrumentos#descargar_informe_acuerdo_pdf", as: :descargar_informe_acuerdo_pdf
       end
     end     

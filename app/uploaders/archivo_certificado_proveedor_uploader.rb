@@ -1,5 +1,5 @@
 class ArchivoCertificadoProveedorUploader < CarrierWave::Uploader::Base
-  storage :aws
+# Almacenamiento global en config/initializers/carrierwave.rb (:file en test/dev, :fog Azure en prod).
 
   def store_dir
     "accion/public/uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"

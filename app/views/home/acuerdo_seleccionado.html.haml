@@ -59,8 +59,13 @@
     -@acuerdo_seleccionado.datos[:clasificaciones].each_slice(3) do |sub_grupo|
       .row
         -sub_grupo.each do |clasificacion|
-        - image_url = Clasificacion.find(clasificacion[:id]).imagen.url
-        - icono_url = Clasificacion.find(clasificacion[:id]).icono.url
+          -# --- INICIO DEL CAMBIO ---
+          -# Ya NO usamos Clasificacion.find().imagen.url
+          -# Construimos la ruta dinámica hacia el Proxy usando el ID guardado
+          - image_url = archivo_generico_path(modelo: 'clasificacion', id: clasificacion[:id], campo: 'imagen')
+          - icono_url = archivo_generico_path(modelo: 'clasificacion', id: clasificacion[:id], campo: 'icono')
+          -# --- FIN DEL CAMBIO ---
+
           .col-12.col-lg-4.py-2.px-lg-2
             .flip-card
               .flip-card-inner

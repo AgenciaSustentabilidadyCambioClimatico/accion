@@ -400,15 +400,13 @@ class MinutasController < ApplicationController #crea la depencia con convocator
   end
 
   def descargar_acta
-    @minuta = Minuta.find(params[:id].to_i)
-    archivo = @minuta.acta
-    redirect_to archivo.url
+    # Redirige silenciosamente a nuestro proxy seguro en lugar de la URL cruda de Azure
+    redirect_to archivo_generico_path(modelo: 'minuta', id: params[:id], campo: 'acta')
   end
 
   def descargar_archivo_resolucion
-    @minuta = Minuta.find(params[:id].to_i)
-    archivo = @minuta.archivo_resolucion
-    redirect_to archivo.url
+    # Redirige silenciosamente a nuestro proxy seguro
+    redirect_to archivo_generico_path(modelo: 'minuta', id: params[:id], campo: 'archivo_resolucion')
   end
 
   private

@@ -1,0 +1,494 @@
+:javascript
+  function sanitizarComprobante(input) {
+    if (input.value) {
+      input.value = input.value.toUpperCase();
+    }
+  }
+
+  function guardarComprobanteModal(rowKey) {
+    const $modalInput = $('#modal_input_comprobante_' + rowKey);
+    const val = $modalInput.val().trim();
+    $('#hidden_comprobante_' + rowKey).val(val);
+    const $btn = $('#btn_comprobante_' + rowKey);
+    
+    if (val !== '') {
+      $btn.html('<i class="fa fa-file-text-o mr-1"></i>Ver').removeClass('btn-outline-secondary').addClass('btn-outline-primary font-weight-bold');
+    } else {
+      $btn.html('<i class="fa fa-plus mr-1"></i>Ingresar').removeClass('btn-outline-primary font-weight-bold').addClass('btn-outline-secondary');
+    }
+  }
+
+  function formatearMascaraMiles(valStr) {
+    if (valStr === null || valStr === undefined) return '';
+    let str = valStr.toString().trim();
+    if (str === '') return '0'; // Forzar que no quede vacío
+
+    // Separar parte entera y decimales (usando coma para decimales)
+    let partes = str.replace(/\./g, '').replace(/[^0-9,]/g, '').split(',');
+    let entera = partes[0] || '0';
+    let decimal = partes[1] !== undefined ? partes[1].substring(0, 2) : null;
+
+    // Formatear separador de miles con puntos
+    entera = entera.replace(/^0+(?=\d)/, '');
+    if (entera === '') entera = '0';
+    entera = entera.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    return decimal !== null ? `${entera},${decimal}` : entera;
+  }
+
+  function sanitizarDecimalesYCalcular(input) {
+    if (!input || input.value === undefined) return;
+
+    let cursorPosition = input.selectionStart || 0;
+    let valorOriginal = input.value;
+
+    // Si el usuario vacía el campo, forzamos un cero numérico.
+    if (valorOriginal.trim() === '') {
+      input.value = '0';
+      calcularCostoRendidoFila(input);
+      return;
+    }
+
+    let valorFormateado = formatearMascaraMiles(valorOriginal);
+
+    if (valorOriginal !== valorFormateado) {
+      let puntosAntes = (valorOriginal.substring(0, cursorPosition).match(/\./g) || []).length;
+      input.value = valorFormateado;
+      let puntosDespues = (valorFormateado.substring(0, cursorPosition).match(/\./g) || []).length;
+      let ajusteCursor = puntosDespues - puntosAntes;
+      let nuevaPos = Math.max(0, cursorPosition + ajusteCursor);
+      
+      try {
+        input.setSelectionRange(nuevaPos, nuevaPos);
+      } catch (e) {}
+    }
+
+    calcularCostoRendidoFila(input);
+  }
+
+  function calcularCostoRendidoFila(elemento) {
+    const $tr = $(elemento).closest('tr');
+    const $table = $tr.closest('table');
+    const esReitimizada = $tr.data('es-reitimizada') === true || $tr.data('es-reitimizada') === 'true' || $table.data('es-reitimizada') === true || $table.data('es-reitimizada') === 'true';
+
+    const $inputVisCantidad = $tr.find('.input-cantidad-rendida');
+    const $inputVisValorUnitario = $tr.find('.input-valor-unitario-rendido');
+
+    const $hiddenCantidad = $tr.find('.real-cantidad-rendida');
+    const $hiddenValorUnitario = $tr.find('.real-valor-unitario-rendido');
+
+    // Limpiar puntos de miles y reemplazar comas por puntos para operaciones numéricas Float
+    let cantStr = $inputVisCantidad.val() ? $inputVisCantidad.val().replace(/\./g, '').replace(',', '.') : '0';
+    let cantidad = parseFloat(cantStr);
+    if (isNaN(cantidad) || cantidad < 0) { cantidad = 0; }
+
+    let valUniStr = $inputVisValorUnitario.val() ? $inputVisValorUnitario.val().replace(/\./g, '').replace(',', '.') : '0';
+    let valorUnitario = parseFloat(valUniStr);
+    if (isNaN(valorUnitario) || valorUnitario < 0) { valorUnitario = 0; }
+
+    // Almacena el valor numérico float limpio en el campo oculto
+    $hiddenCantidad.val(cantidad);
+    $hiddenValorUnitario.val(valorUnitario);
+
+    const formateador = new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+
+    const costoRendido = cantidad * valorUnitario;
+    const $cellCosto = $tr.find('.cell-costo-rendido');
+    $cellCosto.data('val-costo', costoRendido);
+    $cellCosto.text(formateador.format(costoRendido));
+
+    const costoSolicitado = parseFloat($tr.find('.cell-costo-solicitado').data('val-solicitado')) || 0;
+    
+    // Cálculo de saldo permitiendo valores negativos
+    let saldo = costoSolicitado - costoRendido;
+
+    // Validación individual de fila cuando NO es reitimizada
+    if (!esReitimizada && costoRendido > costoSolicitado) {
+      $cellCosto.addClass('text-danger font-weight-bold').removeClass('text-dark');
+      $inputVisCantidad.addClass('is-invalid');
+      $tr.addClass('has-row-exceso');
+    } else {
+      $cellCosto.removeClass('text-danger').addClass('text-dark');
+      $inputVisCantidad.removeClass('is-invalid');
+      $tr.removeClass('has-row-exceso');
+    }
+
+    const $cellSaldo = $tr.find('.cell-saldo');
+    $cellSaldo.data('val-saldo', saldo);
+    $cellSaldo.text(formateador.format(saldo));
+
+    if (saldo < 0) {
+      $cellSaldo.addClass('text-danger font-weight-bold').removeClass('text-dark');
+    } else {
+      $cellSaldo.removeClass('text-danger').addClass('text-dark');
+    }
+
+    // 1. Recalcular Totales de la Tabla Específica
+    let totalSolicitado = 0;
+    let totalRendido = 0;
+    let totalSaldo = 0;
+
+    $table.find('.cell-costo-solicitado').each(function() {
+      totalSolicitado += parseFloat($(this).data('val-solicitado')) || 0;
+    });
+
+    $table.find('.cell-costo-rendido').each(function() {
+      totalRendido += parseFloat($(this).data('val-costo')) || 0;
+    });
+
+    $table.find('.cell-saldo').each(function() {
+      totalSaldo += parseFloat($(this).data('val-saldo')) || 0;
+    });
+
+    const $cellTotalRendido = $table.find('.cell-total-costo-rendido');
+    $cellTotalRendido.text(formateador.format(totalRendido));
+    
+    const $cellTotalSaldo = $table.find('.cell-total-saldo');
+    $cellTotalSaldo.text(formateador.format(totalSaldo));
+    if (totalSaldo < 0) {
+      $cellTotalSaldo.addClass('text-danger');
+    } else {
+      $cellTotalSaldo.removeClass('text-danger');
+    }
+
+    // CONTROL BLOQUEO FORMULARIO POR EXCESO INDIVIDUAL O GLOBAL
+    const $msgExceso = $table.closest('.table-responsive-container').find('.msg-exceso-monto');
+    const tieneExcesoFila = $table.find('.has-row-exceso').length > 0;
+
+    if (!esReitimizada && (totalRendido > totalSolicitado || tieneExcesoFila)) {
+      $cellTotalRendido.removeClass('text-success').addClass('text-danger');
+      $table.addClass('has-exceso-error');
+      $msgExceso.slideDown(200);
+    } else if (esReitimizada && totalRendido > totalSolicitado) {
+      $cellTotalRendido.removeClass('text-success').addClass('text-danger');
+      $table.addClass('has-exceso-error');
+      $msgExceso.slideDown(200);
+    } else {
+      $cellTotalRendido.removeClass('text-danger').addClass('text-success');
+      $table.removeClass('has-exceso-error');
+      $msgExceso.slideUp(200);
+    }
+
+    // 2. Recalcular Gran Total General de la Actividad
+    const $container = $tr.closest('.card-body');
+    let granTotalRendido = 0;
+    let granTotalSaldo = 0;
+
+    $container.find('.cell-costo-rendido').each(function() {
+      granTotalRendido += parseFloat($(this).data('val-costo')) || 0;
+    });
+
+    $container.find('.cell-saldo').each(function() {
+      granTotalSaldo += parseFloat($(this).data('val-saldo')) || 0;
+    });
+
+    $container.find('.cell-gran-total-costo-rendido').text(formateador.format(granTotalRendido));
+    $container.find('.cell-gran-total-saldo').text(formateador.format(granTotalSaldo));
+
+    if (typeof validarFormulario === 'function') {
+      validarFormulario();
+    }
+  }
+
+  function aplicarMascarasGlobales() {
+    $('.input-cantidad-rendida, .input-valor-unitario-rendido').each(function() {
+      sanitizarDecimalesYCalcular(this);
+    });
+  }
+
+  $(document).ready(function() {
+    aplicarMascarasGlobales();
+
+    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function() {
+      aplicarMascarasGlobales();
+    });
+
+    $(document).on('focusout change blur keyup', '.input-valor-unitario-rendido, .input-cantidad-rendida', function() {
+      sanitizarDecimalesYCalcular(this);
+    });
+  });
+
+- gastos = local_assigns[:gastos] || {}
+- actividad_id_param = local_assigns[:actividad_id]
+- es_editable = local_assigns.key?(:es_editable) ? local_assigns[:es_editable] : true
+- es_reitimizada = local_assigns.key?(:es_reitimizada) ? local_assigns[:es_reitimizada] : false
+
+-# HELPER RUBY ROBUSTO PARA FORMATEAR MILES DIRECTO AL CONSTRUIR EL HTML
+- formatear_miles_ruby = lambda do |num|
+  - return '' if num.blank?
+  - val_f = num.to_f.round(2)
+  - if val_f % 1 == 0
+    - val_f.to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
+  - else
+    - partes = val_f.to_s.split('.')
+    - entera = partes[0].to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
+    - decimal = partes[1].to_s[0..1].gsub(/0+$/, '')
+    - decimal = '0' if decimal.empty?
+    - "#{entera},#{decimal}"
+
+-# OBTENCIÓN ROBUSTA DE PARÁMETROS Y FLUJO
+- mes_a_rendir_num = (params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir) || 1).to_i
+- flujo_id_actual = @rendicion.try(:flujo_id) || @tarea_pendiente.try(:flujo_id) || @flujo.try(:id)
+
+-# TRADUCCIÓN EXACTA DE ID: OBTIENE EL PK 711 A PARTIR DEL 101 DE LA INTERFAZ
+- plan_act_obj = nil
+- if flujo_id_actual.present? && actividad_id_param.present?
+  - plan_act_obj = PlanActividad.find_by(flujo_id: flujo_id_actual, actividad_id: actividad_id_param)
+  - plan_act_obj ||= PlanActividad.find_by(flujo_id: flujo_id_actual, id: actividad_id_param)
+- real_plan_act_id = plan_act_obj.try(:id) || actividad_id_param
+
+-# CÁLCULO DE HISTÓRICO DE RENDICIONES PREVIAS (< mes_a_rendir_num)
+- rendiciones_previas_ids = []
+- if flujo_id_actual.present? && mes_a_rendir_num > 1
+  - rendiciones_previas_ids = RendicionFpl.where(flujo_id: flujo_id_actual).where('mes_a_rendir < ?', mes_a_rendir_num).pluck(:id)
+
+- cant_hist_hash = {}
+- costo_hist_hash = {}
+- if rendiciones_previas_ids.present?
+  - cant_hist_hash  = RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_previas_ids).group(:categoria, :item_origen_id).sum(:cantidad_rendida)
+  - costo_hist_hash = RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_previas_ids).group(:categoria, :item_origen_id).sum(:costo_rendido)
+
+- categorias_def = [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ]
+
+- rendicion_gastos_map = {}
+- if @rendicion.present?
+  - @rendicion.rendicion_gastos_fpl.each do |g|
+    - cat_s = g.categoria.to_s.strip.downcase
+    - item_s = g.item_origen_id.to_s.strip
+    - rendicion_gastos_map["#{g.plan_actividad_id}_#{cat_s}_#{item_s}"] = g
+    - if plan_act_obj.present? && plan_act_obj.actividad_id.present?
+      - rendicion_gastos_map["#{plan_act_obj.actividad_id}_#{cat_s}_#{item_s}"] = g
+
+- tipos_aporte_map = {}
+- categorias_def.each do |cat_key, _cat_label|
+  - gastos[cat_key].to_a.each do |item|
+    - tp_raw = item.try(:tipo_aporte).to_s.strip
+    - tp_key = tp_raw.downcase
+    - if tp_key.present?
+      - tipos_aporte_map[tp_key] ||= { label: tp_raw, items_count: 0 }
+      - tipos_aporte_map[tp_key][:items_count] += 1
+
+- tiene_gastos = tipos_aporte_map.present?
+
+- gran_total_costo_postulado = 0
+- gran_total_costo_rendido = 0
+- gran_total_saldo_general = 0
+
+.card.mb-3.border-light
+  .card-header.py-2.bg-light.d-flex.justify-content-between.align-items-center
+    %span.font-weight-bold.text-secondary{style: "font-size: 12px;"}
+      %i.fa.fa-calculator.mr-1
+      Presupuesto / Gastos de la Actividad
+  .card-body.p-2
+    - if tiene_gastos
+      - tipos_aporte_map.each do |tp_key, tp_info|
+        - total_costo_postulado = 0
+        - total_costo_rendido = 0
+        - total_saldo_general = 0
+        - tiene_exceso_tabla = false
+
+        - if tipos_aporte_map.size > 1
+          .mt-2.mb-2
+            %span.badge.badge-primary{style: "font-size: 12px; padding: 6px 12px;"}
+              %i.fa.fa-layer-group.mr-1
+              = tp_info[:label]
+
+        .table-responsive-container.mb-3
+          .table-responsive
+            %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;", data: { es_reitimizada: es_reitimizada.to_s }}
+              %thead
+                %tr.bg-light
+                  %th.encabezado-form{style: "width: 13%;"} Categoría
+                  %th.encabezado-form{style: "width: 14%;"} Nombre / Ítem
+                  %th.encabezado-form{style: "width: 14%;"} Tipo Aporte
+                  %th.encabezado-form{style: "width: 7%;", title: "Saldo restante para esta rendición"} HH / Und. Disponible
+                  %th.encabezado-form{style: "width: 8%;"} Valor Unitario
+                  %th.encabezado-form{style: "width: 7%;", title: "Saldo restante para esta rendición"} Monto Disponible
+                  %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
+                  %th.encabezado-form{style: "width: 9%;"} Valor Und. Rendido
+                  %th.encabezado-form{style: "width: 8%;"} Monto Rendido
+                  %th.encabezado-form{style: "width: 6%;"} Saldo
+                  %th.encabezado-form{style: "width: 8%;"} Detalle Medios Verificación
+              %tbody
+                - categorias_def.each do |cat_key, cat_label|
+                  - cat_key_str = cat_key.to_s.strip.downcase
+                  - items_cat = gastos[cat_key].to_a.select { |i| i.try(:tipo_aporte).to_s.strip.downcase == tp_key }
+                  - items_cat.each do |item|
+                    - item_id_num = item.id.to_i
+
+                    -# RECUPERAR REGISTRO GUARDADO EN MAPA
+                    - g_guardado = rendicion_gastos_map["#{real_plan_act_id}_#{cat_key_str}_#{item_id_num}"]
+                    - g_guardado ||= rendicion_gastos_map["#{actividad_id_param}_#{cat_key_str}_#{item_id_num}"]
+                    - comprobante_ref_val = ""
+
+                    -# HISTÓRICOS RENDIDOS
+                    - cant_hist = cant_hist_hash[[cat_key_str, item_id_num]]
+                    - cant_hist ||= cant_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
+                    - cant_hist = cant_hist.to_f.round(2)
+
+                    - costo_hist = costo_hist_hash[[cat_key_str, item_id_num]]
+                    - costo_hist ||= costo_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
+                    - costo_hist = costo_hist.to_f.round(2)
+
+                    -# POSTULADO
+                    - v_unitario_solicitado = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+                    - hh_postulada_orig = (item.try(:hh) || item.try(:cantidad)).to_f.round(2)
+                    - monto_postulado_orig = item.try(:costo).presence || item.try(:total).presence || (hh_postulada_orig * v_unitario_solicitado)
+
+                    - hh_postulada = [(hh_postulada_orig - cant_hist).round(2), 0.0].max
+                    - monto_postulado = [(monto_postulado_orig - costo_hist).round(2), 0.0].max
+
+                    - if g_guardado.present?
+                      - cantidad_rendida = g_guardado.cantidad_rendida.to_f.round(2)
+                      - if g_guardado.respond_to?(:valor_unitario_rendido) && g_guardado.valor_unitario_rendido.present? && g_guardado.valor_unitario_rendido.to_f > 0
+                        - v_unitario_rendido = g_guardado.valor_unitario_rendido.to_f
+                      - else
+                        - v_unitario_rendido = g_guardado.valor_unitario.to_f
+                      
+                      - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
+                      - comprobante_ref_val = g_guardado.try(:comprobante_ref).to_s
+                    - else
+                      - cantidad_rendida = hh_postulada
+                      - v_unitario_rendido = v_unitario_solicitado
+                      - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
+
+                    - saldo_actual = monto_postulado - monto_rendido
+
+                    - total_costo_postulado += monto_postulado
+                    - total_costo_rendido += monto_rendido
+                    - total_saldo_general += saldo_actual
+
+                    -# MÁSCARAS DE FORMATO CON SEPARADOR DE MILES EN RUBY
+                    - cantidad_rendida_str = formatear_miles_ruby.call(cantidad_rendida)
+                    - v_unitario_rendido_str = formatear_miles_ruby.call(v_unitario_rendido)
+
+                    - es_gasto_oper_adm = [:operaciones, :administracion].include?(cat_key)
+                    - row_key = "#{real_plan_act_id}_#{cat_key_str}_#{item.id}"
+                    
+                    - tiene_exceso_fila = !es_reitimizada && (monto_rendido > monto_postulado)
+                    - tiene_exceso_tabla = true if tiene_exceso_fila
+
+                    %tr{data: { es_reitimizada: es_reitimizada.to_s }, class: (tiene_exceso_fila ? 'has-row-exceso' : '')}
+                      %td.contenido-form= cat_label
+                      %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                      %td.contenido-form.text-center= item.try(:tipo_aporte)
+                      
+                      %td.contenido-form.text-center= "#{formatear_miles_ruby.call(hh_postulada)} #{item.try(:unidad) || 'HH'}"
+                      %td.contenido-form.text-right= number_to_currency(v_unitario_solicitado)
+                      
+                      %td.contenido-form.text-right.font-weight-bold.cell-costo-solicitado{data: { val_solicitado: monto_postulado }}= number_to_currency(monto_postulado)
+
+                      - if es_editable
+                        %td.contenido-form.text-center
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", real_plan_act_id
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key_str
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][item_origen_id]", item.id
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][tipo_aporte]", item.try(:tipo_aporte)
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_postulada]", hh_postulada
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][costo_postulado]", monto_postulado
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario_postulado]", v_unitario_solicitado
+
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "real-cantidad-rendida"
+                          = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida #{'is-invalid' if tiene_exceso_fila}", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
+                        
+                        %td.contenido-form.text-center
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario_rendido, class: "real-valor-unitario-rendido"
+                          - if es_gasto_oper_adm
+                            .input-group{style: "width: 105px; margin: 0 auto;"}
+                              .input-group-prepend
+                                %span.input-group-text.border-text{style: "padding: 2px 6px; font-size: 11px; background-color: #e9ecef;"} $
+                              = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-right input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", readonly: !es_reitimizada, style: "padding-right: 5px; #{'background-color: #e9ecef; cursor: not-allowed;' unless es_reitimizada}", autocomplete: "off"
+                          - else
+                            = hidden_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "input-valor-unitario-rendido"
+                            %span.font-weight-bold= number_to_currency(v_unitario_rendido)
+                      - else
+                        %td.contenido-form.text-center
+                          %span.font-weight-bold= cantidad_rendida_str
+                        %td.contenido-form.text-center
+                          %span.font-weight-bold= number_to_currency(v_unitario_rendido)
+
+                      %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{class: (tiene_exceso_fila ? 'text-danger' : ''), data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
+                      
+                      %td.contenido-form.text-right.font-weight-bold.cell-saldo{class: (saldo_actual < 0 ? 'text-danger' : ''), data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
+
+                      %td.contenido-form.text-center{style: "vertical-align: middle;"}
+                        = hidden_field_tag "gastos_rendidos[#{row_key}][comprobante_ref]", comprobante_ref_val, id: "hidden_comprobante_#{row_key}"
+                        - btn_class = comprobante_ref_val.present? ? "btn-outline-primary font-weight-bold" : "btn-outline-secondary"
+                        - btn_icon = comprobante_ref_val.present? ? "fa-file-text-o" : "fa-plus"
+                        - btn_text = comprobante_ref_val.present? ? "Ver" : "Ingresar"
+                        
+                        %button.btn.btn-sm.smaller-text.py-0.px-2{type: "button", id: "btn_comprobante_#{row_key}", class: btn_class, style: "width: 85px;", data: {toggle: "modal", target: "#modal_comprobante_#{row_key}"}}
+                          %i.fa{class: "#{btn_icon} mr-1"}
+                          = btn_text
+
+                        -# Modal emergente amplio para la fila
+                        .modal.fade{id: "modal_comprobante_#{row_key}", tabindex: "-1", role: "dialog", aria: {hidden: "true"}}
+                          .modal-dialog.modal-dialog-centered.modal-lg{role: "document"}
+                            .modal-content.text-left
+                              .modal-header.py-2.bg-light
+                                %h6.modal-title.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+                                  %i.fa.fa-file-text-o.mr-1.text-info
+                                  N° Comprobante / Documento de Respaldo
+                                %button.close{type: "button", data: {dismiss: "modal"}, aria: {label: "Cerrar"}}
+                                  %span{aria: {hidden: "true"}} &times;
+                              .modal-body.p-3
+                                .form-group.mb-2
+                                  %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Ítem / Nombre:
+                                  .text-dark.font-weight-bold{style: "font-size: 13px;"}= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                                .form-group.mb-0
+                                  %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Detalle de N° Factura / Boleta / Comprobante de Respaldo:
+                                  = text_area_tag "modal_input_comprobante_#{row_key}", comprobante_ref_val, id: "modal_input_comprobante_#{row_key}", class: "form-control border-text", rows: 4, oninput: "sanitizarComprobante(this); guardarComprobanteModal('#{row_key}')", style: "font-size: 13px;", placeholder: "Ingrese N° de documento, detalles, observaciones de respaldo, etc...", disabled: !es_editable
+                              - if es_editable
+                                .modal-footer.py-2.px-3.bg-light
+                                  %button.btn.btn-sm.btn-primary{type: "button", style: "min-width: 120px;", onclick: "guardarComprobanteModal('#{row_key}')", data: {dismiss: "modal"}}
+                                    %i.fa.fa-check.mr-1
+                                    Guardar y Cerrar
+
+                - tiene_exceso = (!es_reitimizada && total_costo_rendido > total_costo_postulado) || tiene_exceso_tabla
+                - tiene_exceso_global_reitimizacion = es_reitimizada && total_costo_rendido > total_costo_postulado
+
+                %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
+                  %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL TABLA:
+                  %td.contenido-form.text-right.font-weight-bold.text-primary.cell-total-costo-solicitado= number_to_currency(total_costo_postulado)
+                  %td.contenido-form{colspan: 2}
+                  %td.contenido-form.text-right.font-weight-bold.cell-total-costo-rendido{class: (tiene_exceso || tiene_exceso_global_reitimizacion ? 'text-danger' : 'text-success')}= number_to_currency(total_costo_rendido)
+                  %td.contenido-form.text-right.font-weight-bold.cell-total-saldo{class: (total_saldo_general < 0 ? 'text-danger' : '')}= number_to_currency(total_saldo_general)
+                  %td.contenido-form
+
+          .msg-exceso-monto.alert.alert-danger.py-1.px-2.mt-1.mb-0.font-weight-bold{style: "font-size: 11px; #{'display: none;' unless (tiene_exceso || tiene_exceso_global_reitimizacion)}"}
+            %i.fa.fa-exclamation-triangle.mr-1
+            - if es_reitimizada
+              El total del Monto Rendido de esta tabla no puede superar al Monto Disponible global.
+            - else
+              En rendiciones sin reitimización, el Monto Rendido de cada ítem no puede superar su Monto Disponible individual.
+
+        - gran_total_costo_postulado += total_costo_postulado
+        - gran_total_costo_rendido += total_costo_rendido
+        - gran_total_saldo_general += total_saldo_general
+
+      - if tipos_aporte_map.size > 1
+        .card.mt-2.mb-1{style: "background-color: #e9ecef; border: 2px solid #6c757d;"}
+          .card-body.py-2.px-3
+            .d-flex.justify-content-between.align-items-center.flex-wrap
+              %span.font-weight-bold.text-dark{style: "font-size: 13px;"}
+                %i.fa.fa-calculator.mr-2.text-primary
+                TOTAL GENERAL APORTES DE LA ACTIVIDAD:
+              .d-flex.align-items-center.flex-wrap
+                .mr-4.my-1
+                  %span.text-secondary{style: "font-size: 11px;"} Total Disponible:
+                  %strong.text-primary.ml-1{style: "font-size: 13px;"}= number_to_currency(gran_total_costo_postulado)
+                .mr-4.my-1
+                  %span.text-secondary{style: "font-size: 11px;"} Total Rendido:
+                  %strong.text-success.ml-1.cell-gran-total-costo-rendido{style: "font-size: 13px;"}= number_to_currency(gran_total_costo_rendido)
+                .my-1
+                  %span.text-secondary{style: "font-size: 11px;"} Total Saldo:
+                  %strong.text-dark.ml-1.cell-gran-total-saldo{style: "font-size: 13px;"}= number_to_currency(gran_total_saldo_general)
+    - else
+      .text-center.text-muted.py-2{style: "font-size: 11px;"}
+        %i.fa.fa-info-circle.mr-1
+        No hay gastos registrados para esta pestaña en esta actividad.

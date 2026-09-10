@@ -55,9 +55,12 @@
                   %td.p-o.text-center
                     = dd.object.publico ? "Si" : "No"
                   %td.p-o.text-center
-                    = link_to dd.object.archivo.url, download: '', class: "btn btn-tabla" do
-                      %i.fa.fa-download.p-1
-                      #{dd.object.archivo.file.filename}
+                    - if dd.object.archivo.present?
+                      - nombre_archivo = dd.object.archivo.identifier.presence || (dd.object.archivo.file&.filename rescue "documento")
+                      - url_proxy = archivo_generico_path(modelo: dd.object.class.name.underscore, id: dd.object.id, campo: 'archivo')
+                      = link_to url_proxy, class: "btn btn-tabla", download: nombre_archivo, data: { turbo: false, turbolinks: false } do
+                        %i.fa.fa-download.p-1
+                        = nombre_archivo
                   %td.p-0.text-center.align-middle
                     = dd.input :requiere_correcciones, label: false, input_html: { class: 'im-not-required-check-the-others p-0 correcciones' }, wrapper_class: 'm-0 chk-m-0'
                   %td

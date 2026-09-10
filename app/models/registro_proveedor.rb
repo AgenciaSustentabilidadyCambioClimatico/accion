@@ -207,7 +207,7 @@ class RegistroProveedor < ApplicationRecord
           image_height: 9,
           image_width: 9
         },
-        "<font size='9'><color rgb='007BFF'><link href='"+link+"'>"+texto+"</link></color></font>"
+        "<font size='9'><color rgb='007BFF'><link href='accion.ascc.cl'>"+texto+"</link></color></font>"
       ]
     ],
     cell_style: {

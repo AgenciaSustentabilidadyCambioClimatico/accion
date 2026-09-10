@@ -1,0 +1,1215 @@
+- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
+- titulo t(:rendicion_por_actividad)
+
+-# -------------------------------------------------------------
+-# 1. INICIALIZACIÓN DE VARIABLES Y EVALUACIÓN DE EDITABILIDAD
+-# -------------------------------------------------------------
+- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl, rendicion_gastos_fpl: []).to_a rescue []
+- get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
+
+- estado_rend_actual = @rendicion ? get_estado_num.call(@rendicion) : 0
+- es_borrador_o_observada = @rendicion.nil? || [0, 3, 4].include?(estado_rend_actual)
+- es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && es_borrador_o_observada
+
+- paso_actual = params[:paso].to_s == '2' ? 2 : 1
+
+-# MAPEO EXCLUSIVO DEL FLUJO ACTUAL PARA EVITAR FILTRADO DE OTROS PROYECTOS
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- map_planes_by_id = arr_planes.index_by(&:id)
+- map_planes_by_act_id = arr_planes.select { |p| p.try(:actividad_id).to_i > 0 }.index_by { |p| p.actividad_id.to_i }
+- detalles_hash = (@actividad_detalle.presence || arr_planes).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+
+-# ==========================================================
+-# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
+-# ==========================================================
+- reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
+- valor_duracion = @duracion.presence || (@duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : fpl_objeto.try(:duracion))
+- duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
+- mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
+- es_sin_movimientos = ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos)) || params[:sin_movimientos].to_s == '1'
+
+-# ==========================================================
+-# CÁLCULO Y CONTROL DE GASTOS DE ADMINISTRACIÓN TOTAL (LÍMITE 10%)
+-# ==========================================================
+- c_costos_obj = PlanActividad.costos(@tarea_pendiente&.flujo_id) rescue nil
+- tot_gen_proyecto = c_costos_obj.try(:costo_total_de_la_propuesta).to_f
+- if tot_gen_proyecto.zero? && arr_planes.present?
+  - tot_gen_proyecto = arr_planes.sum { |p| p.try(:valor_hh_tipo_3).to_f + p.try(:valor_hh_tipos_1_2).to_f + p.try(:total_gastos_tipo_1).to_f + p.try(:total_gastos_tipo_2).to_f }
+
+- if c_costos_obj.present?
+  - tot_admin_proyecto = c_costos_obj.try(:aporte_solicitado_fondo_gasto_administracion).to_f + c_costos_obj.try(:aporte_propio_valorado_gasto_administracion).to_f + c_costos_obj.try(:aporte_propio_liquido_gasto_administracion).to_f
+- else
+  - tot_admin_proyecto = arr_planes.sum { |p| p.try(:total_gastos_tipo_2).to_f }
+
+- pct_admin_actual = tot_gen_proyecto > 0 ? (tot_admin_proyecto / tot_gen_proyecto * 100.0) : 0.0
+- excede_admin = pct_admin_actual.round(1) > 10.0
+- limite_admin_monto = tot_gen_proyecto * 0.10
+
+-# Explicitación inteligente de observaciones activas (Solo detalles con cumple en estado 2 u 0)
+- obs_tecnica = nil
+- obs_financiera_fpl = nil
+- obs_financiera_aporte = nil
+
+- if @rendicion.present? && @rendicion.respond_to?(:rendicion_detalles_fpl)
+  - detalles_activos = @rendicion.rendicion_detalles_fpl.to_a
+  
+  - det_tec = detalles_activos.find { |d| (d.read_attribute_before_type_cast(:tipo_tab) || d.tipo_tab).to_i == 0 }
+  - if det_tec.present?
+    - raw_c = (det_tec.read_attribute_before_type_cast(:cumple) || det_tec.cumple).to_s.downcase
+    - if ['2', '0', 'false', 'no'].include?(raw_c)
+      - obs_tecnica = det_tec.try(:comentario_revisor).presence || det_tec.try(:observacion_revisor).presence || det_tec.try(:observacion).presence || det_tec.try(:comentario).presence
+
+  - det_fin_fpl = detalles_activos.find { |d| (d.read_attribute_before_type_cast(:tipo_tab) || d.tipo_tab).to_i == 1 }
+  - if det_fin_fpl.present?
+    - raw_c = (det_fin_fpl.read_attribute_before_type_cast(:cumple) || det_fin_fpl.cumple).to_s.downcase
+    - if ['2', '0', 'false', 'no'].include?(raw_c)
+      - obs_financiera_fpl = det_fin_fpl.try(:comentario_revisor).presence || det_fin_fpl.try(:observacion_revisor).presence || det_fin_fpl.try(:observacion).presence || det_fin_fpl.try(:comentario).presence
+
+  - det_fin_aporte = detalles_activos.find { |d| (d.read_attribute_before_type_cast(:tipo_tab) || d.tipo_tab).to_i == 2 }
+  - if det_fin_aporte.present?
+    - raw_c = (det_fin_aporte.read_attribute_before_type_cast(:cumple) || det_fin_aporte.cumple).to_s.downcase
+    - if ['2', '0', 'false', 'no'].include?(raw_c)
+      - obs_financiera_aporte = det_fin_aporte.try(:comentario_revisor).presence || det_fin_aporte.try(:observacion_revisor).presence || det_fin_aporte.try(:observacion).presence || det_fin_aporte.try(:comentario).presence
+
+- fecha_res = fpl_objeto.try(:fecha_resolucion)
+- mes_nombre = nil
+- if fecha_res.present?
+  - fecha_target = fecha_res.to_date + (mes_seleccionado_defecto.to_i - 1).months
+  - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+- texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
+
+-# TRADUCTOR VISTA
+- get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+-# LÓGICA DE ESTADOS Y EVALUACIÓN DEL MES ACTUAL CON TRADUCCIÓN
+- rendiciones_en_proceso = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && [1, 2].include?(get_estado_num.call(r)) }
+- act_ids_en_proceso = rendiciones_en_proceso.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&get_act_id).uniq
+
+- rendiciones_observadas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && [3, 4].include?(get_estado_num.call(r)) }
+- act_ids_observadas = es_sin_movimientos ? [] : rendiciones_observadas.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&get_act_id).uniq
+
+- rendiciones_borrador = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && get_estado_num.call(r) == 0 }
+- act_ids_borrador = es_sin_movimientos ? [] : rendiciones_borrador.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&get_act_id).uniq
+
+- act_ids_editables_actuales = (act_ids_borrador + act_ids_observadas).uniq
+
+- rendiciones_previas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i < mes_seleccionado_defecto.to_i }
+- act_det_previas = rendiciones_previas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
+- actividades_no_realizadas_previas = act_det_previas.compact.map(&get_act_id).uniq
+
+- avances_aprobados_por_actividad  = Hash.new(0)
+- avances_proceso_por_actividad    = Hash.new(0)
+- avances_observados_por_actividad = Hash.new(0)
+- avances_borrador_por_actividad   = Hash.new(0)
+
+- rendiciones_todas.each do |rend|
+  - est_num = get_estado_num.call(rend)
+  - rend.rendicion_detalles_fpl.each do |det|
+    - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
+    - val_av = det.nivel_avance.to_i
+    - det.rendicion_detalle_actividades_fpl.each do |rda|
+      - t_id = get_act_id.call(rda.plan_actividad_id)
+      - avances_aprobados_por_actividad[t_id]  = [avances_aprobados_por_actividad[t_id], val_av].max if [5, 6].include?(est_num)
+      - avances_proceso_por_actividad[t_id]    = [avances_proceso_por_actividad[t_id], val_av].max if [1, 2].include?(est_num)
+      - avances_observados_por_actividad[t_id] = [avances_observados_por_actividad[t_id], val_av].max if [3, 4].include?(est_num)
+      - avances_borrador_por_actividad[t_id]   = [avances_borrador_por_actividad[t_id], val_av].max if est_num == 0
+
+-# Overlay de carga inicial y navegación
+#pantalla-cargando{style: "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.85); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center;"}
+  %i.fa.fa-spinner.fa-spin.fa-3x.text-primary.mb-3
+  %h5.font-weight-bold.text-secondary Cargando datos de rendición...
+
+:javascript
+  const ES_EDITABLE = #{es_editable ? 'true' : 'false'};
+  const PASO_ACTUAL = #{paso_actual.to_i};
+  const ACTIVIDADES_GUARDADAS = #{raw act_ids_editables_actuales.map(&:to_s).to_json};
+
+  $(document).ready(function() {
+
+    // Oculta la pantalla de carga inicial
+    $(window).on('load', function() {
+      $('#pantalla-cargando').fadeOut(200);
+    });
+
+    // Feedback visual al cambiar de paso
+    $('#btn-continuar-paso2, #btn-volver-paso1').on('click', function() {
+      $('#pantalla-cargando').find('h5').text('Procesando paso...');
+      $('#pantalla-cargando').fadeIn(100);
+      setTimeout(function() {
+        $('#pantalla-cargando').fadeOut(200);
+      }, 300);
+    });
+
+    // CARGA LAZY LOADING AL DESPLEGAR EL ACORDEÓN DE CADA ACTIVIDAD
+    $(document).on('show.bs.collapse', '.collapse', function () {
+      const $container = $(this).find('.contenedor-desglose-ajax');
+      
+      if ($container.length > 0 && $container.attr('data-cargado') === 'false') {
+        const urlTarget = $container.data('url');
+        
+        $.ajax({
+          url: urlTarget,
+          type: 'GET',
+          dataType: 'html',
+          success: function(responseHtml) {
+            $container.html(responseHtml);
+            $container.attr('data-cargado', 'true');
+            
+            if (typeof aplicarMascarasGlobales === 'function') {
+              aplicarMascarasGlobales();
+            }
+            if (typeof validarFormulario === 'function') {
+              validarFormulario();
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Error AJAX Desglose:", status, error, xhr.responseText);
+            $container.html('<div class="alert alert-danger py-2 my-2 font-weight-bold" style="font-size: 11px;"><i class="fa fa-exclamation-circle mr-1"></i> Error al cargar el detalle de la actividad. Intente desplegar nuevamente.</div>');
+          }
+        });
+      }
+    });
+
+    $("input:file").on('change', function () {
+      const input = $(this);
+      const celda = input.closest('td');
+
+      celda.find('.mensaje-archivo-listo').remove();
+
+      if (this.files && this.files.length > 0) {
+        const nombreArchivo = this.files[0].name;
+
+        input.css({
+          'border': '2px solid #28a745',
+          'background-color': '#e8f5e9'
+        });
+
+        const mensajeHtml = `
+          <div class="mensaje-archivo-listo text-success mt-1" style="font-size: 10px; font-weight: bold; line-height: 1.2;">
+            <i class="fa fa-check-circle mr-1"></i> Archivo listo para adjuntar<br>
+          </div>
+        `;
+        input.after(mensajeHtml);
+      } else {
+        input.css({ 'border': '', 'background-color': '' });
+      }
+
+      validarFormulario();
+    });
+
+    htmlErrorToTooltip('top');
+
+    // VALIDACIÓN DE MONTO RENDIDO MAXIMO CUANDO NO ES REITIMIZADA
+    $(document).on('input change', '.input-monto-rendido', function() {
+      const $input = $(this);
+      const esReitimizada = $input.data('es-reitimizada') === true || $input.data('es-reitimizada') === 'true';
+      const maxPermitido = parseFloat($input.data('monto-maximo') || $input.attr('max') || 0);
+      const valorIngresado = parseFloat($input.val() || 0);
+
+      if (!esReitimizada && maxPermitido > 0 && valorIngresado > maxPermitido) {
+        $input.addClass('is-invalid has-exceso-error');
+        if ($input.next('.error-max-monto').length === 0) {
+          $input.after(`<small class="error-max-monto text-danger d-block font-weight-bold" style="font-size: 10px;">No puede superar el monto presupuestado ($${maxPermitido.toLocaleString('es-CL')})</small>`);
+        }
+      } else {
+        $input.removeClass('is-invalid has-exceso-error');
+        $input.next('.error-max-monto').remove();
+      }
+
+      validarFormulario();
+    });
+
+    $('#chk_sin_movimientos_paso1').on('change', function() {
+      const esSinMovimientos = $(this).is(':checked');
+      $('#hdn_sin_movimientos').val(esSinMovimientos ? '1' : '0');
+
+      if (esSinMovimientos) {
+        $('.chk-actividad-paso1').prop('checked', false).prop('disabled', true);
+      } else if (ES_EDITABLE) {
+        const esUltima = $('#chk_ultima_rendicion_paso1').is(':checked');
+        if (esUltima) {
+          actualizarComportamientoUltimaRendicion(true);
+        } else {
+          $('.chk-actividad-paso1').each(function() {
+            const permDisabled = $(this).data('permanente-disabled') === true || $(this).data('permanente-disabled') === 'true';
+            if (!permDisabled) {
+              $(this).prop('disabled', false);
+              const debeMarcar = $(this).data('debe-marcar-defecto') === true || $(this).data('debe-marcar-defecto') === 'true';
+              if (debeMarcar) {
+                $(this).prop('checked', true);
+              }
+            }
+          });
+        }
+      }
+      filtrarVistaPorSeleccion(obtenerActividadesSeleccionadas());
+      validarFormulario();
+    });
+
+    $('#chk_ultima_rendicion_paso1').on('change', function() {
+      const esUltima = $(this).is(':checked');
+      $('#chk_ultima_rendicion_form').prop('checked', esUltima);
+      actualizarComportamientoUltimaRendicion(esUltima);
+    });
+
+    $('#chk_ultima_rendicion_form').on('change', function() {
+      const esUltima = $(this).is(':checked');
+      $('#chk_ultima_rendicion_paso1').prop('checked', esUltima);
+      actualizarComportamientoUltimaRendicion(esUltima);
+    });
+
+    if ($('#chk_sin_movimientos_paso1').is(':checked')) {
+      $('#chk_sin_movimientos_paso1').trigger('change');
+    } else if ($('#chk_ultima_rendicion_paso1').is(':checked')) {
+      actualizarComportamientoUltimaRendicion(true);
+    } else {
+      if (PASO_ACTUAL === 2 && ACTIVIDADES_GUARDADAS.length > 0) {
+        filtrarVistaPorSeleccion(ACTIVIDADES_GUARDADAS);
+      } else {
+        const seleccionadasIniciales = obtenerActividadesSeleccionadas();
+        filtrarVistaPorSeleccion(seleccionadasIniciales);
+      }
+    }
+
+    $('#btn-continuar-paso2').on('click', function() {
+      const esSinMovimientos = $('#chk_sin_movimientos_paso1').is(':checked');
+      const seleccionadas = obtenerActividadesSeleccionadas();
+
+      if (!esSinMovimientos && seleccionadas.length === 0) {
+        alert('Debe seleccionar al menos una actividad para rendir o marcar la opción "Sin movimientos".');
+        return;
+      }
+
+      $('#paso1_resumen').hide();
+      $('#paso2_formulario').fadeIn();
+      filtrarVistaPorSeleccion(seleccionadas);
+    });
+
+    $('#btn-volver-paso1').on('click', function() {
+      $('#paso2_formulario').hide();
+      $('#paso1_resumen').fadeIn();
+    });
+
+    $('form').on('submit', function() {
+      const seleccionadas = obtenerActividadesSeleccionadas();
+      $('#hdn_actividades_seleccionadas').val(seleccionadas.join(','));
+    });
+
+    if (!ES_EDITABLE) {
+      bloquearFormularioSoloLectura();
+    }
+  });
+
+  function actualizarComportamientoUltimaRendicion(esUltima) {
+    const esSinMovimientos = $('#chk_sin_movimientos_paso1').is(':checked');
+    if (!ES_EDITABLE || esSinMovimientos) return;
+
+    $('.chk-actividad-paso1').each(function() {
+      const permDisabled = $(this).data('permanente-disabled') === true || $(this).data('permanente-disabled') === 'true';
+
+      if (!permDisabled) {
+        if (esUltima) {
+          $(this).prop('checked', true).prop('disabled', true);
+        } else {
+          $(this).prop('disabled', false);
+          const debeMarcar = $(this).data('debe-marcar-defecto') === true || $(this).data('debe-marcar-defecto') === 'true';
+          $(this).prop('checked', debeMarcar);
+        }
+      }
+    });
+
+    filtrarVistaPorSeleccion(obtenerActividadesSeleccionadas());
+    validarFormulario();
+  }
+
+  function obtenerActividadesSeleccionadas() {
+    const seleccionadas = [];
+    $('.chk-actividad-paso1:checked').each(function() {
+      seleccionadas.push($(this).val().toString());
+    });
+    return seleccionadas;
+  }
+
+  function filtrarVistaPorSeleccion(actividadesIds) {
+    const esSinMovimientos = $('#chk_sin_movimientos_paso1').is(':checked');
+
+    $('.actividad-tecnica-block, .actividad-fpl-block, .actividad-aporte-block').each(function() {
+      const id = $(this).attr('id').replace('tecnica_actividad_card_', '').replace('fpl_actividad_card_', '').replace('aporte_actividad_card_', '');
+      
+      if (!esSinMovimientos && actividadesIds.includes(id)) {
+        $(this).show();
+        $(this).find('input, select, textarea').prop('disabled', false);
+      } else {
+        $(this).hide();
+        $(this).find('input, select, textarea').prop('disabled', true);
+      }
+    });
+
+    validarFormulario();
+  }
+
+  function toggleObservacion(selectElement, actividadId) {
+    validarFormulario();
+  }
+
+  function bloquearFormularioSoloLectura() {
+    $('#paso1_resumen input[type="checkbox"], #paso2_formulario input[type="checkbox"]').prop('disabled', true);
+    $('#paso2_formulario select, #paso2_formulario textarea, #paso2_formulario input[type="file"], #paso2_formulario input[type="date"]').prop('disabled', true);
+    $('.btn-outline-danger, button[onclick*="agregarFilaDocumentoActividad"]').hide().prop('disabled', true);
+    $('#grabar-button, #enviar-button').prop('disabled', true).addClass('btn-disabled');
+  }
+
+  function validarFormulario() {
+    if (!ES_EDITABLE) {
+      bloquearFormularioSoloLectura();
+      return;
+    }
+
+    const esSinMovimientos = $('#chk_sin_movimientos_paso1').is(':checked');
+    const pendientes = [];
+
+    let tabTecnicaValido = true;
+    let tieneActividadesTecnicas = false;
+
+    if (!esSinMovimientos) {
+      document.querySelectorAll('.actividad-tecnica-block').forEach(block => {
+        if (block.style.display === 'none') return;
+        tieneActividadesTecnicas = true;
+
+        const id = block.id.replace('tecnica_actividad_card_', '');
+        const selectRealizada = document.getElementById('realizada_actividad_' + id);
+        const observacionInput = document.getElementById('observacion_actividad_' + id);
+        const fechaInicioInput = document.getElementById('fecha_inicio_actividad_' + id);
+        const fechaTerminoInput = document.getElementById('fecha_termino_actividad_' + id);
+        const fileInput = document.getElementById('archivo_rendicion_' + id);
+        const tdArchivo = document.getElementById('archivo_cargado_actividad_' + id);
+        const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || ('Actividad ' + id);
+
+        if (selectRealizada && tdArchivo) {
+          const realizada = selectRealizada.value.trim();
+          const observacion = observacionInput ? observacionInput.value.trim() : '';
+          const fechaInicio = fechaInicioInput ? fechaInicioInput.value.trim() : '';
+          const fechaTermino = fechaTerminoInput ? fechaTerminoInput.value.trim() : '';
+          const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
+          const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
+          const tieneArchivo = tieneArchivoPrevio || tieneArchivoNuevo;
+          let resumenValido = true;
+          const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
+          const inputConclusion = document.getElementById('rendicion_conclusion');
+
+          if (inputResultado) {
+            if (inputResultado.value.trim() === '') {
+              resumenValido = false;
+              $(inputResultado).addClass('is-invalid');
+            } else {
+              $(inputResultado).removeClass('is-invalid');
+            }
+          }
+
+          if (inputConclusion) {
+            if (inputConclusion.value.trim() === '') {
+              resumenValido = false;
+              $(inputConclusion).addClass('is-invalid');
+            } else {
+              $(inputConclusion).removeClass('is-invalid');
+            }
+          }
+
+          if (fechaInicio === '') {
+            tabTecnicaValido = false;
+            $(fechaInicioInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Ingresar Fecha de Inicio.');
+          } else {
+            $(fechaInicioInput).removeClass('is-invalid');
+          }
+
+          if (fechaTermino === '') {
+            tabTecnicaValido = false;
+            $(fechaTerminoInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Ingresar Fecha de Término.');
+          } else {
+            $(fechaTerminoInput).removeClass('is-invalid');
+          }
+
+          if (realizada === '') {
+            tabTecnicaValido = false;
+            $(selectRealizada).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Seleccionar Nivel de Avance.');
+          } else {
+            $(selectRealizada).removeClass('is-invalid');
+          }
+
+          if (observacion === '') {
+            tabTecnicaValido = false;
+            $(observacionInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Ingresar Descripción del Avance.');
+          } else {
+            $(observacionInput).removeClass('is-invalid');
+          }
+
+          if (!tieneArchivo) {
+            tabTecnicaValido = false;
+            $(fileInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Adjuntar Documento de Respaldo Técnico.');
+          } else {
+            $(fileInput).removeClass('is-invalid');
+          }
+        }
+      });
+
+      if (!tieneActividadesTecnicas) {
+        tabTecnicaValido = false;
+        pendientes.push('<b>Pestaña Técnica:</b> No se han seleccionado actividades para rendir.');
+      }
+    }
+
+    let tabFinancieraFplValido = true;
+
+    if (!esSinMovimientos) {
+      document.querySelectorAll('.actividad-fpl-block').forEach(block => {
+        if (block.style.display === 'none') return;
+        const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'FPL';
+
+        let tieneDocEnBlock = false;
+        block.querySelectorAll('tbody tr').forEach(fila => {
+          if (fila.style.display === 'none') return;
+          const destroyFlag = fila.querySelector('input.destroy-flag');
+          if (destroyFlag && destroyFlag.value === '1') return;
+
+          const fileInput = fila.querySelector('input[type="file"]');
+          const tdArchivoPrevio = fila.querySelector('td');
+          const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
+          const tieneArchivoPrevio = tdArchivoPrevio && tdArchivoPrevio.querySelector('a') !== null;
+
+          if (tieneArchivoNuevo || tieneArchivoPrevio) {
+            tieneDocEnBlock = true;
+            if (fileInput) $(fileInput).removeClass('is-invalid');
+          } else if (fileInput) {
+            $(fileInput).addClass('is-invalid');
+          }
+        });
+
+        if (!tieneDocEnBlock) {
+          tabFinancieraFplValido = false;
+          pendientes.push('<b>Pestaña Financiera FPL [' + actNombre + ']:</b> Adjuntar Documento de Rendición.');
+        }
+      });
+    }
+
+    let tabFinancieraAporteValido = true;
+
+    if (!esSinMovimientos) {
+      document.querySelectorAll('.actividad-aporte-block').forEach(block => {
+        if (block.style.display === 'none') return;
+        const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'Aporte Propio';
+
+        let tieneDocEnBlock = false;
+        block.querySelectorAll('tbody tr').forEach(fila => {
+          if (fila.style.display === 'none') return;
+          const destroyFlag = fila.querySelector('input.destroy-flag');
+          if (destroyFlag && destroyFlag.value === '1') return;
+
+          const fileInput = fila.querySelector('input[type="file"]');
+          const tdArchivoPrevio = fila.querySelector('td');
+          const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
+          const tieneArchivoPrevio = tdArchivoPrevio && tdArchivoPrevio.querySelector('a') !== null;
+
+          if (tieneArchivoNuevo || tieneArchivoPrevio) {
+            tieneDocEnBlock = true;
+            if (fileInput) $(fileInput).removeClass('is-invalid');
+          } else if (fileInput) {
+            $(fileInput).addClass('is-invalid');
+          }
+        });
+
+        if (!tieneDocEnBlock) {
+          tabFinancieraAporteValido = false;
+          pendientes.push('<b>Pestaña Financiera Aporte [' + actNombre + ']:</b> Adjuntar Documento de Rendición.');
+        }
+      });
+    }
+
+    let resumenValido = true;
+    const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
+    const inputConclusion = document.getElementById('rendicion_conclusion');
+
+    if (inputResultado && inputResultado.value.trim() === '') {
+      resumenValido = false;
+    }
+    if (inputConclusion && inputConclusion.value.trim() === '') {
+      resumenValido = false;
+    }
+
+    const tieneExcesoMonto = $('.has-exceso-error').length > 0;
+    const formCompleto = esSinMovimientos ? resumenValido : (tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido && resumenValido && !tieneExcesoMonto);
+    const botonEnviar = document.getElementById('enviar-button');
+    
+    if (botonEnviar) {
+      botonEnviar.disabled = !formCompleto;
+      if (formCompleto) {
+        botonEnviar.classList.remove('btn-disabled');
+      } else {
+        botonEnviar.classList.add('btn-disabled');
+      }
+    }
+  }
+
+  function agregarFilaDocumentoActividad(tbodyId, actividadId) {
+    if (!ES_EDITABLE) return;
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+
+    const timestamp = Date.now() + Math.floor(Math.random() * 1000);
+    const esFpl = tbodyId.includes('filas-fpl');
+    const paramName = esFpl ? 'documentos_fpl' : 'documentos_aporte';
+
+    const nuevaFilaHtml = `
+      <tr>
+        <td class="contenido-form">
+          <input type="hidden" name="${paramName}[${timestamp}][id]" value="" />
+          <input type="hidden" name="${paramName}[${timestamp}][actividad_ids][]" value="${actividadId}" />
+          <input type="hidden" name="${paramName}[${timestamp}][_destroy]" value="0" class="destroy-flag" />
+          --
+        </td>
+        <td class="contenido-form">
+          <input type="file" name="${paramName}[${timestamp}][archivo]" class="form-control smaller-text border-text" onchange="validarFormulario()" />
+        </td>
+        <td class="contenido-form text-center">
+          <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarFilaDocumento(this)" title="Eliminar">
+            <i class="fa fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+
+    $(tbody).append(nuevaFilaHtml);
+    validarFormulario();
+  }
+
+  function eliminarFilaDocumento(boton) {
+    if (!ES_EDITABLE) return;
+    const $tr = $(boton).closest('tr');
+    const hiddenId = $tr.find('input[type="hidden"][name*="[id]"]').val();
+
+    if (hiddenId && hiddenId !== '') {
+      $tr.find('input.destroy-flag').val('1');
+      $tr.hide();
+    } else {
+      const $tbody = $tr.closest('tbody');
+      if ($tbody.find('tr:visible').length > 1) {
+        $tr.remove();
+      } else {
+        $tr.find('input[type="file"]').val('');
+        $tr.find('input[type="hidden"][name*="[id]"]').val('');
+      }
+    }
+    validarFormulario();
+  }
+
+  // Lógica para mostrar la sección Información Complementaria solo en la pestaña "tecnica"
+  $(document).ready(function() {
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      if ($(e.target).attr('href') === '#tecnica') {
+        $('#info-complementaria-section').show();
+      } else {
+        $('#info-complementaria-section').hide();
+      }
+    });
+
+    // Validar estado inicial
+    if ($('#tecnica').hasClass('active')) {
+      $('#info-complementaria-section').show();
+    } else {
+      $('#info-complementaria-section').hide();
+    }
+  });
+
+:css
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
+  .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
+  .is-invalid { border-color: #dc3545 !important; }
+
+%input#paso_actual_val{type: "hidden", value: paso_actual}
+
+.row
+  .col-12
+    .card.mb-3
+      .card-header.p-0
+        .p-3
+          %h5.no-margin= titulo_instrumento_fpl.html_safe
+          %h5.no-margin= titulo_instrumento.html_safe
+          %h5.no-margin= titulo_proyecto_fpl.html_safe
+          %h5.no-margin= titulo_apl.html_safe
+          %h5.no-margin= datos_beneficiario_fpl.html_safe
+
+-# ==========================================
+-# PASO 1: MATRIZ / RESUMEN DE ACTIVIDADES
+-# ==========================================
+#paso1_resumen{style: ("display: none;" if paso_actual == 2)}
+
+  -# Mensaje dinámico de observación para Rendición Sin Movimientos
+  - if es_sin_movimientos && [3, 4].include?(estado_rend_actual)
+    .alert.alert-danger.mb-3{style: "border-left: 5px solid #dc3545; background-color: #f8d7da; color: #721c24; border-radius: 4px; padding: 12px 15px;"}
+      .d-flex.align-items-start
+        %i.fa.fa-exclamation-triangle.fa-2x.mr-3.mt-1{style: "color: #dc3545;"}
+        .w-100
+          %h6.font-weight-bold.mb-2{style: "font-size: 14px; color: #721c24;"}
+            Observaciones a la Rendición Sin Movimientos
+
+          - if obs_tecnica.present?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Revisor Técnico:
+              %span= obs_tecnica
+
+          - if obs_financiera_fpl.present?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Revisor Financiero FPL:
+              %span= obs_financiera_fpl
+
+          - if obs_financiera_aporte.present?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Revisor Financiero Aporte Propio:
+              %span= obs_financiera_aporte
+
+          - if obs_tecnica.blank? && obs_financiera_fpl.blank? && obs_financiera_aporte.blank?
+            .mb-1{style: "font-size: 13px;"}
+              %strong.text-dark Observación del Revisor:
+              %span La rendición sin movimientos presenta observaciones que deben ser subsanadas.
+
+  .card.mb-3
+    .card-header.bg-light
+      .d-flex.justify-content-between.align-items-center.flex-wrap
+        %h5.no-margin.mb-2.mb-md-0 Seleccione las Actividades a Rendir
+        .d-flex.align-items-center.flex-wrap
+          .d-flex.align-items-center.mr-4.mb-1.mb-md-0
+            %span.font-weight-bold.mr-2 Mes a rendir:
+            %span.badge.badge-primary{style: "font-size: 13px; padding: 6px 12px;"}= texto_mes_display
+          
+          .form-check.form-check-inline.mb-1.mb-md-0.mr-3
+            = check_box_tag "sin_movimientos_paso1", "1", es_sin_movimientos, class: "form-check-input", id: "chk_sin_movimientos_paso1", disabled: !es_editable
+            %label.form-check-label.font-weight-bold.text-secondary{for: "chk_sin_movimientos_paso1"}
+              %i.fa.fa-minus-circle.mr-1
+              Sin movimientos
+
+          .form-check.form-check-inline.mb-1.mb-md-0
+            = check_box_tag "ultima_rendicion_paso1", "1", @rendicion.try(:ultima_rendicion), class: "form-check-input", id: "chk_ultima_rendicion_paso1", disabled: !es_editable
+            %label.form-check-label.font-weight-bold.text-danger{for: "chk_ultima_rendicion_paso1"}
+              %i.fa.fa-flag.mr-1
+              Última rendición
+
+      .card-body
+      -# =========================================================================
+      -# MENSAJE INFORMATIVO DE DEMO CON ÍCONO DE EXCLAMACIÓN
+      -# =========================================================================
+      .alert.d-flex.align-items-center.py-2.px-3.mb-3{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 13px;"}
+        %i.fa.fa-exclamation-circle.mr-2{style: "font-size: 16px; color: #004085;"}
+        %span Texto demo informativo: Ingrese aquí las instrucciones o mensaje de advertencia.
+      .table-responsive
+        %table.table.table-bordered.table-striped.no-margin
+          %thead
+            %tr
+              %th.encabezado-form{style: 'width: 5%; text-align: center; vertical-align: middle;', rowspan: 2}= t(:n°)
+              %th.encabezado-form{style: 'width: 40%; text-align: center; vertical-align: middle;', rowspan: 2}= t(:actividades)
+              %th.encabezado-form{colspan: duracion, style: 'text-align: center; border-right: 1px solid #dee2e6;'}= t(:duracion)
+              %th.encabezado-form{style: 'width: 12%; text-align: center; vertical-align: middle;', rowspan: 2} Total
+              %th.encabezado-form{style: 'width: 8%; text-align: center; vertical-align: middle;', rowspan: 2} Seleccionar
+            %tr
+              - (1..duracion).each do |m|
+                %th.encabezado-form{style: 'width: 30px; text-align: center;'}= m
+          %tbody
+            - total_total_suma = 0
+            - if @actividad_x_linea.present?
+              - @actividad_x_linea.each do |actividad|
+                - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+                - act_id_num = actividad.id.to_i
+                - plan_act_id_num = plan_act.try(:id).to_i
+                - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+                - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+                - duracion_act = plan_act.try(:duracion).to_s
+                - duraciones = duracion_act.split(',').map(&:strip)
+                - es_mes_actual = duraciones.include?(mes_seleccionado_defecto.to_s)
+
+                - es_en_proceso = mis_ids.any? { |id| act_ids_en_proceso.include?(id) }
+                - es_observada  = mis_ids.any? { |id| act_ids_observadas.include?(id) } && !es_en_proceso
+                - es_borrador   = mis_ids.any? { |id| act_ids_borrador.include?(id) } && !es_en_proceso && !es_observada
+
+                - max_avance_aprobado  = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
+                - max_avance_proceso   = mis_ids.map { |id| avances_proceso_por_actividad[id] }.max || 0
+                - max_avance_observado = mis_ids.map { |id| avances_observados_por_actividad[id] }.max || 0
+                - max_avance_borrador  = mis_ids.map { |id| avances_borrador_por_actividad[id] }.max || 0
+
+                - completada_100 = (max_avance_aprobado >= 100) || (max_avance_proceso >= 100)
+
+                - es_mes_previo = duraciones.any? { |m| m.to_i < mes_seleccionado_defecto.to_i }
+                - es_pendiente_previo = es_mes_previo && !completada_100
+                - tiene_avance_parcial = (max_avance_aprobado > 0 || max_avance_proceso > 0) && !completada_100
+
+                - esta_deshabilitada = !es_editable || completada_100 || es_en_proceso
+                - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador || es_observada
+                - debe_marcarse = !esta_deshabilitada && !es_sin_movimientos && es_sugerida_defecto
+
+                - valor_hh_tipo_3 = plan_act.try(:valor_hh_tipo_3).to_f
+                - valor_hh_tipos_1_2 = plan_act.try(:valor_hh_tipos_1_2).to_f
+                - total_gastos_tipo_1 = plan_act.try(:total_gastos_tipo_1).to_f
+                - total_gastos_tipo_2 = plan_act.try(:total_gastos_tipo_2).to_f
+                - suma = valor_hh_tipo_3 + valor_hh_tipos_1_2 + total_gastos_tipo_1 + total_gastos_tipo_2
+                - total_total_suma += suma
+
+                - tipo_act_val = actividad.try(:tipo_actividad)
+                - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
+
+                %tr
+                  %td.contenido-form.text-center= actividad.correlativo
+                  %td.contenido-form
+                    = actividad.nombre
+                    - if tipo_act_txt.present?
+                      %span.badge.ml-1{style: "font-size: 10px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                        = tipo_act_txt
+                    - if es_reitimizada
+                      %span.badge.ml-1{style: "font-size: 10px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                        %i.fa.fa-refresh.mr-1
+                        Reitemización autorizada 
+                  - (1..duracion).each do |m|
+                    %td.contenido-form.text-center
+                      - if duraciones.include?(m.to_s)
+                        %span.font-weight-bold.text-primary X
+                  %td.contenido-form.text-right
+                    = number_to_currency(suma)
+                  %td.contenido-form.text-center
+                    %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act, 'permanente-disabled' => esta_deshabilitada.to_s, 'debe-marcar-defecto' => (!esta_deshabilitada && es_sugerida_defecto).to_s }, checked: debe_marcarse, disabled: esta_deshabilitada || es_sin_movimientos, title: (completada_100 ? "Actividad completada al 100%" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : ""))}
+                    
+                    - if es_en_proceso
+                      - txt_av = max_avance_proceso > 0 ? " (#{max_avance_proceso}%)" : ""
+                      %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 11px; background-color: #fd7e14;"}= "En revision ASCC #{txt_av}"
+                    - elsif es_observada
+                      - txt_av = max_avance_observado > 0 ? " (#{max_avance_observado}%)" : ""
+                      %span.badge.badge-danger.d-block.mt-1{style: "font-size: 11px; background-color: #dc3545;"}= "Observada#{txt_av}"
+                    - elsif completada_100
+                      - if max_avance_proceso >= 100 && max_avance_aprobado < 100
+                        %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 11px; background-color: #fd7e14;"}= "En revision ASCC (100%)"
+                      - else
+                        %span.badge.badge-success.d-block.mt-1{style: "font-size: 11px;"} Finalizada 100%
+                    - elsif es_borrador && !es_sin_movimientos
+                      - txt_av = max_avance_borrador > 0 ? " (#{max_avance_borrador}%)" : ""
+                      %span.badge.badge-info.text-white.d-block.mt-1{style: "font-size: 11px;"}= "Borrador#{txt_av}"
+                    - elsif (max_avance_aprobado > 0 || max_avance_proceso > 0) && !es_sin_movimientos
+                      - max_av_actual = [max_avance_aprobado, max_avance_proceso].max
+                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 11px;"}= "en Ejecución (#{max_av_actual}%)"
+
+            %tr
+              %td.contenido-form{style: 'font-weight: bold;', colspan: 2 + duracion} Total
+              %td.contenido-form.text-right{style: 'font-weight: bold;'}
+                = number_to_currency(total_total_suma)
+              %td.contenido-form
+      - if es_editable
+        .d-flex.justify-content-end.mt-3
+          %button.btn.btn-primary#btn-continuar-paso2{type: "button"}
+            Continuar a Rendición
+            %i.fa.fa-arrow-right.ml-1
+
+-# ==========================================
+-# PASO 2: FORMULARIO DE RENDICIÓN POR PESTAÑAS
+-# ==========================================
+#paso2_formulario{style: ("display: none;" if paso_actual == 1)}
+  
+  .row.mb-3
+    .col-12
+      .card.border-info.mb-0{style: "border-width: 2px;"}
+        .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+          %span.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+            %i.fa.fa-calendar-check-o.mr-2.text-info
+            Rendición correspondiente a:
+          %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
+            = texto_mes_display
+
+  -# ALERTA Y CONTROL DE GASTOS DE ADMINISTRACIÓN (10% SOBRE PRESUPUESTO TOTAL)
+  .alert.py-2.px-3.mb-3{class: (excede_admin ? 'alert-danger' : 'alert-info'), style: "border: 1px solid #{excede_admin ? '#f5c6cb' : '#bee5eb'}; border-radius: 4px; font-size: 13px;"}
+    .d-flex.align-items-center
+      %i.fa.fa-2x.mr-3{class: (excede_admin ? 'fa-exclamation-triangle text-danger' : 'fa-info-circle text-info')}
+      %div
+        %strong.d-block{style: "font-size: 14px;"}= excede_admin ? "Error: Límite de Gastos de Administración Excedido" : "Control de Gastos de Administración"
+        %span
+          El presupuesto asignado a Gastos de Administración no puede superar el <strong>10%</strong> del presupuesto total del proyecto 
+          (#{number_to_currency(limite_admin_monto, unit: '$', precision: 0)}). 
+          El proyecto tiene asignado un <strong class="#{excede_admin ? 'text-danger' : 'text-success'}">#{number_to_percentage(pct_admin_actual, precision: 1)}</strong> 
+          (#{number_to_currency(tot_admin_proyecto, unit: '$', precision: 0)}).
+
+  - tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
+
+  #tab-menu-controls.mb-0.mt-2.px-2{:role => "tabpanel"}
+    %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+      - tabs.each do |tab, active|
+        %li.nav-item.tab-block{id: "#{tab}-tab"}
+          %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+            = t(tab.to_s.gsub('-','_'))
+
+  = simple_form_for fpl_objeto, url: adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
+    = hidden_field_tag "mes_a_rendir", mes_seleccionado_defecto
+    = hidden_field_tag "paso", "2"
+    = hidden_field_tag "sin_movimientos", (es_sin_movimientos ? "1" : "0"), id: "hdn_sin_movimientos"
+    = hidden_field_tag "actividades_seleccionadas", "", id: "hdn_actividades_seleccionadas"
+
+    .tab-content#manifestacionContent
+      
+      / -------------------------------------------------------------
+      / Pestaña 1: TÉCNICA
+      / -------------------------------------------------------------
+      .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
+        .mb-3
+          .form-check
+            = check_box_tag "ultima_rendicion", "1", @rendicion.try(:ultima_rendicion), class: "form-check-input", id: "chk_ultima_rendicion_form", disabled: !es_editable
+            %label.form-check-label.font-weight-bold.text-danger{for: "chk_ultima_rendicion_form"}
+              %i.fa.fa-flag.mr-1
+              ¿Es la última rendición del proyecto?
+
+        - if @actividad_x_linea.present?
+          - @actividad_x_linea.uniq(&:id).each do |actividad|
+            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
+
+            - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
+            - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
+            - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
+
+            - duracion_act = plan_act.try(:duracion).to_s
+            - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
+
+            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
+            - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
+            - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
+            
+            - max_avance_aprobado = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
+            - min_avance = max_avance_aprobado > 0 ? [max_avance_aprobado + 1, 100].min : 1
+            
+            - nivel_avance_valor = detalle_tecnico&.nivel_avance.to_s
+            - min_avance = [min_avance, nivel_avance_valor.to_i].min if nivel_avance_valor.present? && nivel_avance_valor.to_i > 0
+            - opciones_avance = [['Seleccione...', '']] + (min_avance..100).map { |n| ["#{n}%", n.to_s] }
+            
+            - observacion_valor = detalle_tecnico&.observacion
+            - archivo = detalle_tecnico&.archivo
+            - tiene_archivo = detalle_tecnico&.archivo&.url.present?
+
+            .card.mb-2.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+                .d-flex.align-items-center
+                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitemización autorizada
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_tecnica_#{actividad.id}", role: "button", "aria-expanded" => "false", style: "background-color: #fff; font-size: 11px;"}
+                  %i.fa.fa-chevron-down.mr-1
+                  Ver / Ocultar
+
+              .collapse{id: "collapse_tecnica_#{actividad.id}"}
+                .card-body.p-2
+                  = hidden_field_tag "actividades_ids[]", actividad.id
+
+                  .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
+                    %span
+                      %strong Indicador asociado al objetivo:
+                      = indicador_texto
+
+                  .table-responsive
+                    %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
+                      %thead
+                        %tr.bg-light
+                          %th.encabezado-form{style: 'width: 15%;'} 
+                            Fecha de Inicio
+                            %span.text-danger *
+                          %th.encabezado-form{style: 'width: 15%;'} 
+                            Fecha de Término
+                            %span.text-danger *
+                          %th.encabezado-form{style: 'width: 15%;'} 
+                            Nivel de avance
+                            %span.text-danger *
+                          %th.encabezado-form{style: 'width: 55%;'} 
+                            Descripción del Avance
+                            %span.text-danger *
+                      %tbody
+                        %tr
+                          %td.contenido-form
+                            = date_field_tag "fecha_inicio_actividad_#{actividad.id}", fecha_inicio_valor, class: "form-control smaller-text border-text w-100", disabled: !es_editable, onchange: "validarFormulario()"
+                          %td.contenido-form
+                            = date_field_tag "fecha_termino_actividad_#{actividad.id}", fecha_termino_valor, class: "form-control smaller-text border-text w-100", disabled: !es_editable, onchange: "validarFormulario()"
+                          %td.contenido-form
+                            = select_tag "realizada_actividad_#{actividad.id}", options_for_select(opciones_avance, nivel_avance_valor), class: "form-control smaller-text border-text w-100", onchange: "toggleObservacion(this, '#{actividad.id}')", disabled: !es_editable
+                          %td.contenido-form
+                            = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text w-100", disabled: !es_editable, placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"
+
+                  .mt-3.mb-2.px-1
+                    %h6.font-weight-bold.text-secondary{style: "font-size: 12px;"} 
+                      %i.fa.fa-file-pdf-o.mr-1
+                      Documento de Respaldo Técnico
+                  
+                  .table-responsive
+                    %table.table.table-striped.no-margin
+                      %thead
+                        %tr
+                          %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado
+                          - if es_editable
+                            %th.encabezado-form{style: 'width: 65%;'}= t(:subir_documento_rendicion)
+                      %tbody
+                        %tr
+                          %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
+                            = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                          - if es_editable
+                            %td.contenido-form
+                              = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+
+      / -------------------------------------------------------------
+      / Pestaña 2: Financiera FPL (CARGA AJAX LAZY LOADING)
+      / -------------------------------------------------------------
+      .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
+        - if @actividad_x_linea.present?
+          - @actividad_x_linea.each do |actividad|
+            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
+
+            - duracion_act = plan_act.try(:duracion).to_s
+            - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
+            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
+
+            .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+                .d-flex.align-items-center
+                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitemización autorizada
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_fpl_#{actividad.id}", role: "button", "aria-expanded" => "false", style: "background-color: #fff; font-size: 11px;"}
+                  %i.fa.fa-chevron-down.mr-1
+                  Ver / Ocultar
+
+              .collapse{id: "collapse_fpl_#{actividad.id}"}
+                .card-body.p-2
+                  -# CONTENEDOR AJAX PARA CARGA BAJO DEMANDA AL DESPLEGAR
+                  .contenedor-desglose-ajax{id: "container_fpl_#{actividad.id}", data: { url: cargar_desglose_actividad_fondo_produccion_limpia_path(@tarea_pendiente, actividad_id: actividad.id, tipo: 'fpl', mes_a_rendir: mes_seleccionado_defecto, es_reitimizada: es_reitimizada.to_s, es_editable: es_editable.to_s), cargado: "false" }}
+                    .text-center.py-3.text-muted
+                      %i.fa.fa-spinner.fa-spin.mr-1
+                      Cargando detalle de recursos y gastos...
+
+                  .d-flex.justify-content-end.mb-2
+                    - if es_editable
+                      %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumentoActividad('filas-fpl-#{actividad.id}', #{actividad.id})"}
+                        %i.fa.fa-plus.mr-1
+                        Agregar documento
+
+                  .table-responsive
+                    %table.table.table-striped.no-margin
+                      %thead
+                        %tr
+                          %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
+                          - if es_editable
+                            %th.encabezado-form{style: 'width: 55%;'}
+                              Subir Documento Rendición
+                              %span.text-danger *
+                            %th.encabezado-form{style: 'width: 10%;'} Acciones
+                      %tbody{id: "filas-fpl-#{actividad.id}"}
+                        - if docs_act.present?
+                          - docs_act.each do |doc|
+                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - row_key = doc.id
+                            %tr
+                              %td.contenido-form
+                                = hidden_field_tag "documentos_fpl[#{row_key}][id]", doc.id
+                                = hidden_field_tag "documentos_fpl[#{row_key}][actividad_ids][]", actividad.id
+                                = hidden_field_tag "documentos_fpl[#{row_key}][_destroy]", "0", class: "destroy-flag"
+                                = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                              - if es_editable
+                                %td.contenido-form
+                                  = file_field_tag "documentos_fpl[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                                %td.contenido-form.text-center
+                                  %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                    %i.fa.fa-trash
+                        - elsif es_editable
+                          - row_key = "init_fpl_#{actividad.id}"
+                          %tr
+                            %td.contenido-form
+                              = hidden_field_tag "documentos_fpl[#{row_key}][id]", ""
+                              = hidden_field_tag "documentos_fpl[#{row_key}][actividad_ids][]", actividad.id
+                              = hidden_field_tag "documentos_fpl[#{row_key}][_destroy]", "0", class: "destroy-flag"
+                              = '--'
+                            %td.contenido-form
+                              = file_field_tag "documentos_fpl[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                            %td.contenido-form.text-center
+                              %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                %i.fa.fa-trash
+
+      / -------------------------------------------------------------
+      / Pestaña 3: Financiera Aporte Propio (CARGA AJAX LAZY LOADING)
+      / -------------------------------------------------------------
+      .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
+        - if @actividad_x_linea.present?
+          - @actividad_x_linea.each do |actividad|
+            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
+
+            - duracion_act = plan_act.try(:duracion).to_s
+            - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
+            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
+
+            .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+                .d-flex.align-items-center
+                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitemización autorizada
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_aporte_#{actividad.id}", role: "button", "aria-expanded" => "false", style: "background-color: #fff; font-size: 11px;"}
+                  %i.fa.fa-chevron-down.mr-1
+                  Ver / Ocultar
+
+              .collapse{id: "collapse_aporte_#{actividad.id}"}
+                .card-body.p-2
+                  -# CONTENEDOR AJAX PARA CARGA BAJO DEMANDA AL DESPLEGAR
+                  .contenedor-desglose-ajax{id: "container_aporte_#{actividad.id}", data: { url: cargar_desglose_actividad_fondo_produccion_limpia_path(@tarea_pendiente, actividad_id: actividad.id, tipo: 'aporte', mes_a_rendir: mes_seleccionado_defecto, es_reitimizada: es_reitimizada.to_s, es_editable: es_editable.to_s), cargado: "false" }}
+                    .text-center.py-3.text-muted
+                      %i.fa.fa-spinner.fa-spin.mr-1
+                      Cargando detalle de recursos y gastos...
+
+                  .d-flex.justify-content-end.mb-2
+                    - if es_editable
+                      %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumentoActividad('filas-aporte-#{actividad.id}', #{actividad.id})"}
+                        %i.fa.fa-plus.mr-1
+                        Agregar documento
+
+                  .table-responsive
+                    %table.table.table-striped.no-margin
+                      %thead
+                        %tr
+                          %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
+                          - if es_editable
+                            %th.encabezado-form{style: 'width: 55%;'}
+                              Subir Documento Rendición
+                              %span.text-danger *
+                            %th.encabezado-form{style: 'width: 10%;'} Acciones
+                      %tbody{id: "filas-aporte-#{actividad.id}"}
+                        - if docs_act.present?
+                          - docs_act.each do |doc|
+                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - row_key = doc.id
+                            %tr
+                              %td.contenido-form
+                                = hidden_field_tag "documentos_aporte[#{row_key}][id]", doc.id
+                                = hidden_field_tag "documentos_aporte[#{row_key}][actividad_ids][]", actividad.id
+                                = hidden_field_tag "documentos_aporte[#{row_key}][_destroy]", "0", class: "destroy-flag"
+                                = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                              - if es_editable
+                                %td.contenido-form
+                                  = file_field_tag "documentos_aporte[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                                %td.contenido-form.text-center
+                                  %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                    %i.fa.fa-trash
+                        - elsif es_editable
+                          - row_key = "init_aporte_#{actividad.id}"
+                          %tr
+                            %td.contenido-form
+                              = hidden_field_tag "documentos_aporte[#{row_key}][id]", ""
+                              = hidden_field_tag "documentos_aporte[#{row_key}][actividad_ids][]", actividad.id
+                              = hidden_field_tag "documentos_aporte[#{row_key}][_destroy]", "0", class: "destroy-flag"
+                              = '--'
+                            %td.contenido-form
+                              = file_field_tag "documentos_aporte[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                            %td.contenido-form.text-center
+                              %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                %i.fa.fa-trash
+
+    -# -------------------------------------------------------------
+    -# SECCIÓN: RESUMEN Y CONCLUSIONES DE LA RENDICIÓN
+    -# -------------------------------------------------------------
+    .card.mt-3.mb-3{style: 'border: 2px solid #dee2e6;'}
+      .card-header.encabezado-form{style: 'text-align: left; padding: 10px 15px;'}
+        %h5.no-margin.font-weight-bold{style: 'font-size: 14px; color: #5d759e;'}
+          %i.fa.fa-file-text-o.mr-2.text-info
+          Información Complementaria de la Rendición
+      .card-body.p-3.border-0{style: 'border: none !important;'}
+        .row
+          .col-12.mb-3
+            %label.label-estilo{for: 'rendicion_resultado_actividades_realizadas'}
+              Resultado de las actividades realizadas
+              %span.text-danger *
+            = text_area_tag "rendicion[resultado_actividades_realizadas]", @rendicion&.resultado_actividades_realizadas, class: "form-control border-text", rows: 4, disabled: !es_editable, placeholder: "Describa detalladamente el resultado de las actividades realizadas...", required: true, onkeyup: "validarFormulario()", onchange: "validarFormulario()"
+
+          .col-12.mb-3
+            %label.label-estilo{for: 'rendicion_informacion_adicional'}
+              Información adicional (Opcional)
+            = text_area_tag "rendicion[informacion_adicional]", @rendicion&.informacion_adicional, class: "form-control border-text", rows: 2, disabled: !es_editable, placeholder: "Ingrese cualquier información adicional relevante (opcional)..."
+
+          .col-12.mb-1
+            %label.label-estilo{for: 'rendicion_conclusion'}
+              Conclusión
+              %span.text-danger *
+            = text_area_tag "rendicion[conclusion]", @rendicion&.conclusion, class: "form-control border-text", rows: 3, disabled: !es_editable, placeholder: "Ingrese la conclusión general de la rendición...", required: true, onkeyup: "validarFormulario()", onchange: "validarFormulario()"
+    .d-flex.justify-content-between.mt-3
+      %button.btn.btn-sm.btn-secondary#btn-volver-paso1{type: "button"}
+        %i.fa.fa-arrow-left.mr-1
+        Volver a Selección
+
+      .float-right
+        = volver_root
+        - if @rendicion.present?
+          = link_to descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-success mr-2", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Actividades en PDF" do
+            %i.fa.fa-file-pdf-o.mr-1
+            Descargar Informe PDF
+        - if es_editable
+          = button_tag "Grabar", 
+            type: 'submit', 
+            name: 'commit_type', 
+            value: 'grabar', 
+            id: 'grabar-button', 
+            class: "btn btn-sm btn-primary mr-2", 
+            data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Guardando..." }
+
+          = button_tag t(:enviar), 
+            type: 'submit', 
+            name: 'commit_type', 
+            value: 'enviar', 
+            id: 'enviar-button', 
+            class: "btn btn-sm btn-success btn-disabled", 
+            disabled: true, 
+            data: { confirm: "¿Está seguro que desea enviar los documentos de rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando...", remote: false }

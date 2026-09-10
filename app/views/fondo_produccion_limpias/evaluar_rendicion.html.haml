@@ -1,0 +1,852 @@
+:javascript
+  $(document).ready(function() {
+    htmlErrorToTooltip('top');
+    validarFormulario();
+  });
+
+  function toggleComentariosRevisor(selectElement, id) {
+    const $select = $(selectElement);
+    const val = $select.val().toString().toLowerCase();
+    const $tr = $select.closest('tr');
+
+    // Detecta cualquier representación de rechazo/No ("0", "2", "no", "false")
+    const esNo = (val === '0' || val === '2' || val === 'no' || val === 'false');
+
+    if (esNo) {
+      // Obtiene el título de la actividad o de la declaración sin movimientos
+      let tituloActividad = $tr.closest('.card').find('.header-actividad-fpl .font-weight-bold').text().trim();
+      if (!tituloActividad) {
+        tituloActividad = $tr.find('td:first').text().replace(/\s+/g, ' ').trim() || 'Declaración Sin Movimientos';
+      }
+
+      // Despliega automáticamente el modal de bitácora para ingresar la observación
+      abrirModalComentarios(id, tituloActividad, 'comentario_revisor_', 'comentario_postulante_', false);
+    }
+
+    validarFormulario();
+  }
+
+  // ----------------------------------------------------
+  // LÓGICA DE BITÁCORA UNIFICADA (POSTULANTE Y REVISOR)
+  // ----------------------------------------------------
+  function abrirModalComentarios(id, tituloActividad, idInputRevisor, idInputPostulante, esSoloLectura = false) {
+    const targetInputId = idInputRevisor + id;
+    const targetPostulanteId = idInputPostulante + id;
+
+    $('#modalBitacoraComentarios').attr('data-target-input', targetInputId);
+    $('#modal_titulo_actividad').text(tituloActividad);
+
+    const inputRevisor = document.getElementById(targetInputId);
+    const inputPostulante = document.getElementById(targetPostulanteId);
+
+    const textoRevisor = inputRevisor ? inputRevisor.value : '';
+    const textoPostulante = inputPostulante ? inputPostulante.value : '';
+
+    $('#bitacora_historial_container').html(formatearBitacoraDoble(textoPostulante, textoRevisor));
+    $('#nuevo_comentario_modal').val('');
+
+    if (esSoloLectura) {
+      $('#seccion_nuevo_comentario').hide();
+      $('#btn_guardar_modal').hide();
+      $('#btn_cerrar_modal').text('Cerrar');
+    } else {
+      $('#seccion_nuevo_comentario').show();
+      $('#btn_guardar_modal').show();
+      $('#btn_cerrar_modal').text('Cancelar');
+    }
+
+    $('#modalBitacoraComentarios').modal('show');
+  }
+
+  function guardarComentarioModal() {
+    const nuevoComentario = $('#nuevo_comentario_modal').val().trim();
+    const targetInputId = $('#modalBitacoraComentarios').attr('data-target-input');
+    const campoOculto = document.getElementById(targetInputId);
+
+    if (nuevoComentario !== '' && campoOculto) {
+      const fechaActual = new Date().toLocaleDateString('es-CL') + ' ' + new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+      const entradaBitacora = '[' + fechaActual + ']: ' + nuevoComentario;
+
+      let historialPrevio = campoOculto.value.trim();
+      let nuevoHistorial = historialPrevio ? historialPrevio + '\n' + entradaBitacora : entradaBitacora;
+
+      campoOculto.value = nuevoHistorial;
+      $(campoOculto).attr('value', nuevoHistorial).trigger('change');
+
+      const badgeContainer = document.getElementById('preview_' + targetInputId);
+      if (badgeContainer) {
+        const total = contarLineasComentarios(nuevoHistorial);
+        badgeContainer.innerHTML = '<span class="badge badge-info"><i class="fa fa-comments"></i> ' + total + ' registro(s)</span>';
+      }
+    }
+
+    $('#modalBitacoraComentarios').modal('hide');
+    validarFormulario();
+  }
+
+  function formatearBitacoraDoble(textoPostulante, textoRevisor) {
+    let html = '';
+
+    if (textoPostulante && textoPostulante.trim() !== '') {
+      html += '<div class="font-weight-bold text-primary mb-1"><i class="fa fa-user mr-1"></i> Comentarios / Observaciones del Postulante:</div>';
+      textoPostulante.split('\n').forEach(linea => {
+        if (linea.trim() !== '') {
+          html += '<div class="p-2 mb-2 bg-info text-white border rounded smaller-text">' + escapeHtml(linea) + '</div>';
+        }
+      });
+    }
+
+    if (textoRevisor && textoRevisor.trim() !== '') {
+      html += '<div class="font-weight-bold text-danger mt-2 mb-1"><i class="fa fa-user-md mr-1"></i> Historial del Revisor:</div>';
+      textoRevisor.split('\n').forEach(linea => {
+        if (linea.trim() !== '') {
+          html += '<div class="p-2 mb-2 bg-light border border-danger text-dark rounded smaller-text">' + escapeHtml(linea) + '</div>';
+        }
+      });
+    }
+
+    if (html === '') {
+      html = '<div class="text-muted font-italic p-3 text-center border rounded bg-light">No hay registros previos en la bitácora.</div>';
+    }
+
+    return html;
+  }
+
+  function contarLineasComentarios(texto) {
+    if (!texto) return 0;
+    return texto.split('\n').filter(linea => linea.trim() !== '').length;
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  function validarFormulario() {
+    let formularioValido = true;
+
+    document.querySelectorAll('select[id^="cumple_"]:not([disabled])').forEach(select => {
+      const id = select.id.split('_').pop();
+      const comentarioInput = document.getElementById('comentario_revisor_' + id);
+      const $select = $(select);
+      const $td = $select.closest('td');
+      const $tr = $select.closest('tr');
+      const $btnBitacora = $tr.find('button[onclick*="abrirModalComentarios"]');
+
+      // Limpiar marcas visuales previas
+      $td.find('.msg-comentario-requerido').remove();
+
+      if (select.value === '') {
+        formularioValido = false;
+        $select.removeClass('is-invalid border-danger');
+      } else if (select.value === '2' || select.value.toLowerCase() === 'no') {
+        const tieneComentario = comentarioInput && comentarioInput.value.trim() !== '';
+
+        if (!tieneComentario) {
+          formularioValido = false;
+          $select.addClass('is-invalid border-danger');
+          $btnBitacora.removeClass('btn-primary btn-outline-primary').addClass('btn-danger');
+          $td.append('<small class="msg-comentario-requerido text-danger font-weight-bold d-block mt-1" style="font-size: 10px; line-height: 1.2;"><i class="fa fa-exclamation-triangle mr-1"></i> Debe ingresar un comentario en Bitácora</small>');
+        } else {
+          $select.removeClass('is-invalid border-danger');
+          $btnBitacora.removeClass('btn-danger').addClass('btn-primary');
+        }
+      } else {
+        $select.removeClass('is-invalid border-danger');
+        $btnBitacora.removeClass('btn-danger').addClass('btn-primary');
+      }
+    });
+
+    const botonEnviar = document.getElementById('enviar-button');
+    if (botonEnviar) {
+      botonEnviar.disabled = !formularioValido;
+      if (formularioValido) {
+        botonEnviar.classList.remove('btn-disabled');
+      } else {
+        botonEnviar.classList.add('btn-disabled');
+      }
+    }
+  }
+
+:css
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
+  .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
+  .header-actividad-observada { background-color: #f8d7da !important; border-bottom: 2px solid #dc3545 !important; }
+  .is-invalid { border-color: #dc3545 !important; }
+
+- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
+- titulo t(:evaluacion_rendicion)
+
+- mes_actual = @rendicion&.mes_a_rendir.to_s
+- es_sin_mov = @rendicion.try(:sin_movimientos?) || ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos))
+
+-# TRADUCTOR INVERSO DE IDs
+- map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+- get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+- actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+
+-# ==========================================================
+-# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
+-# ==========================================================
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
+-# CÁLCULO DEL MES EN CURSO
+- fecha_res = fpl_objeto.try(:fecha_resolucion)
+- mes_nombre = nil
+- if fecha_res.present?
+  - fecha_target = fecha_res.to_date + (mes_actual.to_i - 1).months
+  - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+
+- texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual})" : "Rendición #{mes_actual}"
+
+- obtener_gastos_actividad = lambda do |act_id, tipos_validos|
+  - f_id = @tarea_pendiente&.flujo_id
+  - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
+
+.row
+  .col-12
+    .card.mb-3
+      .card-header.p-0
+        .p-3
+          %h5.no-margin= titulo_instrumento_fpl.html_safe
+          %h5.no-margin= titulo_instrumento.html_safe
+          %h5.no-margin= titulo_proyecto_fpl.html_safe
+          %h5.no-margin= titulo_apl.html_safe
+          %h5.no-margin= datos_beneficiario_fpl.html_safe
+
+.row.mb-3
+  .col-12
+    .card.border-info.mb-0{style: "border-width: 2px;"}
+      .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+        %span.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+          %i.fa.fa-calendar-check-o.mr-2.text-info
+          Rendición correspondiente a:
+        %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
+          = texto_mes_display
+
+- tabs = { "tecnica" => @es_revision_tecnica, "financiera-fpl" => @es_revision_financiera, "financiera-aporte" => false }
+
+#tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+  %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+    - tabs.each do |tab, active|
+      %li.nav-item.tab-block{id: "#{tab}-tab"}
+        %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => (active ? "true" : "false"), "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+          = t(tab.to_s.gsub('-','_'))
+
+- url_evaluacion = @es_revision_tecnica ? guardar_revision_tecnica_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) : guardar_revision_financiera_rendicion_fondo_produccion_limpia_path(@tarea_pendiente)
+
+= simple_form_for fpl_objeto, url: url_evaluacion, html: { autocomplete: :off }, remote: true do |f|
+  = hidden_field_tag "mes_a_rendir", @rendicion&.mes_a_rendir
+  .tab-content#manifestacionContent
+
+    / ----------------------------------------------------
+    / Pestaña 1: Evaluación Técnica
+    / ----------------------------------------------------
+    .tab-pane.fade#tecnica{class: ('show active' if @es_revision_tecnica), :role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
+      - if es_sin_mov
+        - detalle_eval = @rendicion.rendicion_detalles_fpl.first_or_create!(tipo_tab: 0) if @rendicion.present?
+        - if detalle_eval.present?
+          - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
+          - val_str = raw_cumple.to_s.downcase
+          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+          - valor_comentario = detalle_eval.comentario_revisor
+          - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+
+          .alert.alert-warning.mb-3.p-3{style: "border-left: 4px solid #ffc107;"}
+            .d-flex.align-items-center
+              %i.fa.fa-info-circle.fa-2x.mr-3.text-warning
+              %div
+                %h6.font-weight-bold.mb-1 Rendición Sin Movimientos Técnicos
+                %p.mb-0{style: "font-size: 12px;"} Esta rendición fue enviada por el postulante declarando que no existieron ejecuciones ni movimientos técnicos en este período.
+
+          .card.border-warning.mb-3
+            .card-header.bg-light.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+              Evaluación Técnica de la Rendición Sin Movimientos
+            .card-body.p-3
+              .table-responsive
+                %table.table.table-striped.no-margin
+                  %thead
+                    %tr
+                      %th.encabezado-form{style: 'width: 50%;'} Declaración
+                      %th.encabezado-form{style: 'width: 20%;'} Cumple
+                      %th.encabezado-form{style: 'width: 30%;'} Comentarios / Bitácora
+                  %tbody
+                    %tr
+                      %td.contenido-form
+                        %span.font-weight-bold Rendición Sin Movimientos Técnicos
+                        %br
+                        %small.text-muted= detalle_eval.observacion.presence || "Sin avances técnicos registrados en el período."
+                      %td.contenido-form
+                        - if @es_revision_tecnica
+                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
+                        - else
+                          - if valor_cumple_int == 1
+                            %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
+                          - elsif valor_cumple_int == 2
+                            %span.badge.badge-danger{style: 'font-size: 10px; padding: 5px 10px;'} No
+                          - else
+                            %span.text-muted --
+                      %td.contenido-form.text-center
+                        - if @es_revision_tecnica
+                          = hidden_field_tag "comentario_postulante_#{detalle_eval.id}", "", id: "comentario_postulante_#{detalle_eval.id}"
+                          = hidden_field_tag "detalles[#{detalle_eval.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_eval.id}"
+                          %button.btn.btn-sm.btn-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                            %i.fa.fa-comments.mr-1
+                            Bitácora
+                          .mt-1{id: "preview_comentario_revisor_#{detalle_eval.id}"}
+                            %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                              %i.fa.fa-comments
+                              = "#{num_comentarios_rev} registro(s)"
+                        - else
+                          = hidden_field_tag "read_tec_comentario_#{detalle_eval.id}", valor_comentario, id: "read_tec_comentario_#{detalle_eval.id}"
+                          %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'read_tec_comentario_', 'comentario_postulante_', true)"}
+                            %i.fa.fa-comments.mr-1
+                            Bitácora
+      - elsif @actividad_x_linea.present?
+        - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
+
+        - if actividades_filtradas.present?
+          - actividades_filtradas.each do |actividad|
+            - act_id_num = actividad.id.to_i
+            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            
+            - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
+            - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
+
+            - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
+            - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
+
+            - detalle_tecnico = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i] || @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+            - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || '--'
+            - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || '--'
+            - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
+            - observacion_valor = detalle_tecnico&.observacion
+            - comentario_postulante_val = detalle_tecnico&.try(:comentario_postulante)
+            - archivo = detalle_tecnico&.archivo
+            
+            - raw_cumple = detalle_tecnico ? (detalle_tecnico.read_attribute_before_type_cast(:cumple) || detalle_tecnico.cumple) : nil
+            - val_str = raw_cumple.to_s.downcase
+            - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+            - valor_comentario = detalle_tecnico&.comentario_revisor
+            - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+            - es_actividad_observada = valor_cumple_int == 2
+
+            .card.mb-3.actividad-tecnica-block{id: "tecnica_eval_card_#{actividad.id}", style: (es_actividad_observada ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada)}
+                .d-flex.align-items-center.flex-wrap
+                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitemización autorizada
+                  - if es_actividad_observada
+                    %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad requiere corrección"}
+                      %i.fa.fa-exclamation-triangle.mr-1
+                      Observada
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_tecnica_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                  %i.fa.fa-chevron-down.mr-1
+                  Ver / Ocultar
+
+              .collapse{id: "collapse_tecnica_eval_#{actividad.id}"}
+                .card-body.p-2
+                  .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
+                    %span
+                      %strong Indicador asociado al objetivo:
+                      = indicador_texto
+
+                  .table-responsive
+                    %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
+                      %thead
+                        %tr.bg-light
+                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Inicio
+                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Término
+                          %th.encabezado-form{style: 'width: 15%;'} Nivel de avance
+                          %th.encabezado-form{style: 'width: 55%;'} Descripción del Avance
+                      %tbody
+                        %tr
+                          %td.contenido-form.text-center= fecha_inicio_valor
+                          %td.contenido-form.text-center= fecha_termino_valor
+                          %td.contenido-form.text-center
+                            - avance_num = detalle_tecnico&.nivel_avance.to_i
+                            - if avance_num > 0
+                              %span.badge.badge-info{style: "font-size: 11px; padding: 5px 8px;"}= "#{avance_num}%"
+                            - else
+                              %span.badge.badge-secondary{style: "font-size: 11px; padding: 5px 8px;"} Sin registrar
+                          %td.contenido-form= observacion_valor.presence || '--'
+
+                  - if @es_revision_tecnica
+                    .table-responsive.mt-3
+                      %table.table.table-striped.no-margin
+                        %thead
+                          %tr
+                            %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado
+                            %th.encabezado-form{style: 'width: 15%;'} Cumple
+                            %th.encabezado-form{style: 'width: 50%;'} Comentarios
+                        %tbody
+                          %tr
+                            %td.contenido-form
+                              - if detalle_tecnico.present? && archivo.present?
+                                = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
+                              - else
+                                %span.text-muted --
+                            
+                            %td.contenido-form
+                              - if detalle_tecnico.present?
+                                = select_tag "detalles[#{detalle_tecnico.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{detalle_tecnico.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_tecnico.id}')"
+                              - else
+                                %span.text-muted --
+
+                            %td.contenido-form.text-center
+                              - if detalle_tecnico.present?
+                                = hidden_field_tag "comentario_postulante_#{detalle_tecnico.id}", comentario_postulante_val, id: "comentario_postulante_#{detalle_tecnico.id}"
+                                = hidden_field_tag "detalles[#{detalle_tecnico.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_tecnico.id}"
+                                %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                                  %i.fa.fa-comments.mr-1
+                                  Bitácora
+                                .mt-1{id: "preview_comentario_revisor_#{detalle_tecnico.id}"}
+                                  %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                                    %i.fa.fa-comments
+                                    = "#{num_comentarios_rev} registro(s)"
+                              - else
+                                %span.text-muted --
+                  - else
+                    .table-responsive.mt-3
+                      %table.table.table-striped.no-margin
+                        %thead
+                          %tr
+                            %th.encabezado-form{style: 'width: 50%;'} Archivo Cargado
+                            %th.encabezado-form{style: 'width: 15%;'} Cumple
+                            %th.encabezado-form{style: 'width: 35%;'} Comentarios
+                        %tbody
+                          %tr
+                            %td.contenido-form
+                              - if detalle_tecnico.present? && archivo.present?
+                                = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
+                              - else
+                                %span.text-muted --
+                            
+                            %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                              - if detalle_tecnico.present?
+                                - if valor_cumple_int == 1
+                                  %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
+                                - elsif valor_cumple_int == 2
+                                  %span.badge.badge-danger{style: 'font-size: 10px; padding: 5px 10px;'} No
+                                - else
+                                  %span.text-muted --
+                              - else
+                                %span.text-muted --
+
+                            %td.contenido-form.text-center
+                              - if detalle_tecnico.present?
+                                = hidden_field_tag "comentario_postulante_#{detalle_tecnico.id}", comentario_postulante_val, id: "comentario_postulante_#{detalle_tecnico.id}"
+                                = hidden_field_tag "read_tec_comentario_#{detalle_tecnico.id}", valor_comentario, id: "read_tec_comentario_#{detalle_tecnico.id}"
+                                %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'read_tec_comentario_', 'comentario_postulante_', true)"}
+                                  %i.fa.fa-comments.mr-1
+                                  Bitácora
+                                .mt-1{id: "preview_read_tec_comentario_#{detalle_tecnico.id}"}
+                                  %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                                    %i.fa.fa-comments
+                                    = "#{num_comentarios_rev} registro(s)"
+                              - else
+                                %span.text-muted --
+
+        - else
+          .card.mt-2
+            .card-body.text-center.text-muted Rendición Sin Movimientos
+      - else
+        .card.mt-2
+          .card-body.text-center.text-muted No hay actividades configuradas para esta línea.
+
+    / ----------------------------------------------------
+    / Pestaña 2: Evaluación Financiera FPL
+    / ----------------------------------------------------
+    .tab-pane.fade#financiera-fpl{class: ('show active' if @es_revision_financiera), :role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
+      - if es_sin_mov
+        - detalle_eval = @rendicion.rendicion_detalles_fpl.find_or_create_by!(tipo_tab: 1) if @rendicion.present?
+        - if detalle_eval.present?
+          - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
+          - val_str = raw_cumple.to_s.downcase
+          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+          - valor_comentario = detalle_eval.comentario_revisor
+          - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+
+          .alert.alert-warning.mb-3.p-3{style: "border-left: 4px solid #ffc107;"}
+            .d-flex.align-items-center
+              %i.fa.fa-info-circle.fa-2x.mr-3.text-warning
+              %div
+                %h6.font-weight-bold.mb-1 Rendición Sin Movimientos Financieros FPL
+                %p.mb-0{style: "font-size: 12px;"} Esta rendición fue enviada por el postulante declarando que no existieron gastos ni movimientos financieros FPL en este período.
+
+          .card.border-warning.mb-3
+            .card-header.bg-light.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+              Evaluación Financiera FPL de la Rendición Sin Movimientos
+            .card-body.p-3
+              .table-responsive
+                %table.table.table-striped.no-margin
+                  %thead
+                    %tr
+                      %th.encabezado-form{style: 'width: 50%;'} Declaración
+                      %th.encabezado-form{style: 'width: 20%;'} Cumple
+                      %th.encabezado-form{style: 'width: 30%;'} Comentarios / Bitácora
+                  %tbody
+                    %tr
+                      %td.contenido-form
+                        %span.font-weight-bold Rendición Sin Movimientos Financieros FPL
+                        %br
+                        %small.text-muted Sin gastos ni comprobantes rendidos en el período.
+                      %td.contenido-form
+                        - if @es_revision_financiera
+                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
+                        - else
+                          - if valor_cumple_int == 1
+                            %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
+                          - elsif valor_cumple_int == 2
+                            %span.badge.badge-danger{style: 'font-size: 10px; padding: 5px 10px;'} No
+                          - else
+                            %span.text-muted --
+                      %td.contenido-form.text-center
+                        - if @es_revision_financiera
+                          = hidden_field_tag "comentario_postulante_#{detalle_eval.id}", "", id: "comentario_postulante_#{detalle_eval.id}"
+                          = hidden_field_tag "detalles[#{detalle_eval.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_eval.id}"
+                          %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos FPL', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                            %i.fa.fa-comments.mr-1
+                            Bitácora
+                          .mt-1{id: "preview_comentario_revisor_#{detalle_eval.id}"}
+                            %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                              %i.fa.fa-comments
+                              = "#{num_comentarios_rev} registro(s)"
+                        - else
+                          = hidden_field_tag "read_fin_comentario_#{detalle_eval.id}", valor_comentario, id: "read_fin_comentario_#{detalle_eval.id}"
+                          %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos FPL', 'read_fin_comentario_', 'comentario_postulante_', true)"}
+                            %i.fa.fa-comments.mr-1
+                            Bitácora
+      - elsif @actividad_x_linea.present?
+        - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
+        - docs_fpl_base = @documentos_fpl.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_fpl?) && d.financiera_fpl?) || d.tipo_tab.to_s.include?('fpl') || d.tipo_tab.to_s == '1' }) || []
+
+        - if actividades_fpl_filtradas.present?
+          - actividades_fpl_filtradas.each do |actividad|
+            - act_id_num = actividad.id.to_i
+            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - docs_act = docs_fpl_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
+            - es_actividad_observada_fpl = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
+            - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
+
+            .card.mb-3.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: (es_actividad_observada_fpl ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada_fpl)}
+                .d-flex.align-items-center.flex-wrap
+                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitemización autorizada
+                  - if es_actividad_observada_fpl
+                    %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión financiera"}
+                      %i.fa.fa-exclamation-triangle.mr-1
+                      Observada
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_fpl_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                  %i.fa.fa-chevron-down.mr-1
+                  Ver / Ocultar
+
+              .collapse{id: "collapse_fpl_eval_#{actividad.id}"}
+                .card-body.p-2
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
+
+                  - if @es_revision_financiera
+                    .table-responsive.mt-3
+                      %table.table.table-striped.no-margin
+                        %thead
+                          %tr
+                            %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
+                            %th.encabezado-form{style: 'width: 15%;'} Cumple
+                            %th.encabezado-form{style: 'width: 50%;'} Comentarios
+                        %tbody
+                          - if docs_act.present?
+                            - docs_act.each do |doc|
+                              - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                              - val_str = raw_cumple.to_s.downcase
+                              - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+                              - valor_comentario = doc.comentario_revisor
+                              - comentario_postulante_val = doc.try(:comentario_postulante)
+                              - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                              - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+
+                              %tr
+                                %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                                %td.contenido-form
+                                  = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
+                                %td.contenido-form.text-center
+                                  = hidden_field_tag "comentario_postulante_#{doc.id}", comentario_postulante_val, id: "comentario_postulante_#{doc.id}"
+                                  = hidden_field_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}"
+                                  %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                                    %i.fa.fa-comments.mr-1
+                                    Bitácora
+                                  .mt-1{id: "preview_comentario_revisor_#{doc.id}"}
+                                    %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                                      %i.fa.fa-comments
+                                      = "#{num_comentarios_rev} registro(s)"
+                          - else
+                            %tr
+                              %td.contenido-form.text-muted.text-center Sin documentos cargados
+                              %td.contenido-form.text-center --
+                              %td.contenido-form.text-center --
+                  - else
+                    .table-responsive.mt-2
+                      %table.table.table-striped.no-margin
+                        %thead
+                          %tr
+                            %th.encabezado-form{style: 'width: 100%;'} Archivos Cargados
+                        %tbody
+                          - if docs_act.present?
+                            - docs_act.each do |doc|
+                              - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                              %tr
+                                %td.contenido-form
+                                  = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                          - else
+                            %tr
+                              %td.contenido-form.text-muted.text-center Sin documentos cargados
+        - else
+          .card.mt-2
+            .card-body.text-center.text-muted No hay documentos financieros FPL para evaluar en este mes.
+      - else
+        .card.mt-2
+          .card-body.text-center.text-muted No se enviaron documentos financieros FPL para evaluar.
+
+    / ----------------------------------------------------
+    / Pestaña 3: Evaluación Financiera Aporte Propio
+    / ----------------------------------------------------
+    .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
+      - if es_sin_mov
+        - detalle_eval = @rendicion.rendicion_detalles_fpl.find_or_create_by!(tipo_tab: 2) if @rendicion.present?
+        - if detalle_eval.present?
+          - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
+          - val_str = raw_cumple.to_s.downcase
+          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+          - valor_comentario = detalle_eval.comentario_revisor
+          - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+
+          .alert.alert-warning.mb-3.p-3{style: "border-left: 4px solid #ffc107;"}
+            .d-flex.align-items-center
+              %i.fa.fa-info-circle.fa-2x.mr-3.text-warning
+              %div
+                %h6.font-weight-bold.mb-1 Rendición Sin Movimientos de Aporte Propio
+                %p.mb-0{style: "font-size: 12px;"} No se registraron aportes propios líquidos ni valorados para este período.
+
+          .card.border-warning.mb-3
+            .card-header.bg-light.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+              Evaluación Aporte Propio de la Rendición Sin Movimientos
+            .card-body.p-3
+              .table-responsive
+                %table.table.table-striped.no-margin
+                  %thead
+                    %tr
+                      %th.encabezado-form{style: 'width: 50%;'} Declaración
+                      %th.encabezado-form{style: 'width: 20%;'} Cumple
+                      %th.encabezado-form{style: 'width: 30%;'} Comentarios / Bitácora
+                  %tbody
+                    %tr
+                      %td.contenido-form
+                        %span.font-weight-bold Rendición Sin Movimientos Aporte Propio
+                        %br
+                        %small.text-muted Sin aportes propios registrados en el período.
+                      %td.contenido-form
+                        - if @es_revision_financiera
+                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
+                        - else
+                          - if valor_cumple_int == 1
+                            %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
+                          - elsif valor_cumple_int == 2
+                            %span.badge.badge-danger{style: 'font-size: 10px; padding: 5px 10px;'} No
+                          - else
+                            %span.text-muted --
+                      %td.contenido-form.text-center
+                        - if @es_revision_financiera
+                          = hidden_field_tag "comentario_postulante_#{detalle_eval.id}", "", id: "comentario_postulante_#{detalle_eval.id}"
+                          = hidden_field_tag "detalles[#{detalle_eval.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_eval.id}"
+                          %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Aporte Propio', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                            %i.fa.fa-comments.mr-1
+                            Bitácora
+                          .mt-1{id: "preview_comentario_revisor_#{detalle_eval.id}"}
+                            %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                              %i.fa.fa-comments
+                              = "#{num_comentarios_rev} registro(s)"
+                        - else
+                          = hidden_field_tag "read_apo_comentario_#{detalle_eval.id}", valor_comentario, id: "read_apo_comentario_#{detalle_eval.id}"
+                          %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Aporte Propio', 'read_apo_comentario_', 'comentario_postulante_', true)"}
+                            %i.fa.fa-comments.mr-1
+                            Bitácora
+      - elsif @actividad_x_linea.present?
+        - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
+        - docs_aporte_base = @documentos_aporte.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_aporte?) && d.financiera_aporte?) || d.tipo_tab.to_s.include?('aporte') || d.tipo_tab.to_s == '2' }) || []
+
+        - if actividades_aporte_filtradas.present?
+          - actividades_aporte_filtradas.each do |actividad|
+            - act_id_num = actividad.id.to_i
+            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - docs_act = docs_aporte_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
+            - es_actividad_observada_aporte = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
+            - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
+
+            .card.mb-3.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: (es_actividad_observada_aporte ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada_aporte)}
+                .d-flex.align-items-center.flex-wrap
+                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitemización autorizada
+                  - if es_actividad_observada_aporte
+                    %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión de aporte propio"}
+                      %i.fa.fa-exclamation-triangle.mr-1
+                      Observada
+                %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_aporte_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                  %i.fa.fa-chevron-down.mr-1
+                  Ver / Ocultar
+
+              .collapse{id: "collapse_aporte_eval_#{actividad.id}"}
+                .card-body.p-2
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
+
+                  - if @es_revision_financiera
+                    .table-responsive.mt-3
+                      %table.table.table-striped.no-margin
+                        %thead
+                          %tr
+                            %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
+                            %th.encabezado-form{style: 'width: 15%;'} Cumple
+                            %th.encabezado-form{style: 'width: 50%;'} Comentarios
+                        %tbody
+                          - if docs_act.present?
+                            - docs_act.each do |doc|
+                              - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                              - val_str = raw_cumple.to_s.downcase
+                              - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+                              - valor_comentario = doc.comentario_revisor
+                              - comentario_postulante_val = doc.try(:comentario_postulante)
+                              - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                              - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+
+                              %tr
+                                %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                                %td.contenido-form
+                                  = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
+                                %td.contenido-form.text-center
+                                  = hidden_field_tag "comentario_postulante_#{doc.id}", comentario_postulante_val, id: "comentario_postulante_#{doc.id}"
+                                  = hidden_field_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}"
+                                  %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                                    %i.fa.fa-comments.mr-1
+                                    Bitácora
+                                  .mt-1{id: "preview_comentario_revisor_#{doc.id}"}
+                                    %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                                      %i.fa.fa-comments
+                                      = "#{num_comentarios_rev} registro(s)"
+                          - else
+                            %tr
+                              %td.contenido-form.text-muted.text-center Sin documentos cargados
+                              %td.contenido-form.text-center --
+                              %td.contenido-form.text-center --
+                  - else
+                    .table-responsive.mt-2
+                      %table.table.table-striped.no-margin
+                        %thead
+                          %tr
+                            %th.encabezado-form{style: 'width: 100%;'} Archivos Cargados
+                        %tbody
+                          - if docs_act.present?
+                            - docs_act.each do |doc|
+                              - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                              %tr
+                                %td.contenido-form
+                                  = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                          - else
+                            %tr
+                              %td.contenido-form.text-muted.text-center Sin documentos cargados
+        - else
+          .card.mt-2
+            .card-body.text-center.text-muted No hay documentos de aporte para evaluar en este mes.
+      - else
+        .card.mt-2
+          .card-body.text-center.text-muted No se enviaron documentos de aporte para evaluar.
+
+  .float-right.mt-3
+    = volver_root
+    - if @tiene_permisos
+      = button_tag "Grabar Avance", 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'grabar', 
+        class: "btn btn-sm btn-primary mr-2", 
+        data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+
+      = button_tag t(:enviar_evaluacion), 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'enviar', 
+        id: 'enviar-button', 
+        class: "btn btn-sm btn-success btn-disabled", 
+        disabled: true, 
+        data: { confirm: "¿Está seguro que desea enviar la evaluación de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }
+
+/ ----------------------------------------------------
+/ MODAL POPUP: BITÁCORA Y HISTORIAL DE COMENTARIOS
+/ ----------------------------------------------------
+.modal.fade#modalBitacoraComentarios{tabindex: "-1", role: "dialog", "aria-labelledby" => "modalBitacoraLabel", "aria-hidden" => "true"}
+  .modal-dialog.modal-lg{role: "document"}
+    .modal-content
+      .modal-header.bg-info.text-white
+        %h5.modal-title#modalBitacoraLabel
+          %i.fa.fa-comments.mr-2
+          %span#modalBitacoraLabelText Bitácora de Comentarios
+        %button.close.text-white{type: "button", "data-dismiss" => "modal", "aria-label" => "Cerrar"}
+          %span{"aria-hidden" => "true"} &times;
+      .modal-body
+        .alert.alert-secondary.py-2.mb-3
+          %strong Actividad / Declaración:
+          %span#modal_titulo_actividad.font-italic
+
+        #bitacora_historial_container.mb-3{style: "max-height: 250px; overflow-y: auto;"}
+
+        #seccion_nuevo_comentario
+          %hr
+          .form-group.mb-0
+            %label.font-weight-bold.text-danger{for: "nuevo_comentario_modal"}
+              %i.fa.fa-pencil.mr-1
+              Agregar Nuevo Comentario (Revisor):
+            %textarea#nuevo_comentario_modal.form-control.border-text{rows: 3, placeholder: "Escriba aquí la observación o comentario..."}
+
+      .modal-footer
+        %button.btn.btn-sm.btn-secondary#btn_cerrar_modal{type: "button", "data-dismiss" => "modal"} Cancelar
+        %button.btn.btn-sm.btn-primary#btn_guardar_modal{type: "button", onclick: "guardarComentarioModal()"}
+          %i.fa.fa-plus-circle.mr-1
+          Añadir Entrada a Bitácora

@@ -8,6 +8,7 @@ class PlanActividad < ApplicationRecord
   has_many :equipo_trabajos
   has_many :recurso_humanos
 
+  mount_uploader :archivo_reitimizacion, ArchivoReitimizacionUploader
 
   def self.actividad_detalle(flujo_id)
     # ===========================

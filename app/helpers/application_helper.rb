@@ -495,32 +495,42 @@ module ApplicationHelper
             atributo = []
             field.each do |archivo|
               split = archivo.current_path.split('/') rescue archivo.path.split('/')# DZC genera un array de palabras dentro del path
-              archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier, y lo agrega al arreglo
+              archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/'...
               atributo << archivo.path.split('/public').last
             end
             begin
               atributo = field[0].mounted_as
             rescue
             end
-            # DZC 2018-10-26 10:24:34 ejecuta el path descarga_zip en aplication_controller, pasando los parámetros nombre de la clase, id del objeto, nombre del atributo
+            # DZC 2018-10-26 10:24:34 ejecuta el path descarga_zip...
             haml_tag :a, href: desacarga_zip_path(clase: objeto.class.name, objeto_id: objeto.id, atributo: atributo), class: 'btn btn-sm btn-descargar btn-block tooltip-block '+padding, download: '', title: archivos.to_sentence, "data-original-title" => archivos.to_sentence do
               haml_tag :i, class: 'fa fa-download'
               haml_concat (boton.blank? ? archivos.to_sentence : boton) if nombre_boton
             end
           else
-            #
+            # --- INICIO DEL CAMBIO: LÓGICA PROXY (Archivo Único) ---
             begin
-              file_name = field.file.filename
-              url = field.url
-            rescue
-              file_split = field.path.split('/public')
-              url = request.base_url + file_split.last
-              file_name = file_split.last.split('/').last
+              # 1. Sacamos el nombre del archivo de forma segura
+              file_name = field.file.filename rescue field.path.split('/').last
+              
+              # 2. Obtenemos modelo y campo
+              nombre_campo = field.mounted_as rescue 'archivo'
+              nombre_modelo = objeto.class.name.underscore
+              
+              # 3. Generamos la URL apuntando a nuestro controlador Proxy
+              url = archivo_generico_path(modelo: nombre_modelo, id: objeto.id, campo: nombre_campo)
+            rescue => e
+              Rails.logger.error "=== ERROR GENERANDO RUTA PROXY EN HELPER C/TITULO: #{e.message} ==="
+              url = "#"
+              file_name = "documento"
             end
-            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", download: '', title: file_name, "data-original-title" => file_name do
+            
+            # Se omite el atributo `download: ''` explícito, ya que el controlador envía `disposition: 'attachment'`
+            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", title: file_name, "data-original-title" => file_name do
               haml_tag :i, class: 'fa fa-download'
               haml_concat (boton.blank? ? file_name : boton) if nombre_boton
             end
+            # --- FIN DEL CAMBIO ---
           end
         else
           haml_tag :a, class: 'btn btn-sm btn-descargar btn-block tooltip-block', "data-original-title" => "Archivo(s) no subido(s)..." do
@@ -542,35 +552,42 @@ module ApplicationHelper
             archivos = []
             atributo = []
             field.each do |archivo|
-              split = archivo.current_path.split('/') rescue archivo.path.split('/')# DZC genera un array de palabras dentro del path
-              archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier, y lo agrega al arreglo
+              split = archivo.current_path.split('/') rescue archivo.path.split('/')
+              archivos << split[split.length-1]
               atributo << archivo.path.split('/public').last
             end
             begin
               atributo = field[0].mounted_as
             rescue
             end
-            # DZC 2018-10-26 10:24:34 ejecuta el path descarga_zip en aplication_controller, pasando los parámetros nombre de la clase, id del objeto, nombre del atributo
             haml_tag :a, href: desacarga_zip_path(clase: objeto.class.name, objeto_id: objeto.id, atributo: atributo), class: 'btn btn-sm btn-descargar btn-block tooltip-block '+padding, download: '', title: archivos.to_sentence, "data-original-title" => archivos.to_sentence do
               haml_tag :i, class: 'fa fa-download'
               haml_concat (boton.blank? ? archivos.to_sentence : boton) if nombre_boton
             end
           else
-            #
+            # --- INICIO DEL CAMBIO MEJORADO ---
             begin
-              file_name = field.file.filename
-              url = field.url
-            rescue
-              file_split = field.path.split('/public')
-              url = request.base_url + file_split.last
-              file_name = file_split.last.split('/').last
+              file_name = field.file.filename rescue field.path.split('/').last
+              nombre_campo = field.mounted_as rescue 'archivo'
+              nombre_modelo = objeto.class.name.underscore
+
+              # Generamos la URL apuntando a nuestro controlador Proxy
+              url = archivo_generico_path(modelo: nombre_modelo, id: objeto.id, campo: nombre_campo)
+            rescue => e
+              Rails.logger.error "=== ERROR GENERANDO RUTA PROXY: #{e.message} ==="
+              url = "#"
+              file_name = "documento"
             end
-            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", download: '', title: file_name, "data-original-title" => file_name do
+
+            # Remarcamos 'target: _blank' para asegurar que abra o dispare la descarga
+            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", title: file_name, "data-original-title" => file_name do
               haml_tag :i, class: 'fa fa-download'
               haml_concat (boton.blank? ? file_name : boton) if nombre_boton
             end
+            # --- FIN DEL CAMBIO ---
           end
         else
+          # ... (Botón deshabilitado intacto) ...
           haml_tag :a, class: 'btn btn-sm btn-descargar btn-block tooltip-block', "data-original-title" => "Archivo(s) no subido(s)..." do
             haml_tag :i, class: 'fa fa-ban'
           end
@@ -702,11 +719,10 @@ def generar_zip(archivos)
         stream.put_next_entry(nombre)
         stream.write archivo_tecnica[:data] if archivo_tecnica[:data]
       else
-        # Retrieve the S3 URL from CarrierWave uploader
         url = archivo_tecnica.url
         nombre = File.basename(URI.parse(url).path)
 
-        # Open and read the file from S3
+        # Open and read the file from remote storage (Azure Blob vía CarrierWave)
         URI.open(url) do |file_data|
           stream.put_next_entry(nombre)
           stream.write file_data.read
@@ -762,6 +778,8 @@ end
       data[:icon] = "<i class='fa fa-edit'></i>"
     end
   else
+    rend = buscar_rendicion_por_pendiente(pendiente)
+    mes_param = rend&.mes_a_rendir
     case tarea.codigo
     when Tarea::COD_APL_001
     data[:url] = manifestacion_de_interes_path(pendiente)
@@ -1064,6 +1082,30 @@ end
     when Tarea::COD_FPL_11
       data[:url] =  resolucion_contrato_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_11_1
+      data[:url] = autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_12
+      data[:url] = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_13
+      data[:url] = asignar_revisor_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_14
+      data[:url] = revision_financiera_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_15
+      data[:url] = revision_tecnica_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_16
+      data[:url] = verificacion_contable_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_17
+      data[:url] = corregir_rendicion_financiera_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_18
+      data[:url] = corregir_rendicion_tecnica_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
     #Nuevo flujo postulacion FPL  
     end
   end
@@ -1135,6 +1177,64 @@ end
     "#{formatted_rut}-#{dv.upcase}"
   end
   
-  
+  def buscar_rendicion_por_pendiente(pendiente)
+    # 1. Prioridad: Obtener la rendición exacta guardada en el Hash 'data' de la tarea
+    rend = pendiente.determina_rendicion if pendiente.respond_to?(:determina_rendicion)
+    return rend if rend.present?
+
+    flujo_id = pendiente.flujo_id
+    codigo = pendiente.tarea.codigo.to_s
+
+    # 2. Fallback por estado solo si la tarea no poseía 'data' guardado
+    case codigo
+    when 'FPL-13', 'FPL-14', 'FPL-15'
+      RendicionFpl.where(flujo_id: flujo_id, estado: [:enviada_a_revision, 1, :en_evaluacion, 2])
+                  .order(mes_a_rendir: :asc).first
+    when 'FPL-17'
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_financiera, 4])
+    when 'FPL-18'
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_tecnica, 3])
+    when 'FPL-12' # Rendición Documentos por Actividades (Postulante)
+      rend = RendicionFpl.where(flujo_id: flujo_id, estado: [:borrador, 0, :observada_tecnica, 3, :observada_financiera, 4])
+                        .order(mes_a_rendir: :asc).first
+
+      # Si no hay borrador abierto, calcular (último mes enviado con estado >= 1) + 1
+      unless rend.present?
+        estados_enviados = [1, 2, 3, 4, 5, 6]
+        ultimo_mes_enviado = RendicionFpl.where(flujo_id: flujo_id, estado: estados_enviados)
+                                        .pluck(:mes_a_rendir).compact.max || 0
+        mes_sugerido = ultimo_mes_enviado + 1
+        rend = Struct.new(:mes_a_rendir).new(mes_sugerido)
+      end
+      rend
+    else
+      RendicionFpl.where(flujo_id: flujo_id).order(mes_a_rendir: :desc).first
+    end
+  end
+
+  def nombre_tarea_con_rendicion(pendiente)
+    tarea = pendiente.tarea
+    nombre_base = tarea.nombre
+    codigos_fpl_paralelos = ['FPL-12', 'FPL-13', 'FPL-14', 'FPL-15', 'FPL-17', 'FPL-18']
+
+    if codigos_fpl_paralelos.any? { |cod| tarea.codigo.to_s.include?(cod) || tarea.nombre.to_s.include?(cod) }
+      rend = buscar_rendicion_por_pendiente(pendiente)
+
+      if rend.present? && rend.try(:mes_a_rendir).present?
+        fpl_obj = pendiente.flujo.try(:proyecto)&.fondo_produccion_limpia || FondoProduccionLimpia.find_by(flujo_id: pendiente.flujo_id)
+        fecha_res = fpl_obj.try(:fecha_resolucion)
+
+        if fecha_res.present?
+          fecha_target = fecha_res.to_date + (rend.mes_a_rendir.to_i - 1).months
+          mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+          return "#{nombre_base} - #{mes_nombre} (Rendición #{rend.mes_a_rendir})"
+        else
+          return "#{nombre_base} - Rendición #{rend.mes_a_rendir}"
+        end
+      end
+    end
+
+    nombre_base
+  end
   
 end

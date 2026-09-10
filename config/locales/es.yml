@@ -1521,8 +1521,18 @@ es:
   tipo_b: Tipo B
   adjuntar_resolucion_contrato: Adjuntar Resolución y Contrato
   resolucion_contrato: Resolución y Contrato
+  documentos_rendicion: Documentos de rendición por actividad
+  rendicion_por_actividad: Rendición por actividad
+  tecnica: Técnica
+  financiera_fpl: Financiera FPL
+  financiera_aporte: Financiera Aporte Propio
+  asignar_revisor_rendicion: Asignar Revisor Rendición
+  evaluacion_rendicion: Evaluacion rendición
+  enviar_evaluacion: Enviar evaluación
+  adjuntar_resolucion_contrato: Adjuntar documentos de rendición por actividad
+  subir_documento_rendicion: Subir Documento Rendición
   no_aplica: No Aplica
-  iniciar_flujo_fpl: Iniciar Flujo FPL
+  iniciar_flujo_fpl: Iniciar Flujo
   mantenedor_mapa_actores: Mantenedor Mapa Actores
   nuevo_flujo_fpl: Nuevo Flujo FPL
   admiisibilidad_financiera : Admisibilidad Financiera
@@ -1562,7 +1572,8 @@ es:
   subir_propuesta_APL: Subir Propuesta del APL
   cargar_propuesta_APL: Cargar Propuesta del APL
   prueba_envio_correos: Prueba Envio Correos
-
+  revisor_contable: Revisor Contable
+  datos_rendicion: Datos de Rendición
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   crea_nuevo_flujo_fpl: Crea nuevo flujo FPL
   helpers:

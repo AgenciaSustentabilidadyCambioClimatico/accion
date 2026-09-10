@@ -1,5 +1,5 @@
 class ArchivosAnexosPosterioresFirmasInformeAcuerdosUploader < CarrierWave::Uploader::Base
-  storage :aws
+# Almacenamiento global en config/initializers/carrierwave.rb (:file en test/dev, :fog Azure en prod).
 
   attr_accessor :indice
 
