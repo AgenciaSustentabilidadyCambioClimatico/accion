@@ -767,10 +767,16 @@
                 - suma = valor_hh_tipo_3 + valor_hh_tipos_1_2 + total_gastos_tipo_1 + total_gastos_tipo_2
                 - total_total_suma += suma
 
+                - tipo_act_val = actividad.try(:tipo_actividad)
+                - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
+
                 %tr
                   %td.contenido-form.text-center= actividad.correlativo
                   %td.contenido-form
                     = actividad.nombre
+                    - if tipo_act_txt.present?
+                      %span.badge.ml-1{style: "font-size: 10px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                        = tipo_act_txt
                     - if es_reitimizada
                       %span.badge.ml-1{style: "font-size: 10px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                         %i.fa.fa-refresh.mr-1
@@ -839,6 +845,7 @@
           (#{number_to_currency(limite_admin_monto, unit: '$', precision: 0)}). 
           El proyecto tiene asignado un <strong class="#{excede_admin ? 'text-danger' : 'text-success'}">#{number_to_percentage(pct_admin_actual, precision: 1)}</strong> 
           (#{number_to_currency(tot_admin_proyecto, unit: '$', precision: 0)}).
+
   - tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
 
   #tab-menu-controls.mb-0.mt-2.px-2{:role => "tabpanel"}
@@ -875,6 +882,8 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
 
             - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
             - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
@@ -903,6 +912,9 @@
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
@@ -979,6 +991,8 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
             
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
@@ -989,6 +1003,9 @@
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
@@ -1064,6 +1081,8 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
             
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
@@ -1074,6 +1093,9 @@
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1

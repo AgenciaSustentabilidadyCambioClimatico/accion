@@ -172,7 +172,7 @@
                     Fecha Resolución
                   %td.contenido-form{colspan: (@tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 ? 2 : 1)}
                     - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      = f.input :fecha_resolucion, as: :string, label: false, input_html: { id: "fecha_resolucion", type: "date", class: "form-control smaller-text border-text" }
+                      = f.input :fecha_resolucion, as: :string, label: false, input_html: { id: "fecha_resolucion", type: "date", class: "form-control border-text", style: "font-size: 14px; height: 38px;" }                    
                     - else
                       = l(@fondo_produccion_limpia.fecha_resolucion, format: :default) if @fondo_produccion_limpia.fecha_resolucion.present?
                 %tr{id: "fila_resolucion", data: { original_title: "", title: "" }}
@@ -183,7 +183,7 @@
                     = __descargar_archivo_sin_titulo(f.object.send("archivo_resolucion"), f.object)
                   -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                     %td.contenido-form
-                      = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false
+                      = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control border-text", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false, style: "font-size: 14px; padding: 4px;"
                 %tr{id: "fila_contrato", data: { original_title: "", title: "" }}
                   %td.contenido-form{style: 'vertical-align: middle;'}
                     %abbr{ title: "Campo requerido" } *
@@ -192,7 +192,7 @@
                     = __descargar_archivo_sin_titulo(f.object.send("archivo_contrato"), f.object)
                   -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                     %td.contenido-form
-                      = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false
+                      = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control border-text", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false, style: "font-size: 14px; padding: 4px;"
   .float-right
     = volver_root
     -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
