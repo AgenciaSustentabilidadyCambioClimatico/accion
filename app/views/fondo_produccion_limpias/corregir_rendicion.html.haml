@@ -18,6 +18,69 @@
   });
 
   // ----------------------------------------------------
+  // LÓGICA PARA MANEJO DE MODAL DE URL
+  // ----------------------------------------------------
+  function abrirModalUrl(actividadId) {
+    $('#modal_url_actividad_id').val(actividadId);
+    const urlActual = $('#url_rendicion_' + actividadId).val() || '';
+    const descActual = $('#url_descripcion_' + actividadId).val() || '';
+    $('#modal_input_url').val(urlActual);
+    $('#modal_input_url_descripcion').val(descActual);
+    $('#modalUrlRespaldo').modal('show');
+  }
+
+  function guardarUrlModal() {
+    const actId = $('#modal_url_actividad_id').val();
+    const url = $('#modal_input_url').val().trim();
+    const desc = $('#modal_input_url_descripcion').val().trim() || url;
+
+    if (url === '') {
+      alert('Por favor ingrese una URL válida.');
+      return;
+    }
+
+    $('#url_rendicion_' + actId).val(url);
+    $('#url_descripcion_' + actId).val(desc);
+
+    const $preview = $('#preview_url_' + actId);
+    $preview.html(`
+      <div class="d-inline-flex align-items-center bg-light p-1 px-2 rounded border border-info mt-2">
+        <a href="${url}" target="_blank" class="text-info font-weight-bold mr-2" style="font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <i class="fa fa-external-link mr-1"></i> ${desc}
+        </a>
+        <button type="button" class="btn btn-sm btn-link text-danger p-0 ml-1" onclick="eliminarUrl(${actId})" title="Eliminar URL" style="text-decoration: none;">
+          <i class="fa fa-times-circle"></i>
+        </button>
+      </div>
+    `);
+
+    $('#archivo_cargado_actividad_' + actId).attr('data-tiene-archivo', 'true');
+    $('#modalUrlRespaldo').modal('hide');
+
+    if (typeof validarFormulario === 'function') {
+      validarFormulario();
+    }
+  }
+
+  function eliminarUrl(actId) {
+    $('#url_rendicion_' + actId).val('');
+    $('#url_descripcion_' + actId).val('');
+    $('#preview_url_' + actId).empty();
+
+    const fileInput = document.getElementById('archivo_rendicion_' + actId);
+    const tieneFile = fileInput && fileInput.files && fileInput.files.length > 0;
+    const tieneArchivoDB = $('#archivo_cargado_actividad_' + actId).find('a').length > 0;
+
+    if (!tieneFile && !tieneArchivoDB) {
+      $('#archivo_cargado_actividad_' + actId).attr('data-tiene-archivo', 'false');
+    }
+
+    if (typeof validarFormulario === 'function') {
+      validarFormulario();
+    }
+  }
+
+  // ----------------------------------------------------
   // LÓGICA DE BITÁCORA Y MODAL (COMENTARIO_POSTULANTE)
   // ----------------------------------------------------
   function abrirModalComentarios(id, tituloActividad, idInputPostulante, idInputRevisor, esSoloLectura = false) {
@@ -159,13 +222,15 @@
 
         const id = fila.id.split('_').pop();
         const fileInput = document.getElementById('archivo_rendicion_' + id);
+        const urlInput = document.getElementById('url_rendicion_' + id);
         const tdArchivo = document.getElementById('archivo_cargado_actividad_' + id);
 
         if (tdArchivo) {
           const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
           const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
+          const tieneUrlInput = urlInput && urlInput.value.trim() !== '';
 
-          if (!tieneArchivoPrevio && !tieneArchivoNuevo) {
+          if (!tieneArchivoPrevio && !tieneArchivoNuevo && !tieneUrlInput) {
             formCompleto = false;
           }
         }
@@ -243,7 +308,7 @@
   - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_adm    = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
 
 .row
@@ -332,7 +397,9 @@
             - num_comentarios_post = comentario_postulante_val.to_s.split("\n").reject(&:blank?).count
 
             - archivo = detalle_tecnico&.archivo
-            - tiene_archivo = detalle_tecnico&.archivo&.url.present?
+            - url_valor = detalle_tecnico&.try(:url_respaldo) || detalle_tecnico&.try(:url)
+            - desc_url_valor = detalle_tecnico&.try(:descripcion_url) || url_valor
+            - tiene_archivo = detalle_tecnico&.archivo&.url.present? || url_valor.present?
 
             .card.mb-3.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, style: (es_actividad_observada ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada)}
@@ -408,22 +475,50 @@
                       %thead
                         %tr
                           - if @es_correccion_tecnica
-                            %th.encabezado-form{style: 'width: 30%;'} Archivos Cargados
+                            %th.encabezado-form{style: 'width: 30%;'} Archivos Cargados / Enlace
                             - if (@tiene_permisos.nil? || @tiene_permisos) && @tarea_pendiente.estado_tarea_pendiente_id == 1
                               %th.encabezado-form{style: 'width: 40%;'}= t(:subir_documento_rendicion)
                             %th.encabezado-form{style: 'width: 30%;'} Comentarios Revisor / Postulante
                           - else
-                            %th.encabezado-form{style: 'width: 50%;'} Archivos Cargados
+                            %th.encabezado-form{style: 'width: 50%;'} Archivos Cargados / Enlace
                             %th.encabezado-form{style: 'width: 50%;'} Comentarios Revisor / Postulante
                       %tbody
                         %tr{id: "fila_actividad_#{actividad.id}"}
                           %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
-                            = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                            - if archivo.present?
+                              .mb-1
+                                = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                            - if url_valor.present?
+                              .mt-1
+                                = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold shadow-sm", style: "font-size: 11px; padding: 3px 8px;" do
+                                  %i.fa.fa-external-link.mr-1
+                                  = desc_url_valor.presence || "Ver Enlace"
+                            - if archivo.blank? && url_valor.blank?
+                              %span.text-muted --
                           
                           - if @es_correccion_tecnica
                             - if (@tiene_permisos.nil? || @tiene_permisos) && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                              %td.contenido-form
-                                = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+                              %td.contenido-form.p-2
+                                = hidden_field_tag "url_rendicion_#{actividad.id}", url_valor, id: "url_rendicion_#{actividad.id}"
+                                = hidden_field_tag "url_descripcion_#{actividad.id}", desc_url_valor, id: "url_descripcion_#{actividad.id}"
+
+                                .row.align-items-center
+                                  .col-12.col-md-7.mb-2.mb-md-0
+                                    = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text w-100", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+                                  .col-12.col-md-5.text-md-right
+                                    %button.btn.btn-sm.btn-outline-primary.btn-block{type: "button", style: "font-size: 11px; padding: 4px 8px;", onclick: "abrirModalUrl(#{actividad.id})"}
+                                      %i.fa.fa-link.mr-1
+                                      Cargar URL
+
+                                .preview-url-container{id: "preview_url_#{actividad.id}"}
+                                  - if url_valor.present?
+                                    .d-inline-flex.align-items-center.bg-light.p-1.px-2.rounded.border.border-info.mt-2
+                                      = link_to url_valor, target: "_blank", class: "text-info font-weight-bold mr-2", style: "font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" do
+                                        %i.fa.fa-external-link.mr-1
+                                        = desc_url_valor.presence || "Ver Enlace"
+                                      %button.btn.btn-sm.btn-link.text-danger.p-0.ml-1{type: "button", onclick: "eliminarUrl(#{actividad.id})", title: "Eliminar URL", style: "text-decoration: none;"}
+                                        %i.fa.fa-times-circle
+
                             %td.contenido-form.text-center
                               = hidden_field_tag "comentario_revisor_act_#{actividad.id}", comentario_revisor_val, id: "comentario_revisor_act_#{actividad.id}"
                               = hidden_field_tag "comentario_postulante_actividad_#{actividad.id}", comentario_postulante_val, id: "comentario_postulante_actividad_#{actividad.id}"
@@ -746,3 +841,31 @@
         %button.btn.btn-sm.btn-primary#btn_guardar_modal{type: "button", onclick: "guardarComentarioModal()"}
           %i.fa.fa-plus-circle.mr-1
           Añadir Entrada a Bitácora
+
+-# ==========================================================
+-# MODAL EMERGENTE PARA CARGAR URL COMO ARCHIVO ANEXO
+-# ==========================================================
+.modal.fade#modalUrlRespaldo{tabindex: "-1", role: "dialog", aria: {hidden: "true"}}
+  .modal-dialog.modal-dialog-centered{role: "document"}
+    .modal-content.text-left
+      .modal-header.py-2.bg-light
+        %h6.modal-title.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+          %i.fa.fa-link.mr-1.text-primary
+          Agregar URL como archivo anexo
+        %button.close{type: "button", data: {dismiss: "modal"}, aria: {label: "Cerrar"}}
+          %span{aria: {hidden: "true"}} &times;
+      .modal-body.p-3
+        %input#modal_url_actividad_id{type: "hidden", value: ""}
+        %p.text-muted{style: "font-size: 12px;"}
+          Ingrese una URL como archivo anexo y añada una descripción que la identifique. Puede cargar una URL pública o privada. En este último caso, asegúrese que quienes reciban el anexo tengan los accesos pertinentes.
+        .form-group.mb-3
+          %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} URL:
+          %input.form-control.border-text#modal_input_url{type: "url", placeholder: "Escriba la URL", style: "font-size: 13px;"}
+        .form-group.mb-0
+          %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Descripción:
+          %input.form-control.border-text#modal_input_url_descripcion{type: "text", placeholder: "Escriba la descripción", style: "font-size: 13px;"}
+      .modal-footer.py-2.px-3.bg-light
+        %button.btn.btn-sm.btn-outline-secondary{type: "button", data: {dismiss: "modal"}}
+          Cancelar
+        %button.btn.btn-sm.btn-primary{type: "button", style: "min-width: 100px;", onclick: "guardarUrlModal()"}
+          Adjuntar

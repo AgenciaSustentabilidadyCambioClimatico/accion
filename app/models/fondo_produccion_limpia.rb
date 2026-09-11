@@ -1696,9 +1696,9 @@ class FondoProduccionLimpia < ApplicationRecord
                          programa_texto
                        end
 
-    postulante = User.find_by(id: fpl.try(:usuario_entregables_id))
-    nombre_postulante = postulante.try(:nombre_completo)
-    rut_postulante = postulante.try(:rut)
+    revisor = User.find_by(id: (rendicion.try(:revisor_financiero_id)))
+    nombre_revisor = revisor.try(:nombre_completo)
+    rut_revisor = revisor.try(:rut)
 
     mes_actual_num  = rendicion&.mes_a_rendir.to_i
     flujo_actual_id = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
@@ -2376,11 +2376,11 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.move_down 4
 
         pdf.font "DejaVuSans", style: :bold do
-          pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+          pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
         pdf.font "DejaVuSans", style: :bold do
-          pdf.text rut_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+          pdf.text rut_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
         pdf.font "DejaVuSans", style: :normal do
@@ -2728,15 +2728,15 @@ class FondoProduccionLimpia < ApplicationRecord
     posicion_x = pdf.bounds.width - ancho_firma
 
     pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
-      logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+      #logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
       
-      if File.exist?(logo_firma_path)
-        y_inicio = pdf.cursor
-        # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
-        pdf.transparent(0.25) do
-          pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
-        end
-      end
+      #if File.exist?(logo_firma_path)
+      #  y_inicio = pdf.cursor
+      #  # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
+      #  pdf.transparent(0.25) do
+      #    pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+      #  end
+      #end
 
       # Posicionar la línea a la mitad del logo para que quede sobrepuesto
       pdf.move_down 35
@@ -2784,7 +2784,7 @@ class FondoProduccionLimpia < ApplicationRecord
     nil
   end
 
-  # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
+ # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
   def generar_informe_evaluacion_tecnica_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil)
     t_inicio = Time.now
     Rails.logger.info "=== [PDF INFORME TÉCNICO ACTIVIDADES] INICIANDO GENERACIÓN ==="
@@ -3019,8 +3019,22 @@ class FondoProduccionLimpia < ApplicationRecord
           porcentaje_str = "#{detalle_tecnico&.nivel_avance.to_i}%"
           obs_texto = detalle_tecnico&.observacion.presence || "--"
 
-          nom_archivo = if detalle_tecnico.present? && detalle_tecnico.archivo.present?
-                          detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+          # DETERMINACIÓN DE ADJUNTO O ENLACE URL
+          nom_archivo = if detalle_tecnico.present?
+                          respaldos = []
+
+                          if detalle_tecnico.archivo.present?
+                            nom_f = detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+                            respaldos << "Archivo: #{nom_f if nom_f.present?}"
+                          end
+
+                          url_val = detalle_tecnico.try(:url_respaldo).presence || detalle_tecnico.try(:url).presence
+                          if url_val.present?
+                            desc_val = detalle_tecnico.try(:descripcion_url).presence || url_val
+                            respaldos << "Enlace: #{desc_val} - #{url_val}"
+                          end
+
+                          respaldos.join(" / ").presence
                         end
           nom_archivo = nom_archivo.presence || "Sin adjuntos"
 

@@ -115,7 +115,7 @@
   - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_adm    = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
 
 = simple_form_for fpl_objeto, url: guardar_asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
@@ -192,6 +192,8 @@
                     - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+                    - tipo_act_val = actividad.try(:tipo_actividad)
+                    - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
                     
                     - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
                     - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
@@ -207,12 +209,17 @@
                     - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
                     - observacion_valor = detalle_tecnico&.observacion
                     - archivo = detalle_tecnico&.archivo
+                    - url_valor = detalle_tecnico&.try(:url_respaldo) || detalle_tecnico&.try(:url)
+                    - desc_url_valor = detalle_tecnico&.try(:descripcion_url) || url_valor
 
                     .card.mb-2.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
                       .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
                         .d-flex.align-items-center
                           %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                           %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                          - if tipo_act_txt.present?
+                            %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                              = tipo_act_txt
                           - if es_reitimizada
                             %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                               %i.fa.fa-refresh.mr-1
@@ -244,7 +251,7 @@
                                   %td.contenido-form.text-center
                                     = fecha_termino_valor.presence || '--'
                                   
-                                  -# CELDA NIVEL DE AVANCE ACTUALIZADA
+                                  -# CELDA NIVEL DE AVANCE
                                   %td.contenido-form.text-center
                                     - avance_num = detalle_tecnico&.nivel_avance.to_i
                                     - if avance_num > 0
@@ -255,20 +262,23 @@
                                   %td.contenido-form
                                     = observacion_valor.presence || '--'
 
+                          -# SECCIÓN DE RESPALDO TÉCNICO / ENLACE ESTILIZADA Y ESTÉTICA
                           .mt-3.mb-2.px-1
                             %h6.font-weight-bold.text-secondary{style: "font-size: 12px;"} 
-                              %i.fa.fa-file-pdf-o.mr-1
-                              Documento de Respaldo Técnico
-                          
-                          .table-responsive
-                            %table.table.table-striped.no-margin
-                              %thead
-                                %tr
-                                  %th.encabezado-form{style: 'width: 100%;'} Archivo Cargado
-                              %tbody
-                                %tr
-                                  %td.contenido-form
-                                    = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                              %i.fa.fa-paperclip.mr-1
+                              Documento de Respaldo Técnico / Enlace
+                            
+                            .p-2.rounded.bg-light{style: "border: 1px solid #dee2e6;"}
+                              - if archivo.present?
+                                .d-flex.align-items-center.mb-1
+                                  = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                              - if url_valor.present?
+                                .d-flex.align-items-center.mt-1
+                                  = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold", style: "font-size: 11px; padding: 4px 10px;" do
+                                    %i.fa.fa-external-link.mr-1
+                                    = desc_url_valor.presence || "Ver Enlace"
+                              - if archivo.blank? && url_valor.blank?
+                                %span.text-muted.font-italic{style: "font-size: 11px;"} Sin documento ni enlace cargado
                 - else
                   .card.mt-2
                     .card-body.text-center.text-muted Rendición Sin Movimientos
@@ -289,6 +299,8 @@
                     - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+                    - tipo_act_val = actividad.try(:tipo_actividad)
+                    - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
                     - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
                     - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
@@ -297,6 +309,9 @@
                         .d-flex.align-items-center
                           %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                           %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                          - if tipo_act_txt.present?
+                            %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                              = tipo_act_txt
                           - if es_reitimizada
                             %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                               %i.fa.fa-refresh.mr-1
@@ -341,6 +356,8 @@
                     - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+                    - tipo_act_val = actividad.try(:tipo_actividad)
+                    - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
                     - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
                     - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
@@ -349,6 +366,9 @@
                         .d-flex.align-items-center
                           %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                           %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                          - if tipo_act_txt.present?
+                            %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                              = tipo_act_txt
                           - if es_reitimizada
                             %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                               %i.fa.fa-refresh.mr-1

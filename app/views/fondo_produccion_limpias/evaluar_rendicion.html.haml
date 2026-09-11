@@ -124,6 +124,7 @@
   function validarFormulario() {
     let formularioValido = true;
 
+    // 1. Validar Combos "Cumple" y comentarios asociados
     document.querySelectorAll('select[id^="cumple_"]:not([disabled])').forEach(select => {
       const id = select.id.split('_').pop();
       const comentarioInput = document.getElementById('comentario_revisor_' + id);
@@ -153,6 +154,23 @@
       } else {
         $select.removeClass('is-invalid border-danger');
         $btnBitacora.removeClass('btn-danger').addClass('btn-primary');
+      }
+    });
+
+    // 2. Validar Ruta Repositorio Interno (Drive) OBLIGATORIA cuando existe enlace cargado
+    document.querySelectorAll('.input-url-repositorio-requerido').forEach(input => {
+      const $input = $(input);
+      const val = $input.val().trim();
+      const $td = $input.closest('td');
+
+      $td.find('.msg-url-repo-requerido').remove();
+
+      if (input.offsetParent !== null && val === '') {
+        formularioValido = false;
+        $input.addClass('is-invalid border-danger');
+        $td.append('<small class="msg-url-repo-requerido text-danger font-weight-bold d-block mt-1" style="font-size: 10px; line-height: 1.2;"><i class="fa fa-exclamation-triangle mr-1"></i> Ingrese la ruta en Drive interno</small>');
+      } else {
+        $input.removeClass('is-invalid border-danger');
       }
     });
 
@@ -328,6 +346,8 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
             
             - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
             - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
@@ -342,6 +362,9 @@
             - observacion_valor = detalle_tecnico&.observacion
             - comentario_postulante_val = detalle_tecnico&.try(:comentario_postulante)
             - archivo = detalle_tecnico&.archivo
+            - url_valor = detalle_tecnico&.try(:url_respaldo) || detalle_tecnico&.try(:url)
+            - desc_url_valor = detalle_tecnico&.try(:descripcion_url) || url_valor
+            - url_repo_interna_val = detalle_tecnico&.try(:url_repositorio_interno)
             
             - raw_cumple = detalle_tecnico ? (detalle_tecnico.read_attribute_before_type_cast(:cumple) || detalle_tecnico.cumple) : nil
             - val_str = raw_cumple.to_s.downcase
@@ -355,6 +378,9 @@
                 .d-flex.align-items-center.flex-wrap
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
@@ -399,7 +425,7 @@
                       %table.table.table-striped.no-margin
                         %thead
                           %tr
-                            %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado
+                            %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado / Enlace
                             %th.encabezado-form{style: 'width: 15%;'} Cumple
                             %th.encabezado-form{style: 'width: 50%;'} Comentarios
                         %tbody
@@ -407,7 +433,31 @@
                             %td.contenido-form
                               - if detalle_tecnico.present? && archivo.present?
                                 = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
-                              - else
+                              
+                              - if detalle_tecnico.present? && url_valor.present?
+                                .mb-2
+                                  = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold shadow-sm", style: "font-size: 11px; padding: 4px 10px;" do
+                                    %i.fa.fa-external-link.mr-1
+                                    = desc_url_valor.presence || "Ver Enlace"
+
+                                .p-2.rounded.mt-2{style: "background-color: #fff9e6; border: 1px solid #ffe8a1;"}
+                                  .d-flex.align-items-start.mb-1
+                                    %i.fa.fa-exclamation-circle.text-warning.mr-1.mt-1{style: "font-size: 11px;"}
+                                    %span.text-dark{style: "font-size: 10px; line-height: 1.2;"}
+                                      %strong Recomendación:
+                                      Recomendamos fuertemente que la documentación enviada por enlace, sea descargada y subida a nuestro repositorio (Drive) para asegurar la disponibilidad de la información.
+
+                                  .form-group.mb-0.mt-2
+                                    %label.font-weight-bold.text-dark.mb-1{style: "font-size: 10px;"}
+                                      %abbr{title: "Campo requerido", style: "color: red;"} *
+                                      Ruta Repositorio Interno (Drive):
+                                    .input-group.input-group-sm
+                                      .input-group-prepend
+                                        %span.input-group-text.bg-white.text-muted{style: "border-color: #cccccc;"}
+                                          %i.fa.fa-folder-open.text-primary
+                                      = text_field_tag "detalles[#{detalle_tecnico.id}][url_repositorio_interno]", url_repo_interna_val, id: "url_repositorio_interno_#{detalle_tecnico.id}", class: "form-control input-url-repositorio-requerido border-text", style: "font-size: 11px;", placeholder: "Pegue enlace de Drive...", onkeyup: "validarFormulario()", onchange: "validarFormulario()"
+
+                              - if (detalle_tecnico.blank? || (archivo.blank? && url_valor.blank?))
                                 %span.text-muted --
                             
                             %td.contenido-form
@@ -434,7 +484,7 @@
                       %table.table.table-striped.no-margin
                         %thead
                           %tr
-                            %th.encabezado-form{style: 'width: 50%;'} Archivo Cargado
+                            %th.encabezado-form{style: 'width: 50%;'} Archivo Cargado / Enlace
                             %th.encabezado-form{style: 'width: 15%;'} Cumple
                             %th.encabezado-form{style: 'width: 35%;'} Comentarios
                         %tbody
@@ -442,7 +492,20 @@
                             %td.contenido-form
                               - if detalle_tecnico.present? && archivo.present?
                                 = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
-                              - else
+                              
+                              - if detalle_tecnico.present? && url_valor.present?
+                                .d-flex.align-items-center.mb-1
+                                  = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold", style: "font-size: 11px; padding: 4px 10px;" do
+                                    %i.fa.fa-external-link.mr-1
+                                    = desc_url_valor.presence || "Ver Enlace"
+                                - if url_repo_interna_val.present?
+                                  .mt-2.p-1.px-2.bg-light.rounded{style: "border: 1px solid #17a2b8;"}
+                                    %strong.d-block{style: "font-size: 10px; color: #004085;"} Repositorio Interno (Drive):
+                                    = link_to url_repo_interna_val, target: "_blank", class: "text-primary font-weight-bold", style: "font-size: 11px;" do
+                                      %i.fa.fa-folder-open.mr-1
+                                      = url_repo_interna_val
+
+                              - if (detalle_tecnico.blank? || (archivo.blank? && url_valor.blank?))
                                 %span.text-muted --
                             
                             %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
@@ -552,6 +615,8 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
             - docs_act = docs_fpl_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
             - es_actividad_observada_fpl = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
@@ -561,6 +626,9 @@
                 .d-flex.align-items-center.flex-wrap
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
@@ -713,6 +781,8 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tipo_act_val = actividad.try(:tipo_actividad)
+            - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
             - docs_act = docs_aporte_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
             - es_actividad_observada_aporte = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
@@ -722,6 +792,9 @@
                 .d-flex.align-items-center.flex-wrap
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if tipo_act_txt.present?
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #17a2b8; color: #ffffff;", title: "Tipo de Actividad"}
+                      = tipo_act_txt
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
