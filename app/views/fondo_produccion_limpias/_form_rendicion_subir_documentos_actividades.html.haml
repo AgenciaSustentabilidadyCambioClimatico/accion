@@ -125,6 +125,76 @@
   const PASO_ACTUAL = #{paso_actual.to_i};
   const ACTIVIDADES_GUARDADAS = #{raw act_ids_editables_actuales.map(&:to_s).to_json};
 
+  // FUNCIONES PARA MANEJO DE MODAL DE URL / ENLACE
+  function abrirModalUrl(actividadId) {
+    $('#modal_url_actividad_id').val(actividadId);
+    const urlActual = $('#url_rendicion_' + actividadId).val() || '';
+    const descActual = $('#url_descripcion_' + actividadId).val() || '';
+    $('#modal_input_url').val(urlActual);
+    $('#modal_input_url_descripcion').val(descActual);
+    $('#modalUrlRespaldo').modal('show');
+  }
+
+  function guardarUrlModal() {
+    const actId = $('#modal_url_actividad_id').val();
+    const url = $('#modal_input_url').val().trim();
+    const desc = $('#modal_input_url_descripcion').val().trim() || url;
+
+    if (url === '') {
+      alert('Por favor ingrese una URL válida.');
+      return;
+    }
+
+    // EXCLUSIVIDAD MUTUA: Si se ingresa una URL, se limpia el archivo local adjunto
+    const fileInput = $('#archivo_rendicion_' + actId);
+    if (fileInput.length) {
+      fileInput.val('');
+      fileInput.css({ 'border': '', 'background-color': '' });
+      fileInput.closest('td').find('.mensaje-archivo-listo').remove();
+    }
+
+    $('#url_rendicion_' + actId).val(url);
+    $('#url_descripcion_' + actId).val(desc);
+
+    const $preview = $('#preview_url_' + actId);
+    $preview.html(`
+      <div class="url-badge-container mt-2">
+        <i class="fa fa-link text-info mr-1"></i>
+        <a href="${url}" target="_blank" class="url-badge-link" title="${url}">
+          ${desc}
+        </a>
+        <button type="button" class="btn-remove-url" onclick="eliminarUrl('${actId}')" title="Eliminar URL">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+    `);
+
+    $('#archivo_cargado_actividad_' + actId).attr('data-tiene-archivo', 'true');
+    $('#modalUrlRespaldo').modal('hide');
+
+    if (typeof validarFormulario === 'function') {
+      validarFormulario();
+    }
+  }
+
+  function eliminarUrl(actId) {
+    $('#url_rendicion_' + actId).val('');
+    $('#url_descripcion_' + actId).val('');
+    $('#preview_url_' + actId).empty();
+
+    const fileInput = document.getElementById('archivo_rendicion_' + actId);
+    const tieneFile = fileInput && fileInput.files && fileInput.files.length > 0;
+    const tieneArchivoDB = $('#archivo_cargado_actividad_' + actId).find('a').length > 0;
+
+    if (!tieneFile && !tieneArchivoDB) {
+      $('#archivo_cargado_actividad_' + actId).attr('data-tiene-archivo', 'false');
+    }
+
+    if (typeof validarFormulario === 'function') {
+      validarFormulario();
+    }
+  }
+
   $(document).ready(function() {
 
     // Oculta la pantalla de carga inicial
@@ -179,6 +249,15 @@
 
       if (this.files && this.files.length > 0) {
         const nombreArchivo = this.files[0].name;
+
+        // EXCLUSIVIDAD MUTUA: Si se adjunta archivo local, se limpia la URL registrada
+        const inputId = input.attr('id') || '';
+        if (inputId.includes('archivo_rendicion_')) {
+          const actId = inputId.replace('archivo_rendicion_', '');
+          $('#url_rendicion_' + actId).val('');
+          $('#url_descripcion_' + actId).val('');
+          $('#preview_url_' + actId).empty();
+        }
 
         input.css({
           'border': '2px solid #28a745',
@@ -383,6 +462,7 @@
         const fechaInicioInput = document.getElementById('fecha_inicio_actividad_' + id);
         const fechaTerminoInput = document.getElementById('fecha_termino_actividad_' + id);
         const fileInput = document.getElementById('archivo_rendicion_' + id);
+        const urlInput = document.getElementById('url_rendicion_' + id);
         const tdArchivo = document.getElementById('archivo_cargado_actividad_' + id);
         const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || ('Actividad ' + id);
 
@@ -393,7 +473,8 @@
           const fechaTermino = fechaTerminoInput ? fechaTerminoInput.value.trim() : '';
           const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
           const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
-          const tieneArchivo = tieneArchivoPrevio || tieneArchivoNuevo;
+          const tieneUrlInput = urlInput && urlInput.value.trim() !== '';
+          const tieneArchivo = tieneArchivoPrevio || tieneArchivoNuevo || tieneUrlInput;
           let resumenValido = true;
           const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
           const inputConclusion = document.getElementById('rendicion_conclusion');
@@ -450,10 +531,10 @@
 
           if (!tieneArchivo) {
             tabTecnicaValido = false;
-            $(fileInput).addClass('is-invalid');
-            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Adjuntar Documento de Respaldo Técnico.');
+            if (fileInput) $(fileInput).addClass('is-invalid');
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Adjuntar Documento de Respaldo Técnico o URL.');
           } else {
-            $(fileInput).removeClass('is-invalid');
+            if (fileInput) $(fileInput).removeClass('is-invalid');
           }
         }
       });
@@ -638,6 +719,51 @@
   .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
   .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
   .is-invalid { border-color: #dc3545 !important; }
+
+  /* ESTILOS DE DISEÑO PARA EL ACTION BOX Y CARGA DE URL */
+  .upload-action-box {
+    background-color: #f4f8fb;
+    border: 1px dashed #007bff;
+    border-radius: 6px;
+    padding: 8px 10px;
+    transition: all 0.2s ease-in-out;
+  }
+  .upload-action-box:hover {
+    background-color: #eef5fc;
+    border-color: #0056b3;
+  }
+  .url-badge-container {
+    background: #e0f2fe;
+    border: 1px solid #bae6fd;
+    border-radius: 20px;
+    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .url-badge-link {
+    color: #0369a1;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .url-badge-link:hover {
+    color: #0284c7;
+    text-decoration: underline;
+  }
+  .btn-remove-url {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    font-size: 12px;
+    margin-left: 6px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .btn-remove-url:hover {
+    color: #dc2626;
+  }
 
 %input#paso_actual_val{type: "hidden", value: paso_actual}
 
@@ -905,7 +1031,9 @@
             
             - observacion_valor = detalle_tecnico&.observacion
             - archivo = detalle_tecnico&.archivo
-            - tiene_archivo = detalle_tecnico&.archivo&.url.present?
+            - url_valor = detalle_tecnico&.try(:url_respaldo) || detalle_tecnico&.try(:url)
+            - desc_url_valor = detalle_tecnico&.try(:descripcion_url) || url_valor
+            - tiene_archivo = detalle_tecnico&.archivo&.url.present? || url_valor.present?
 
             .card.mb-2.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
@@ -962,22 +1090,51 @@
                   .mt-3.mb-2.px-1
                     %h6.font-weight-bold.text-secondary{style: "font-size: 12px;"} 
                       %i.fa.fa-file-pdf-o.mr-1
-                      Documento de Respaldo Técnico
+                      Documento de Respaldo Técnico / Enlace
                   
                   .table-responsive
                     %table.table.table-striped.no-margin
                       %thead
                         %tr
-                          %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado
+                          %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado / Enlace
                           - if es_editable
-                            %th.encabezado-form{style: 'width: 65%;'}= t(:subir_documento_rendicion)
+                            %th.encabezado-form{style: 'width: 65%;'} 
+                              Subir Documento Rendición o Enlace URL
+                              %span.text-danger *
                       %tbody
                         %tr
                           %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
-                            = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                            - if archivo.present?
+                              = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                            - elsif url_valor.present?
+                              .mt-1
+                                = link_to url_valor, target: "_blank", class: "badge badge-info p-2 text-white", style: "font-size: 11px;" do
+                                  %i.fa.fa-external-link.mr-1
+                                  = desc_url_valor.presence || "Ver Enlace"
+                            - else
+                              %span.text-muted --
                           - if es_editable
-                            %td.contenido-form
-                              = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+                            %td.contenido-form.p-2
+                              = hidden_field_tag "url_rendicion_#{actividad.id}", url_valor, id: "url_rendicion_#{actividad.id}"
+                              = hidden_field_tag "url_descripcion_#{actividad.id}", desc_url_valor, id: "url_descripcion_#{actividad.id}"
+
+                              .upload-action-box
+                                .d-flex.align-items-center.justify-content-between.flex-wrap
+                                  .flex-grow-1.mr-2{style: "min-width: 180px;"}
+                                    = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control-file smaller-text border-text w-100", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+                                  .text-right.mt-1.mt-sm-0
+                                    %button.btn.btn-sm.btn-primary.shadow-sm{type: "button", style: "font-size: 11px; padding: 4px 10px;", onclick: "abrirModalUrl(#{actividad.id})"}
+                                      %i.fa.fa-link.mr-1
+                                      Cargar URL
+
+                              .preview-url-container{id: "preview_url_#{actividad.id}"}
+                                - if url_valor.present?
+                                  .url-badge-container.mt-2
+                                    %i.fa.fa-link.text-info.mr-1
+                                    = link_to url_valor, target: "_blank", class: "url-badge-link", title: url_valor do
+                                      = desc_url_valor.presence || "Ver Enlace"
+                                    %button.btn-remove-url{type: "button", onclick: "eliminarUrl('#{actividad.id}')", title: "Eliminar URL"}
+                                      %i.fa.fa-times
 
       / -------------------------------------------------------------
       / Pestaña 2: Financiera FPL (CARGA AJAX LAZY LOADING)
@@ -1213,3 +1370,31 @@
             class: "btn btn-sm btn-success btn-disabled", 
             disabled: true, 
             data: { confirm: "¿Está seguro que desea enviar los documentos de rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando...", remote: false }
+
+-# ==========================================================
+-# MODAL EMERGENTE PARA CARGAR URL COMO ARCHIVO ANEXO
+-# ==========================================================
+.modal.fade#modalUrlRespaldo{tabindex: "-1", role: "dialog", aria: {hidden: "true"}}
+  .modal-dialog.modal-dialog-centered{role: "document"}
+    .modal-content.text-left
+      .modal-header.py-2.bg-light
+        %h6.modal-title.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+          %i.fa.fa-link.mr-1.text-primary
+          Agregar URL como archivo anexo
+        %button.close{type: "button", data: {dismiss: "modal"}, aria: {label: "Cerrar"}}
+          %span{aria: {hidden: "true"}} &times;
+      .modal-body.p-3
+        %input#modal_url_actividad_id{type: "hidden", value: ""}
+        %p.text-muted{style: "font-size: 12px;"}
+          Ingrese una URL como archivo anexo y añada una descripción que la identifique. Puedes cargar una URL pública o privada. En este último caso, asegúrate que quienes reciban el anexo tengan los accesos pertinentes.
+        .form-group.mb-3
+          %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} URL:
+          %input.form-control.border-text#modal_input_url{type: "url", placeholder: "Escriba la URL", style: "font-size: 13px;"}
+        .form-group.mb-0
+          %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Descripción:
+          %input.form-control.border-text#modal_input_url_descripcion{type: "text", placeholder: "Escriba la descripción", style: "font-size: 13px;"}
+      .modal-footer.py-2.px-3.bg-light
+        %button.btn.btn-sm.btn-outline-secondary{type: "button", data: {dismiss: "modal"}}
+          Cancelar
+        %button.btn.btn-sm.btn-primary{type: "button", style: "min-width: 100px;", onclick: "guardarUrlModal()"}
+          Adjuntar

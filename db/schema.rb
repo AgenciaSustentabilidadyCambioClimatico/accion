@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_01_171408) do
+ActiveRecord::Schema.define(version: 2026_09_11_130238) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1893,6 +1893,9 @@ ActiveRecord::Schema.define(version: 2026_09_01_171408) do
     t.date "fecha_termino"
     t.integer "nivel_avance"
     t.text "comentario_postulante"
+    t.text "url_respaldo"
+    t.string "descripcion_url"
+    t.text "url_repositorio_interno"
     t.index ["rendicion_fpl_id"], name: "index_rendicion_detalles_fpl_on_rendicion_fpl_id"
   end
 

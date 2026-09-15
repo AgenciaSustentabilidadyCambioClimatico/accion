@@ -4380,10 +4380,10 @@ class FondoProduccionLimpiasController < ApplicationController
             next if nivel_avance.blank?
 
             detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
-                                                    .find_by(
-                                                      rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num }, 
-                                                      plan_actividad_id: real_pk
-                                                    )
+                                                      .find_by(
+                                                        rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num }, 
+                                                        plan_actividad_id: real_pk
+                                                      )
             detalle = detalle_act&.rendicion_detalle_fpl || @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
             
             detalle.fecha_inicio  = params["fecha_inicio_actividad_#{act_cruda}"]
@@ -4391,6 +4391,16 @@ class FondoProduccionLimpiasController < ApplicationController
             detalle.nivel_avance  = nivel_avance.to_i
             detalle.observacion   = params["observacion_actividad_#{act_cruda}"]
             detalle.archivo       = params["archivo_rendicion_#{act_cruda}"] if params["archivo_rendicion_#{act_cruda}"].present?
+            
+            # --- GUARDADO DE LA URL DE RESPALDO Y SU DESCRIPCIÓN ---
+            if detalle.respond_to?(:url_respaldo=)
+              detalle.url_respaldo = params["url_rendicion_#{act_cruda}"]
+              detalle.descripcion_url = params["url_descripcion_#{act_cruda}"]
+            elsif detalle.respond_to?(:url=)
+              detalle.url = params["url_rendicion_#{act_cruda}"]
+              detalle.descripcion_url = params["url_descripcion_#{act_cruda}"] if detalle.respond_to?(:descripcion_url=)
+            end
+            
             detalle.save!
 
             unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: real_pk)
@@ -4435,9 +4445,9 @@ class FondoProduccionLimpiasController < ApplicationController
           @rendicion.update!(estado: :enviada_a_revision) rescue @rendicion.update!(estado: 1)
           todas_actividades_ids = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).pluck(:id)
           actividades_completadas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl, :rendicion_fpl)
-                                                          .where(rendiciones_fpl: { flujo_id: @tarea_pendiente.flujo_id })
-                                                          .where("rendicion_detalles_fpl.nivel_avance = 100 OR rendicion_detalles_fpl.realizada = ?", true)
-                                                          .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+                                                       .where(rendiciones_fpl: { flujo_id: @tarea_pendiente.flujo_id })
+                                                       .where("rendicion_detalles_fpl.nivel_avance = 100 OR rendicion_detalles_fpl.realizada = ?", true)
+                                                       .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
           debe_cerrar = (@rendicion.respond_to?(:ultima_rendicion) && @rendicion.ultima_rendicion) || (todas_actividades_ids - actividades_completadas).empty?
 
           @tarea_pendiente.pasar_a_siguiente_tarea('A', { rendicion_fpl_id: @rendicion.id, mes_a_rendir: mes_seleccionado.to_i }, debe_cerrar)
@@ -4720,7 +4730,7 @@ class FondoProduccionLimpiasController < ApplicationController
         return
       end
 
-      # 3. Actualizar los estados 'cumple' y 'comentario_revisor'
+      # 3. Actualizar los estados 'cumple', 'comentario_revisor' y 'url_repositorio_interno'
       guardar_respuestas_evaluacion(params[:detalles])
 
       if params[:commit_type] == 'enviar'
@@ -5114,7 +5124,7 @@ class FondoProduccionLimpiasController < ApplicationController
         mapa_plan_ids[p.id.to_i]           = p.id
       end
 
-      # 3. Guardar avance, nivel de avance, fechas, observaciones y archivos de actividades
+      # 3. Guardar avance, nivel de avance, fechas, observaciones, enlaces y archivos de actividades
       if params[:actividades_ids].present?
         params[:actividades_ids].each do |act_id|
           real_pk = mapa_plan_ids[act_id.to_i] || act_id.to_i
@@ -5145,6 +5155,20 @@ class FondoProduccionLimpiasController < ApplicationController
 
             archivo_adjunto = params["archivo_rendicion_#{act_id}"]
             atributos_a_actualizar[:archivo] = archivo_adjunto if archivo_adjunto.present?
+
+            # ACTUALIZACIÓN DE URL DE RESPALDO Y SU DESCRIPCIÓN
+            if params.key?("url_rendicion_#{act_id}")
+              url_val = params["url_rendicion_#{act_id}"]
+              desc_val = params["url_descripcion_#{act_id}"]
+
+              if detalle.respond_to?(:url_respaldo=)
+                atributos_a_actualizar[:url_respaldo] = url_val
+                atributos_a_actualizar[:descripcion_url] = desc_val
+              elsif detalle.respond_to?(:url=)
+                atributos_a_actualizar[:url] = url_val
+                atributos_a_actualizar[:descripcion_url] = desc_val if detalle.respond_to?(:descripcion_url=)
+              end
+            end
 
             if atributos_a_actualizar.present?
               # Se usa update para que los callbacks (como Carrierwave uploaders) funcionen
@@ -7300,6 +7324,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
           if data.key?(:comentario_revisor)
             attrs[:comentario_revisor] = data[:comentario_revisor].to_s.strip
+          end
+
+          if data.key?(:url_repositorio_interno)
+            attrs[:url_repositorio_interno] = data[:url_repositorio_interno].to_s.strip
           end
 
           # Se usa update! para actualizar la marca de tiempo 'updated_at' requerida para auditoría

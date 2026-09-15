@@ -170,7 +170,14 @@
                   =tarea_nombre
                 %td{class: 'estado-tarea-entrada'}
                   - if fondo_produccion_limpia.present?
-                    = 'Postulación'
+                    - cod_str = tarea.codigo.to_s
+                    - num_tarea_fpl = cod_str.scan(/\d+/).last.to_i rescue 0
+                    - if cod_str.include?('11_1') || cod_str.include?('11.1') || (num_tarea_fpl >= 12 && num_tarea_fpl <= 18)
+                      = 'Rendición'
+                    - elsif num_tarea_fpl == 11
+                      = 'Formalización'
+                    - else
+                      = 'Postulación'
                   - else
                     = manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
                 %td.dos.iconos-acciones{class: 'icono-tarea-entrada'}

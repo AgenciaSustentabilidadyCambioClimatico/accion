@@ -1633,7 +1633,7 @@ class FondoProduccionLimpia < ApplicationRecord
     # ---------------------------------------------------------------------------
     font_path_regular     = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
     font_path_bold        = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
-    font_path_italic      = Rails.root.join("app/assets/fonts/DejaVuSans-Oblique.ttf").to_s # Ajusta el nombre si tienes el archivo
+    font_path_italic      = Rails.root.join("app/assets/fonts/DejaVuSans-Oblique.ttf").to_s
     font_path_bold_italic = Rails.root.join("app/assets/fonts/DejaVuSans-BoldOblique.ttf").to_s
 
     pdf.font_families.update("DejaVuSans" => {
@@ -1688,17 +1688,17 @@ class FondoProduccionLimpia < ApplicationRecord
                        else
                          programa_texto
                        end
-     origen_texto = if prog_clean.include?('01 - Ley Presupuesto') || prog_clean.include?('07 - DPS') || prog_clean =~ /^01|^07|Ley Presupuesto|DPS/i
-                         'ASCC'
-                       elsif prog_clean.downcase.include?('extrapresupuestario')
-                         'Gobierno Regional'
-                       else
-                         programa_texto
-                       end
+    origen_texto = if prog_clean.include?('01 - Ley Presupuesto') || prog_clean.include?('07 - DPS') || prog_clean =~ /^01|^07|Ley Presupuesto|DPS/i
+                     'ASCC'
+                   elsif prog_clean.downcase.include?('extrapresupuestario')
+                     'Gobierno Regional'
+                   else
+                     programa_texto
+                   end
 
-    postulante = User.find_by(id: fpl.try(:usuario_entregables_id))
-    nombre_postulante = postulante.try(:nombre_completo)
-    rut_postulante = postulante.try(:rut)
+    revisor = User.find_by(id: (rendicion.try(:revisor_financiero_id)))
+    nombre_revisor = revisor.try(:nombre_completo)
+    rut_revisor = revisor.try(:rut)
 
     mes_actual_num  = rendicion&.mes_a_rendir.to_i
     flujo_actual_id = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
@@ -1799,7 +1799,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_titulo_formato(pdf, "INFORME DE EVALUACIÓN DE RENDICIÓN DE GASTOS") rescue nil
       self.pdf_sub_titulo_formato(pdf, "PROYECTOS EN EJECUCIÓN FONDO DE PROMOCIÓN DE LA PRODUCCIÓN LIMPIA") rescue nil
-      self.pdf_separador(pdf, 10) rescue nil
+      self.pdf_separador(pdf, 6) rescue nil
 
       # 1. ANTECEDENTES GENERALES
       self.pdf_sub_titulo_formato(pdf, "ANTECEDENTES GENERALES DEL PROYECTO") rescue nil
@@ -1812,12 +1812,12 @@ class FondoProduccionLimpia < ApplicationRecord
         [ { content: "<b>Fecha aprobación informe evaluación actividades:</b>", inline_format: true }, fecha_recepcion, { content: "<b>Fecha de evaluación de gastos:</b>", inline_format: true }, fecha_evaluacion ]
       ]
 
-      pdf.table(tabla_antecedentes, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
+      pdf.table(tabla_antecedentes, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
         column(0).background_color = 'E0EFF6'
         column(2).background_color = 'E0EFF6'
       end
 
-      self.pdf_separador(pdf, 20) rescue nil
+      self.pdf_separador(pdf, 8) rescue nil
 
       # 2. DESCRIPCIÓN DE ACTIVIDADES
       self.pdf_titulo_formato(pdf, "DESCRIPCIÓN DE ACTIVIDADES") rescue nil
@@ -1834,11 +1834,11 @@ class FondoProduccionLimpia < ApplicationRecord
         tabla_sin_mov = [
           [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
         ]
-        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 5, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
       elsif actividades.present?
         pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado.", size: 8, style: :italic
 
-        self.pdf_separador(pdf, 8) rescue nil
+        self.pdf_separador(pdf, 4) rescue nil
 
         tabla_actividades = [
           [ "Nº", "Etapa / Actividades", "Descripción de las actividades realizadas", "Estado\n(Nivel de avance)" ]
@@ -1874,45 +1874,34 @@ class FondoProduccionLimpia < ApplicationRecord
           ]
         end
 
-        pdf.table(tabla_actividades, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
-        row(0).background_color = 'E0EFF6'
-        row(0).font_style = :bold
-        column(0).width = 30
-        column(0).align = :center
-        column(3).width = 80
-        column(3).align = :center
-
-      end
+        pdf.table(tabla_actividades, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+          row(0).background_color = 'E0EFF6'
+          row(0).font_style = :bold
+          column(0).width = 30
+          column(0).align = :center
+          column(3).width = 80
+          column(3).align = :center
+        end
       else
-          pdf.text "Sin movimientos.", size: 8, style: :italic, align: :center
-          pdf.move_down 10
+        pdf.text "Sin movimientos.", size: 8, style: :italic, align: :center
+        pdf.move_down 4
       end
 
-      
+      self.pdf_separador(pdf, 8) rescue nil
 
-      self.pdf_separador(pdf, 20) rescue nil
-
-      # 3. PLANILLA DE RENDICIÓN DE GASTOS - FPL (ESTILO EVALUACIÓN TÉCNICA)
+      # 3. PLANILLA DE RENDICIÓN DE GASTOS - FPL
       pdf.start_new_page
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DEL FPL") rescue nil
 
       filas_fpl_presentes = false
 
-      # Comprobar si la rendición fue marcada sin movimientos
-      es_sin_movimientos = rendicion.present? && (
-        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
-        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
-        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
-        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
-      )
-
       if es_sin_movimientos
         tabla_sin_mov = [
           [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
         ]
-        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 5, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
       elsif actividades.present?
-        self.pdf_separador(pdf, 10) rescue nil
+        self.pdf_separador(pdf, 6) rescue nil
         actividades.each do |actividad|
           act_id_num = actividad.id.to_i
           plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
@@ -1962,7 +1951,7 @@ class FondoProduccionLimpia < ApplicationRecord
               [ "Categoría", "Ítem / Nombre", "Detalle / Aporte", "Valor Un.", "Cantidad", "Gasto [$]" ]
             ] + items_actividad
 
-            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 2.5, border_color: 'CCCCCC', inline_format: true }) do
               row(0).background_color = 'F8F9FA'
               row(0).font_style = :bold
               column(0).width = 95
@@ -1976,7 +1965,7 @@ class FondoProduccionLimpia < ApplicationRecord
               column(5).align = :right
             end
 
-            pdf.move_down 8
+            pdf.move_down 5
           end
         end
       end
@@ -1986,36 +1975,27 @@ class FondoProduccionLimpia < ApplicationRecord
         tabla_total_fpl = [
           [ { content: "<b>TOTAL RENDICIÓN FPL:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_fpl, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
         ]
-        pdf.table(tabla_total_fpl, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+        pdf.table(tabla_total_fpl, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
           column(0).width = pdf.bounds.width - 100
           column(1).width = 100
           column(1).align = :right
         end
       end
 
+      self.pdf_separador(pdf, 10) rescue nil
 
-      self.pdf_separador(pdf, 20) rescue nil
-
-      # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA (ESTILO EVALUACIÓN TÉCNICA)
+      # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DE LA BENEFICIARIA") rescue nil
       
       filas_ben_presentes = false
-
-      # Comprobar si la rendición fue marcada sin movimientos
-      es_sin_movimientos = rendicion.present? && (
-        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
-        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
-        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
-        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
-      )
 
       if es_sin_movimientos
         tabla_sin_mov = [
           [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
         ]
-        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 6, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
       elsif actividades.present?
-        self.pdf_separador(pdf, 10) rescue nil
+        self.pdf_separador(pdf, 6) rescue nil
         actividades.each do |actividad|
           act_id_num = actividad.id.to_i
           plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
@@ -2065,7 +2045,7 @@ class FondoProduccionLimpia < ApplicationRecord
               [ "Categoría", "Ítem / Nombre", "Detalle / Aporte", "Valor Un.", "Cantidad", "Gasto [$]" ]
             ] + items_actividad
 
-            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 2.5, border_color: 'CCCCCC', inline_format: true }) do
               row(0).background_color = 'F8F9FA'
               row(0).font_style = :bold
               column(0).width = 95
@@ -2079,30 +2059,35 @@ class FondoProduccionLimpia < ApplicationRecord
               column(5).align = :right
             end
 
-            pdf.move_down 8
+            pdf.move_down 5
           end
         end
       end
 
       # TOTALIZADOR APORTE PROPIO
-      if filas_fpl_presentes
+      if filas_ben_presentes
         tabla_total_ben = [
           [ { content: "<b>TOTAL APORTE PROPIO BENEFICIARIA:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_aporte, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
         ]
-        pdf.table(tabla_total_ben, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+        pdf.table(tabla_total_ben, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
           column(0).width = pdf.bounds.width - 100
           column(1).width = 100
           column(1).align = :right
         end
       end
 
-      self.pdf_separador(pdf, 25) rescue nil
+      self.pdf_separador(pdf, 10) rescue nil
 
       # =========================================================================
       # 5. ESTRUCTURA DE COSTOS Y RESUMEN FINANCIERO CONSOLIDADO DEL PROYECTO
       # =========================================================================
+      # Si el espacio restante es menor a 280pt, se inicia una página nueva limpia
+      if pdf.cursor < 280
+        pdf.start_new_page
+      end
+
       self.pdf_sub_titulo_formato(pdf, "RESUMEN FINANCIERO DEL PROYECTO") rescue nil
-      self.pdf_separador(pdf, 10) rescue nil
+      self.pdf_separador(pdf, 5) rescue nil
 
       items_costo = [
         { key: :rrhh_propios, nombre: 'RR HH Propios' },
@@ -2184,112 +2169,130 @@ class FondoProduccionLimpia < ApplicationRecord
       end
 
       ancho_medio = (pdf.bounds.width - 10) / 2.0
-      y_pos_tablas = pdf.cursor
 
       # TABLA 5.1: A Cargo del Fondo PL
-      pdf.bounding_box([pdf.bounds.left, y_pos_tablas], width: ancho_medio) do
-        header_fpl_box = [ [ { content: "<b>A Cargo del Fondo PL</b>", inline_format: true } ] ]
-        pdf.table(header_fpl_box, width: ancho_medio, cell_style: { size: 8, padding: 4, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+      header_fpl_box = [ [ { content: "<b>A Cargo del Fondo PL</b>", inline_format: true } ] ]
+      nodes_fpl = data_costos[:fpl]
+      rows_fpl = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
 
-        nodes_fpl = data_costos[:fpl]
-        rows_fpl = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
-
-        items_costo.each do |item|
-          k = item[:key]
-          node = nodes_fpl[k] || { tot: 0.0, ren: 0.0 }
-          tot = node[:tot].to_f
-          ren = node[:ren].to_f
-          por_ren = tot - ren
-          pct = tot > 0 ? (ren / tot * 100) : 0.0
-
-          rows_fpl << [
-            item[:nombre],
-            fmt_clp.call(tot),
-            fmt_clp.call(ren),
-            fmt_clp.call(por_ren),
-            fmt_pct.call(pct)
-          ]
-        end
-
-        tot_gen_f = nodes_fpl.values.sum { |v| v[:tot].to_f }
-        ren_gen_f = nodes_fpl.values.sum { |v| v[:ren].to_f }
-        por_ren_f = tot_gen_f - ren_gen_f
-        pct_gen_f = tot_gen_f > 0 ? (ren_gen_f / tot_gen_f * 100) : 0.0
+      items_costo.each do |item|
+        k = item[:key]
+        node = nodes_fpl[k] || { tot: 0.0, ren: 0.0 }
+        tot = node[:tot].to_f
+        ren = node[:ren].to_f
+        por_ren = tot - ren
+        pct = tot > 0 ? (ren / tot * 100) : 0.0
 
         rows_fpl << [
-          "<b>TOTAL</b>",
-          "<b>#{fmt_clp.call(tot_gen_f)}</b>",
-          "<b>#{fmt_clp.call(ren_gen_f)}</b>",
-          "<b>#{fmt_clp.call(por_ren_f)}</b>",
-          "<b>#{fmt_pct.call(pct_gen_f)}</b>"
+          item[:nombre],
+          fmt_clp.call(tot),
+          fmt_clp.call(ren),
+          fmt_clp.call(por_ren),
+          fmt_pct.call(pct)
         ]
-
-        pdf.table(rows_fpl, width: ancho_medio, cell_style: { size: 6.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
-          row(0).background_color = 'E0EFF6'
-          row(0).font_style = :bold
-          column(0).width = 85
-          column(1).align = :right
-          column(2).align = :right
-          column(3).align = :right
-          column(4).align = :center
-          row(-1).background_color = 'F0F0F0'
-        end
       end
 
-      height_fpl = y_pos_tablas - pdf.cursor
+      tot_gen_f = nodes_fpl.values.sum { |v| v[:tot].to_f }
+      ren_gen_f = nodes_fpl.values.sum { |v| v[:ren].to_f }
+      por_ren_f = tot_gen_f - ren_gen_f
+      pct_gen_f = tot_gen_f > 0 ? (ren_gen_f / tot_gen_f * 100) : 0.0
+
+      rows_fpl << [
+        "<b>TOTAL</b>",
+        "<b>#{fmt_clp.call(tot_gen_f)}</b>",
+        "<b>#{fmt_clp.call(ren_gen_f)}</b>",
+        "<b>#{fmt_clp.call(por_ren_f)}</b>",
+        "<b>#{fmt_pct.call(pct_gen_f)}</b>"
+      ]
+
+      tbl_fpl_head = pdf.make_table(header_fpl_box, width: ancho_medio, cell_style: { size: 8, padding: 3, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+      tbl_fpl_body = pdf.make_table(rows_fpl, width: ancho_medio, cell_style: { size: 6.5, padding: [2, 2, 2, 2], border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(0).font_style = :bold
+        column(0).width = 75
+        column(1).width = 49
+        column(1).align = :right
+        column(2).width = 51
+        column(2).align = :right
+        column(3).width = 51
+        column(3).align = :right
+        column(4).width = 45
+        column(4).align = :center
+        row(-1).background_color = 'F0F0F0'
+      end
 
       # TABLA 5.2: A Cargo del Beneficiario
-      pdf.bounding_box([pdf.bounds.left + ancho_medio + 10, y_pos_tablas], width: ancho_medio) do
-        header_apo_box = [ [ { content: "<b>A Cargo del Beneficiario</b>", inline_format: true } ] ]
-        pdf.table(header_apo_box, width: ancho_medio, cell_style: { size: 8, padding: 4, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+      header_apo_box = [ [ { content: "<b>A Cargo del Beneficiario</b>", inline_format: true } ] ]
+      nodes_apo = data_costos[:aporte]
+      rows_apo = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
 
-        nodes_apo = data_costos[:aporte]
-        rows_apo = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
-
-        items_costo.each do |item|
-          k = item[:key]
-          node = nodes_apo[k] || { tot: 0.0, ren: 0.0 }
-          tot = node[:tot].to_f
-          ren = node[:ren].to_f
-          por_ren = tot - ren
-          pct = tot > 0 ? (ren / tot * 100) : 0.0
-
-          rows_apo << [
-            item[:nombre],
-            fmt_clp.call(tot),
-            fmt_clp.call(ren),
-            fmt_clp.call(por_ren),
-            fmt_pct.call(pct)
-          ]
-        end
-
-        tot_gen_a = nodes_apo.values.sum { |v| v[:tot].to_f }
-        ren_gen_a = nodes_apo.values.sum { |v| v[:ren].to_f }
-        por_ren_a = tot_gen_a - ren_gen_a
-        pct_gen_a = tot_gen_a > 0 ? (ren_gen_a / tot_gen_a * 100) : 0.0
+      items_costo.each do |item|
+        k = item[:key]
+        node = nodes_apo[k] || { tot: 0.0, ren: 0.0 }
+        tot = node[:tot].to_f
+        ren = node[:ren].to_f
+        por_ren = tot - ren
+        pct = tot > 0 ? (ren / tot * 100) : 0.0
 
         rows_apo << [
-          "<b>TOTAL</b>",
-          "<b>#{fmt_clp.call(tot_gen_a)}</b>",
-          "<b>#{fmt_clp.call(ren_gen_a)}</b>",
-          "<b>#{fmt_clp.call(por_ren_a)}</b>",
-          "<b>#{fmt_pct.call(pct_gen_a)}</b>"
+          item[:nombre],
+          fmt_clp.call(tot),
+          fmt_clp.call(ren),
+          fmt_clp.call(por_ren),
+          fmt_pct.call(pct)
         ]
-
-        pdf.table(rows_apo, width: ancho_medio, cell_style: { size: 6.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
-          row(0).background_color = 'E0EFF6'
-          row(0).font_style = :bold
-          column(0).width = 85
-          column(1).align = :right
-          column(2).align = :right
-          column(3).align = :right
-          column(4).align = :center
-          row(-1).background_color = 'F0F0F0'
-        end
       end
 
-      pdf.move_cursor_to(y_pos_tablas - height_fpl)
-      self.pdf_separador(pdf, 12) rescue nil
+      tot_gen_a = nodes_apo.values.sum { |v| v[:tot].to_f }
+      ren_gen_a = nodes_apo.values.sum { |v| v[:ren].to_f }
+      por_ren_a = tot_gen_a - ren_gen_a
+      pct_gen_a = tot_gen_a > 0 ? (ren_gen_a / tot_gen_a * 100) : 0.0
+
+      rows_apo << [
+        "<b>TOTAL</b>",
+        "<b>#{fmt_clp.call(tot_gen_a)}</b>",
+        "<b>#{fmt_clp.call(ren_gen_a)}</b>",
+        "<b>#{fmt_clp.call(por_ren_a)}</b>",
+        "<b>#{fmt_pct.call(pct_gen_a)}</b>"
+      ]
+
+      tbl_apo_head = pdf.make_table(header_apo_box, width: ancho_medio, cell_style: { size: 8, padding: 3, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+      tbl_apo_body = pdf.make_table(rows_apo, width: ancho_medio, cell_style: { size: 6.5, padding: [2, 2, 2, 2], border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(0).font_style = :bold
+        column(0).width = 75
+        column(1).width = 49
+        column(1).align = :right
+        column(2).width = 51
+        column(2).align = :right
+        column(3).width = 51
+        column(3).align = :right
+        column(4).width = 45
+        column(4).align = :center
+        row(-1).background_color = 'F0F0F0'
+      end
+
+      # Medición exacta de la altura máxima para evitar saltos o brechas
+      h_fpl = tbl_fpl_head.height + tbl_fpl_body.height
+      h_apo = tbl_apo_head.height + tbl_apo_body.height
+      max_h = [h_fpl, h_apo].max
+
+      y_pos_tablas = pdf.cursor
+
+      # Renderizar Tabla 5.1 (Izquierda)
+      pdf.bounding_box([pdf.bounds.left, y_pos_tablas], width: ancho_medio, height: max_h) do
+        tbl_fpl_head.draw
+        tbl_fpl_body.draw
+      end
+
+      # Renderizar Tabla 5.2 (Derecha)
+      pdf.bounding_box([pdf.bounds.left + ancho_medio + 10, y_pos_tablas], width: ancho_medio, height: max_h) do
+        tbl_apo_head.draw
+        tbl_apo_body.draw
+      end
+
+      # Mover el cursor exactamente al final de las dos tablas con 8pt de separación
+      pdf.move_cursor_to(y_pos_tablas - max_h - 8)
 
       # TABLA 5.3: Total del Proyecto (Consolidado)
       header_total_box = [
@@ -2298,7 +2301,7 @@ class FondoProduccionLimpia < ApplicationRecord
           { content: "Resumen General", align: :right, inline_format: true }
         ]
       ]
-      pdf.table(header_total_box, width: pdf.bounds.width, cell_style: { size: 8.5, padding: 4, background_color: '5D759E', text_color: 'FFFFFF', border_color: '5D759E' })
+      pdf.table(header_total_box, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, background_color: '5D759E', text_color: 'FFFFFF', border_color: '5D759E' })
 
       rows_tot = [ [ "Ítem de Gasto", "Presupuesto Total", "Gastos Rendidos", "Pendiente por Rendir", "% Ejecución Acumulada" ] ]
 
@@ -2333,54 +2336,57 @@ class FondoProduccionLimpia < ApplicationRecord
         "<b>#{fmt_pct.call(pct_gen_t)}</b>"
       ]
 
-      pdf.table(rows_tot, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
+      pdf.table(rows_tot, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
         row(0).background_color = 'E0EFF6'
         row(0).font_style = :bold
-        column(0).width = 150
+        column(0).width = 140
+        column(1).width = 103
         column(1).align = :right
+        column(2).width = 103
         column(2).align = :right
+        column(3).width = 103
         column(3).align = :right
+        column(4).width = 103
         column(4).align = :center
         row(-1).background_color = 'E0EFF6'
       end
 
-      self.pdf_separador(pdf, 25) rescue nil
+      self.pdf_separador(pdf, 6) rescue nil
 
       texto_declaracion = "La información que respalda esta rendición de gastos, se encuentra disponible en las dependencias de <b>#{razon_social}</b>, para consulta o revisión del Agencia de Sustentabilidad y Cambio Climático u otro organismo fiscalizador.\n\nDeclaro bajo juramento que los datos contenidos en esta rendición de gastos son verídicos. Asimismo, declaro conocer las disposiciones relativas a sanciones en caso de suministrar información incompleta, falsa o errónea."
-      pdf.font_size(7) do
+      pdf.font_size(6.5) do
         pdf.text texto_declaracion, inline_format: true, align: :justify, color: '333333'
       end
 
-      self.pdf_separador(pdf, 35) rescue nil
+      self.pdf_separador(pdf, 6) rescue nil
 
+      # Bloque de Firma consolidado
       ancho_firma = 220
       posicion_x = pdf.bounds.width - ancho_firma
 
-      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
+      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 65) do
         logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
         
         if File.exist?(logo_firma_path)
           y_inicio = pdf.cursor
-          # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
           pdf.transparent(0.25) do
-            pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+            pdf.image logo_firma_path, width: 70, at: [(ancho_firma - 70) / 2, y_inicio]
           end
         end
 
-        # Posicionar la línea a la mitad del logo para que quede sobrepuesto
-        pdf.move_down 35
-
+        pdf.move_down 25
         pdf.stroke_color '333333'
         pdf.line_width 0.8
+        pdf.stroke_horizontal_rule
 
-        pdf.move_down 4
+        pdf.move_down 3
 
         pdf.font "DejaVuSans", style: :bold do
-          pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+          pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
         pdf.font "DejaVuSans", style: :bold do
-          pdf.text rut_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+          pdf.text rut_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
         pdf.font "DejaVuSans", style: :normal do
@@ -2728,15 +2734,15 @@ class FondoProduccionLimpia < ApplicationRecord
     posicion_x = pdf.bounds.width - ancho_firma
 
     pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
-      logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+      #logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
       
-      if File.exist?(logo_firma_path)
-        y_inicio = pdf.cursor
-        # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
-        pdf.transparent(0.25) do
-          pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
-        end
-      end
+      #if File.exist?(logo_firma_path)
+      #  y_inicio = pdf.cursor
+      #  # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
+      #  pdf.transparent(0.25) do
+      #    pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+      #  end
+      #end
 
       # Posicionar la línea a la mitad del logo para que quede sobrepuesto
       pdf.move_down 35
@@ -2784,7 +2790,7 @@ class FondoProduccionLimpia < ApplicationRecord
     nil
   end
 
-  # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
+ # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
   def generar_informe_evaluacion_tecnica_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil)
     t_inicio = Time.now
     Rails.logger.info "=== [PDF INFORME TÉCNICO ACTIVIDADES] INICIANDO GENERACIÓN ==="
@@ -3019,8 +3025,22 @@ class FondoProduccionLimpia < ApplicationRecord
           porcentaje_str = "#{detalle_tecnico&.nivel_avance.to_i}%"
           obs_texto = detalle_tecnico&.observacion.presence || "--"
 
-          nom_archivo = if detalle_tecnico.present? && detalle_tecnico.archivo.present?
-                          detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+          # DETERMINACIÓN DE ADJUNTO O ENLACE URL
+          nom_archivo = if detalle_tecnico.present?
+                          respaldos = []
+
+                          if detalle_tecnico.archivo.present?
+                            nom_f = detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+                            respaldos << "Archivo: #{nom_f if nom_f.present?}"
+                          end
+
+                          url_val = detalle_tecnico.try(:url_respaldo).presence || detalle_tecnico.try(:url).presence
+                          if url_val.present?
+                            desc_val = detalle_tecnico.try(:descripcion_url).presence || url_val
+                            respaldos << "Enlace: #{desc_val} - #{url_val}"
+                          end
+
+                          respaldos.join(" / ").presence
                         end
           nom_archivo = nom_archivo.presence || "Sin adjuntos"
 
