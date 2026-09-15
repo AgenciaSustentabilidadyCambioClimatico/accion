@@ -309,9 +309,9 @@
                         %span.font-weight-bold Rendición Sin Movimientos Técnicos
                         %br
                         %small.text-muted= detalle_eval.observacion.presence || "Sin avances técnicos registrados en el período."
-                      %td.contenido-form
+                      %td.contenido-form.text-center.align-middle{style: "vertical-align: middle !important;"}
                         - if @es_revision_tecnica
-                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
+                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text mx-auto", style: "max-width: 150px;", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
                         - else
                           - if valor_cumple_int == 1
                             %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
@@ -319,11 +319,11 @@
                             %span.badge.badge-danger{style: 'font-size: 10px; padding: 5px 10px;'} No
                           - else
                             %span.text-muted --
-                      %td.contenido-form.text-center
+                      %td.contenido-form.text-center.align-middle{style: "vertical-align: middle !important;"}
                         - if @es_revision_tecnica
                           = hidden_field_tag "comentario_postulante_#{detalle_eval.id}", "", id: "comentario_postulante_#{detalle_eval.id}"
                           = hidden_field_tag "detalles[#{detalle_eval.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_eval.id}"
-                          %button.btn.btn-sm.btn-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                          %button.btn.btn-sm.btn-primary.mx-auto{type: 'button', style: "max-width: 200px; width: 100%;", onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'comentario_revisor_', 'comentario_postulante_', false)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
                           .mt-1{id: "preview_comentario_revisor_#{detalle_eval.id}"}
@@ -332,7 +332,7 @@
                               = "#{num_comentarios_rev} registro(s)"
                         - else
                           = hidden_field_tag "read_tec_comentario_#{detalle_eval.id}", valor_comentario, id: "read_tec_comentario_#{detalle_eval.id}"
-                          %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'read_tec_comentario_', 'comentario_postulante_', true)"}
+                          %button.btn.btn-sm.btn-outline-primary.mx-auto{type: 'button', style: "max-width: 200px; width: 100%;", onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'read_tec_comentario_', 'comentario_postulante_', true)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
       - elsif @actividad_x_linea.present?
@@ -421,117 +421,184 @@
                           %td.contenido-form= observacion_valor.presence || '--'
 
                   - if @es_revision_tecnica
-                    .table-responsive.mt-3
-                      %table.table.table-striped.no-margin
-                        %thead
-                          %tr
-                            %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado / Enlace
-                            %th.encabezado-form{style: 'width: 15%;'} Cumple
-                            %th.encabezado-form{style: 'width: 50%;'} Comentarios
-                        %tbody
-                          %tr
-                            %td.contenido-form
-                              - if detalle_tecnico.present? && archivo.present?
-                                = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
-                              
-                              - if detalle_tecnico.present? && url_valor.present?
+                    - if detalle_tecnico.present? && url_valor.present?
+                      -# TABLA 1: ARCHIVO CARGADO / ENLACE (CUANDO ES ENLACE)
+                      .table-responsive.mt-3
+                        %table.table.table-striped.no-margin
+                          %thead
+                            %tr
+                              %th.encabezado-form{style: 'width: 100%;'} Enlace Cargado
+                          %tbody
+                            %tr
+                              %td.contenido-form.p-3
                                 .mb-2
-                                  = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold shadow-sm", style: "font-size: 11px; padding: 4px 10px;" do
+                                  = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold shadow-sm", style: "font-size: 12px; padding: 5px 12px;" do
                                     %i.fa.fa-external-link.mr-1
                                     = desc_url_valor.presence || "Ver Enlace"
 
-                                .p-2.rounded.mt-2{style: "background-color: #fff9e6; border: 1px solid #ffe8a1;"}
-                                  .d-flex.align-items-start.mb-1
-                                    %i.fa.fa-exclamation-circle.text-warning.mr-1.mt-1{style: "font-size: 11px;"}
-                                    %span.text-dark{style: "font-size: 10px; line-height: 1.2;"}
+                                .p-3.rounded.mt-2{style: "background-color: #fff9e6; border: 1px solid #ffe8a1;"}
+                                  .d-flex.align-items-start.mb-2
+                                    %i.fa.fa-exclamation-circle.text-warning.mr-2.mt-1{style: "font-size: 16px;"}
+                                    %span.text-dark{style: "font-size: 12px; line-height: 1.4;"}
                                       %strong Recomendación:
                                       Recomendamos fuertemente que la documentación enviada por enlace, sea descargada y subida a nuestro repositorio (Drive) para asegurar la disponibilidad de la información.
 
-                                  .form-group.mb-0.mt-2
-                                    %label.font-weight-bold.text-dark.mb-1{style: "font-size: 10px;"}
+                                  .form-group.mb-0.mt-3
+                                    %label.font-weight-bold.text-dark.mb-1{style: "font-size: 11px;"}
                                       %abbr{title: "Campo requerido", style: "color: red;"} *
                                       Ruta Repositorio Interno (Drive):
                                     .input-group.input-group-sm
                                       .input-group-prepend
                                         %span.input-group-text.bg-white.text-muted{style: "border-color: #cccccc;"}
                                           %i.fa.fa-folder-open.text-primary
-                                      = text_field_tag "detalles[#{detalle_tecnico.id}][url_repositorio_interno]", url_repo_interna_val, id: "url_repositorio_interno_#{detalle_tecnico.id}", class: "form-control input-url-repositorio-requerido border-text", style: "font-size: 11px;", placeholder: "Pegue enlace de Drive...", onkeyup: "validarFormulario()", onchange: "validarFormulario()"
+                                      = text_field_tag "detalles[#{detalle_tecnico.id}][url_repositorio_interno]", url_repo_interna_val, id: "url_repositorio_interno_#{detalle_tecnico.id}", class: "form-control input-url-repositorio-requerido border-text", style: "font-size: 12px;", placeholder: "Pegue enlace de Drive...", onkeyup: "validarFormulario()", onchange: "validarFormulario()"
 
-                              - if (detalle_tecnico.blank? || (archivo.blank? && url_valor.blank?))
-                                %span.text-muted --
-                            
-                            %td.contenido-form
-                              - if detalle_tecnico.present?
-                                = select_tag "detalles[#{detalle_tecnico.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{detalle_tecnico.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_tecnico.id}')"
-                              - else
-                                %span.text-muted --
+                      -# TABLA 2 (ABAJO): CUMPLE Y COMENTARIOS
+                      .table-responsive.mt-2
+                        %table.table.table-striped.no-margin
+                          %thead
+                            %tr
+                              %th.encabezado-form{style: 'width: 30%;'} Cumple
+                              %th.encabezado-form{style: 'width: 70%;'} Comentarios
+                          %tbody
+                            %tr
+                              %td.contenido-form.text-center.align-middle{style: "vertical-align: middle !important;"}
+                                = select_tag "detalles[#{detalle_tecnico.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text mx-auto #{'is-invalid border-danger' if valor_cumple_int == 2}", style: "max-width: 180px;", id: "cumple_#{detalle_tecnico.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_tecnico.id}')"
 
-                            %td.contenido-form.text-center
-                              - if detalle_tecnico.present?
+                              %td.contenido-form.text-center.align-middle{style: "vertical-align: middle !important;"}
                                 = hidden_field_tag "comentario_postulante_#{detalle_tecnico.id}", comentario_postulante_val, id: "comentario_postulante_#{detalle_tecnico.id}"
                                 = hidden_field_tag "detalles[#{detalle_tecnico.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_tecnico.id}"
-                                %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                                %button.btn.btn-sm.mx-auto{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', style: "max-width: 250px; width: 100%;", onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', false)"}
                                   %i.fa.fa-comments.mr-1
                                   Bitácora
                                 .mt-1{id: "preview_comentario_revisor_#{detalle_tecnico.id}"}
                                   %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
                                     %i.fa.fa-comments
                                     = "#{num_comentarios_rev} registro(s)"
-                              - else
-                                %span.text-muted --
-                  - else
-                    .table-responsive.mt-3
-                      %table.table.table-striped.no-margin
-                        %thead
-                          %tr
-                            %th.encabezado-form{style: 'width: 50%;'} Archivo Cargado / Enlace
-                            %th.encabezado-form{style: 'width: 15%;'} Cumple
-                            %th.encabezado-form{style: 'width: 35%;'} Comentarios
-                        %tbody
-                          %tr
-                            %td.contenido-form
-                              - if detalle_tecnico.present? && archivo.present?
-                                = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
+
+                    - else
+                      -# CASO ARCHIVO CARGADO O SIN ATTACHMENT: MANTIENE LAS 3 COLUMNAS EN UNA FILA
+                      .table-responsive.mt-3
+                        %table.table.table-striped.no-margin
+                          %thead
+                            %tr
+                              %th.encabezado-form{style: 'width: 35%;'} Archivo Cargado
+                              %th.encabezado-form{style: 'width: 15%;'} Cumple
+                              %th.encabezado-form{style: 'width: 50%;'} Comentarios
+                          %tbody
+                            %tr
+                              %td.contenido-form.align-middle{style: "vertical-align: middle !important;"}
+                                - if detalle_tecnico.present? && archivo.present?
+                                  = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
+                                - else
+                                  %span.text-muted --
                               
-                              - if detalle_tecnico.present? && url_valor.present?
-                                .d-flex.align-items-center.mb-1
-                                  = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold", style: "font-size: 11px; padding: 4px 10px;" do
+                              %td.contenido-form.text-center.align-middle{style: "vertical-align: middle !important;"}
+                                - if detalle_tecnico.present?
+                                  = select_tag "detalles[#{detalle_tecnico.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{detalle_tecnico.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_tecnico.id}')"
+                                - else
+                                  %span.text-muted --
+
+                              %td.contenido-form.text-center.align-middle{style: "vertical-align: middle !important;"}
+                                - if detalle_tecnico.present?
+                                  = hidden_field_tag "comentario_postulante_#{detalle_tecnico.id}", comentario_postulante_val, id: "comentario_postulante_#{detalle_tecnico.id}"
+                                  = hidden_field_tag "detalles[#{detalle_tecnico.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_tecnico.id}"
+                                  %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                                    %i.fa.fa-comments.mr-1
+                                    Bitácora
+                                  .mt-1{id: "preview_comentario_revisor_#{detalle_tecnico.id}"}
+                                    %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                                      %i.fa.fa-comments
+                                      = "#{num_comentarios_rev} registro(s)"
+                                - else
+                                  %span.text-muted --
+                  - else
+                    - if detalle_tecnico.present? && url_valor.present?
+                      .table-responsive.mt-3
+                        %table.table.table-striped.no-margin
+                          %thead
+                            %tr
+                              %th.encabezado-form{style: 'width: 100%;'} Archivo Cargado / Enlace
+                          %tbody
+                            %tr
+                              %td.contenido-form.p-3
+                                .d-flex.align-items-center.mb-2
+                                  = link_to url_valor, target: "_blank", class: "btn btn-sm btn-info text-white font-weight-bold", style: "font-size: 12px; padding: 4px 10px;" do
                                     %i.fa.fa-external-link.mr-1
                                     = desc_url_valor.presence || "Ver Enlace"
                                 - if url_repo_interna_val.present?
-                                  .mt-2.p-1.px-2.bg-light.rounded{style: "border: 1px solid #17a2b8;"}
-                                    %strong.d-block{style: "font-size: 10px; color: #004085;"} Repositorio Interno (Drive):
-                                    = link_to url_repo_interna_val, target: "_blank", class: "text-primary font-weight-bold", style: "font-size: 11px;" do
+                                  .mt-2.p-2.bg-light.rounded{style: "border: 1px solid #17a2b8;"}
+                                    %strong.d-block{style: "font-size: 11px; color: #004085;"} Repositorio Interno (Drive):
+                                    = link_to url_repo_interna_val, target: "_blank", class: "text-primary font-weight-bold", style: "font-size: 12px;" do
                                       %i.fa.fa-folder-open.mr-1
                                       = url_repo_interna_val
 
-                              - if (detalle_tecnico.blank? || (archivo.blank? && url_valor.blank?))
-                                %span.text-muted --
-                            
-                            %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                              - if detalle_tecnico.present?
+                      .table-responsive.mt-2
+                        %table.table.table-striped.no-margin
+                          %thead
+                            %tr
+                              %th.encabezado-form{style: 'width: 30%;'} Cumple
+                              %th.encabezado-form{style: 'width: 70%;'} Comentarios
+                          %tbody
+                            %tr
+                              %td.contenido-form.text-center.align-middle{style: 'vertical-align: middle !important;'}
                                 - if valor_cumple_int == 1
                                   %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
                                 - elsif valor_cumple_int == 2
                                   %span.badge.badge-danger{style: 'font-size: 10px; padding: 5px 10px;'} No
                                 - else
                                   %span.text-muted --
-                              - else
-                                %span.text-muted --
 
-                            %td.contenido-form.text-center
-                              - if detalle_tecnico.present?
+                              %td.contenido-form.text-center.align-middle{style: 'vertical-align: middle !important;'}
                                 = hidden_field_tag "comentario_postulante_#{detalle_tecnico.id}", comentario_postulante_val, id: "comentario_postulante_#{detalle_tecnico.id}"
                                 = hidden_field_tag "read_tec_comentario_#{detalle_tecnico.id}", valor_comentario, id: "read_tec_comentario_#{detalle_tecnico.id}"
-                                %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'read_tec_comentario_', 'comentario_postulante_', true)"}
+                                %button.btn.btn-sm.btn-outline-primary.mx-auto{type: 'button', style: "max-width: 250px; width: 100%;", onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'read_tec_comentario_', 'comentario_postulante_', true)"}
                                   %i.fa.fa-comments.mr-1
                                   Bitácora
                                 .mt-1{id: "preview_read_tec_comentario_#{detalle_tecnico.id}"}
                                   %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
                                     %i.fa.fa-comments
                                     = "#{num_comentarios_rev} registro(s)"
-                              - else
-                                %span.text-muted --
+                    - else
+                      .table-responsive.mt-3
+                        %table.table.table-striped.no-margin
+                          %thead
+                            %tr
+                              %th.encabezado-form{style: 'width: 50%;'} Archivo Cargado / Enlace
+                              %th.encabezado-form{style: 'width: 15%;'} Cumple
+                              %th.encabezado-form{style: 'width: 35%;'} Comentarios
+                          %tbody
+                            %tr
+                              %td.contenido-form.align-middle{style: 'vertical-align: middle !important;'}
+                                - if detalle_tecnico.present? && archivo.present?
+                                  = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
+                                - else
+                                  %span.text-muted --
+                              
+                              %td.contenido-form.text-center.align-middle{style: 'vertical-align: middle !important;'}
+                                - if detalle_tecnico.present?
+                                  - if valor_cumple_int == 1
+                                    %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
+                                  - elsif valor_cumple_int == 2
+                                    %span.badge.badge-danger{style: 'font-size: 10px; padding: 5px 10px;'} No
+                                  - else
+                                    %span.text-muted --
+                                - else
+                                  %span.text-muted --
+
+                              %td.contenido-form.text-center.align-middle{style: 'vertical-align: middle !important;'}
+                                - if detalle_tecnico.present?
+                                  = hidden_field_tag "comentario_postulante_#{detalle_tecnico.id}", comentario_postulante_val, id: "comentario_postulante_#{detalle_tecnico.id}"
+                                  = hidden_field_tag "read_tec_comentario_#{detalle_tecnico.id}", valor_comentario, id: "read_tec_comentario_#{detalle_tecnico.id}"
+                                  %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'read_tec_comentario_', 'comentario_postulante_', true)"}
+                                    %i.fa.fa-comments.mr-1
+                                    Bitácora
+                                  .mt-1{id: "preview_read_tec_comentario_#{detalle_tecnico.id}"}
+                                    %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                                      %i.fa.fa-comments
+                                      = "#{num_comentarios_rev} registro(s)"
+                                - else
+                                  %span.text-muted --
 
         - else
           .card.mt-2
