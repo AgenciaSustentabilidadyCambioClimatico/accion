@@ -7944,16 +7944,25 @@ class FondoProduccionLimpiasController < ApplicationController
   end
 
   def cargar_datos_autorizar_reitimizacion
-    @tarea_pendiente ||= TareaPendiente.find_by(id: params[:id]) if params[:id].present?
-    flujo_id_ref = @tarea_pendiente.try(:flujo_id)
+    # CORRECCIÓN: Evitar buscar por ID si params[:id] es un hash encriptado (Staging/Producción)
+    if @tarea_pendiente.blank? && params[:id].present? && params[:id].to_s.match?(/^\d+$/)
+      @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
+    end
 
-    @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: flujo_id_ref) || FondoProduccionLimpia.new
+    # Extracción segura usando navegación segura (&.)
+    flujo_id_ref = @tarea_pendiente&.flujo_id || params[:flujo_id]
+
+    @fondo_produccion_limpia = if flujo_id_ref.present?
+                                 FondoProduccionLimpia.find_by(flujo_id: flujo_id_ref) || FondoProduccionLimpia.new
+                               else
+                                 FondoProduccionLimpia.new
+                               end
 
     if params[:mes_a_rendir].present?
       @rendicion = RendicionFpl.find_by(flujo_id: flujo_id_ref, mes_a_rendir: params[:mes_a_rendir])
     end
 
-    @rendicion ||= RendicionFpl.where(flujo_id: flujo_id_ref).order(mes_a_rendir: :desc).first
+    @rendicion ||= RendicionFpl.where(flujo_id: flujo_id_ref).order(mes_a_rendir: :desc).first if flujo_id_ref.present?
 
     if @rendicion.present?
       @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
