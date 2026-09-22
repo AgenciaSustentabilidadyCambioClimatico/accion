@@ -7958,7 +7958,7 @@ class FondoProduccionLimpiasController < ApplicationController
   end
 
   def cargar_datos_autorizar_reitimizacion
-    # 1. NO sobrescribir @tarea_pendiente si el filter de Rails ya la desencriptó
+    # SOLUCIÓN: Si @tarea_pendiente ya existe (cargada por el before_action), NO LA RECONSULTAR NI SOBREESCRIBIR
     if @tarea_pendiente.blank? && params[:id].present?
       if params[:id].to_s.match?(/^\d+$/)
         @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
@@ -7967,28 +7967,24 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    # 2. Cargar explícitamente @flujo
-    @flujo ||= @tarea_pendiente&.flujo
-    flujo_id_ref = @flujo&.id || @tarea_pendiente&.flujo_id || params[:flujo_id]
+    # Extracción de flujo_id
+    flujo_id_ref = @tarea_pendiente&.flujo_id || @fondo_produccion_limpia&.flujo_id || params[:flujo_id]
 
-    # 3. Cargar @fondo_produccion_limpia
     @fondo_produccion_limpia ||= if flujo_id_ref.present?
-                                 FondoProduccionLimpia.find_by(flujo_id: flujo_id_ref) || FondoProduccionLimpia.new
-                               else
-                                 FondoProduccionLimpia.new
-                               end
+                                   FondoProduccionLimpia.find_by(flujo_id: flujo_id_ref) || FondoProduccionLimpia.new
+                                 else
+                                   FondoProduccionLimpia.new
+                                 end
 
-    @flujo ||= @fondo_produccion_limpia&.flujo
-    flujo_id_ref ||= @flujo&.id
+    flujo_id_ref ||= @fondo_produccion_limpia.try(:flujo_id)
 
-    # 4. CARGA CLAVE PARA EL HELPER datos_beneficiario_fpl
+    # Cargar Flujo y Manifestación para los helpers de vista
+    @flujo ||= @tarea_pendiente&.flujo || @fondo_produccion_limpia&.flujo || Flujo.find_by(id: flujo_id_ref)
     if @flujo.present?
       mdi_id = @flujo.try(:manifestacion_de_interes_id)
       @manifestacion_de_interes ||= ManifestacionDeInteres.find_by(id: mdi_id) if mdi_id.present?
-      @manifestacion_de_interes ||= @flujo.try(:manifestacion_de_interes)
     end
 
-    # 5. Cargar RendicionFpl
     if params[:mes_a_rendir].present? && flujo_id_ref.present?
       @rendicion = RendicionFpl.find_by(flujo_id: flujo_id_ref, mes_a_rendir: params[:mes_a_rendir])
     end
@@ -8003,9 +7999,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @documentos_aporte = RendicionDetalleFpl.none
     end
 
-    # =========================================================================
-    # CARGA Y MAPEO EXPLÍCITO DE PLANACTIVIDAD (REITIMIZACIÓN GLOBAL)
-    # =========================================================================
+    # MAPEO DE PLANACTIVIDAD
     @plan_actividades_map = {}
     if flujo_id_ref.present?
       PlanActividad.where(flujo_id: flujo_id_ref).each do |pa|
