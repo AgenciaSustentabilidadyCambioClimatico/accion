@@ -7023,6 +7023,20 @@ class FondoProduccionLimpiasController < ApplicationController
         @actividad_detalle = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
       end
 
+      def set_actividades_x_linea_2
+        # Obtención protegida del flujo_id sin asumir que @tarea_pendiente existe
+        flujo_id_seguro = @tarea_pendiente&.flujo_id || @fondo_produccion_limpia&.flujo_id || @rendicion&.flujo_id || params[:flujo_id]
+        
+        # Búsqueda segura del objeto Flujo
+        flujo_obj = @tarea_pendiente&.flujo || @fondo_produccion_limpia&.flujo || (@rendicion.respond_to?(:flujo) ? @rendicion.flujo : nil) || Flujo.find_by(id: flujo_id_seguro)
+
+        if flujo_id_seguro.present? && flujo_obj.present?
+          @actividad_x_linea = Actividad.actividad_x_linea(flujo_id_seguro, flujo_obj.tipo_instrumento_id)
+        else
+          @actividad_x_linea = []
+        end
+      end
+
       def set_costos
         @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
         if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
@@ -7944,12 +7958,16 @@ class FondoProduccionLimpiasController < ApplicationController
   end
 
   def cargar_datos_autorizar_reitimizacion
-    # SOLUCIÓN: Solo busca si @tarea_pendiente es nil Y params[:id] es un número entero
-    if @tarea_pendiente.blank? && params[:id].present? && params[:id].to_s.match?(/^\d+$/)
-      @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
+    # Si @tarea_pendiente no fue cargada por el before_action, solo buscamos por ID si es un entero numérico
+    if @tarea_pendiente.blank? && params[:id].present?
+      if params[:id].to_s.match?(/^\d+$/)
+        @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
+      elsif TareaPendiente.respond_to?(:find_by_hash)
+        @tarea_pendiente = TareaPendiente.find_by_hash(params[:id]) rescue nil
+      end
     end
 
-    # Extracción segura del flujo_id
+    # Extracción segura del flujo_id con fallback a otras fuentes
     flujo_id_ref = @tarea_pendiente&.flujo_id || @fondo_produccion_limpia&.flujo_id || params[:flujo_id]
 
     @fondo_produccion_limpia = if flujo_id_ref.present?
@@ -7957,6 +7975,8 @@ class FondoProduccionLimpiasController < ApplicationController
                                else
                                  FondoProduccionLimpia.new
                                end
+
+    flujo_id_ref ||= @fondo_produccion_limpia.try(:flujo_id)
 
     if params[:mes_a_rendir].present? && flujo_id_ref.present?
       @rendicion = RendicionFpl.find_by(flujo_id: flujo_id_ref, mes_a_rendir: params[:mes_a_rendir])
@@ -8014,7 +8034,7 @@ class FondoProduccionLimpiasController < ApplicationController
     solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
     @tiene_permisos = solo_lectura.nil?
 
-    set_actividades_x_linea
+    set_actividades_x_linea_2
   end
 
   # Helper para convertir texto a Float reconociendo miles y decimales
