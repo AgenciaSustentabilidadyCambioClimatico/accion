@@ -7944,13 +7944,13 @@ class FondoProduccionLimpiasController < ApplicationController
   end
 
   def cargar_datos_autorizar_reitimizacion
-    # CORRECCIÓN: Evitar buscar por ID si params[:id] es un hash encriptado (Staging/Producción)
+    # SOLUCIÓN: Solo busca si @tarea_pendiente es nil Y params[:id] es un número entero
     if @tarea_pendiente.blank? && params[:id].present? && params[:id].to_s.match?(/^\d+$/)
       @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
     end
 
-    # Extracción segura usando navegación segura (&.)
-    flujo_id_ref = @tarea_pendiente&.flujo_id || params[:flujo_id]
+    # Extracción segura del flujo_id
+    flujo_id_ref = @tarea_pendiente&.flujo_id || @fondo_produccion_limpia&.flujo_id || params[:flujo_id]
 
     @fondo_produccion_limpia = if flujo_id_ref.present?
                                  FondoProduccionLimpia.find_by(flujo_id: flujo_id_ref) || FondoProduccionLimpia.new
@@ -7958,7 +7958,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                  FondoProduccionLimpia.new
                                end
 
-    if params[:mes_a_rendir].present?
+    if params[:mes_a_rendir].present? && flujo_id_ref.present?
       @rendicion = RendicionFpl.find_by(flujo_id: flujo_id_ref, mes_a_rendir: params[:mes_a_rendir])
     end
 
