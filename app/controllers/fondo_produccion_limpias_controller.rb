@@ -7958,7 +7958,7 @@ class FondoProduccionLimpiasController < ApplicationController
   end
 
   def cargar_datos_autorizar_reitimizacion
-    # Si @tarea_pendiente no fue cargada por el before_action, solo buscamos por ID si es un entero numérico
+    # 1. NO sobrescribir @tarea_pendiente si el filter de Rails ya la desencriptó
     if @tarea_pendiente.blank? && params[:id].present?
       if params[:id].to_s.match?(/^\d+$/)
         @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
@@ -7967,17 +7967,28 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    # Extracción segura del flujo_id con fallback a otras fuentes
-    flujo_id_ref = @tarea_pendiente&.flujo_id || @fondo_produccion_limpia&.flujo_id || params[:flujo_id]
+    # 2. Cargar explícitamente @flujo
+    @flujo ||= @tarea_pendiente&.flujo
+    flujo_id_ref = @flujo&.id || @tarea_pendiente&.flujo_id || params[:flujo_id]
 
-    @fondo_produccion_limpia = if flujo_id_ref.present?
+    # 3. Cargar @fondo_produccion_limpia
+    @fondo_produccion_limpia ||= if flujo_id_ref.present?
                                  FondoProduccionLimpia.find_by(flujo_id: flujo_id_ref) || FondoProduccionLimpia.new
                                else
                                  FondoProduccionLimpia.new
                                end
 
-    flujo_id_ref ||= @fondo_produccion_limpia.try(:flujo_id)
+    @flujo ||= @fondo_produccion_limpia&.flujo
+    flujo_id_ref ||= @flujo&.id
 
+    # 4. CARGA CLAVE PARA EL HELPER datos_beneficiario_fpl
+    if @flujo.present?
+      mdi_id = @flujo.try(:manifestacion_de_interes_id)
+      @manifestacion_de_interes ||= ManifestacionDeInteres.find_by(id: mdi_id) if mdi_id.present?
+      @manifestacion_de_interes ||= @flujo.try(:manifestacion_de_interes)
+    end
+
+    # 5. Cargar RendicionFpl
     if params[:mes_a_rendir].present? && flujo_id_ref.present?
       @rendicion = RendicionFpl.find_by(flujo_id: flujo_id_ref, mes_a_rendir: params[:mes_a_rendir])
     end
