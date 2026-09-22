@@ -412,7 +412,10 @@
                             %abbr{ title: "Campo requerido" } *
                             = t(:revisor_tecnico)
                           %br
-                          - current_tec_id = @rendicion&.revisor_tecnico_id
+                          
+                          -# BÚSQUEDA DEL REVISOR TÉCNICO EN EL MAPA DE ACTORES / POSTULACIÓN PARA PRECARGARLO
+                          - current_tec_id = @rendicion&.revisor_tecnico_id || fpl_objeto.try(:revisor_tecnico_id) || fpl_objeto.try(:revisor_institucional_id) || fpl_objeto.flujo.try(:revisor_tecnico_id)
+                          
                           = f.select :revisor_tecnico_id, options_for_select([['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.user.id] }, current_tec_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
                         - else
                           .form-group
@@ -428,7 +431,10 @@
                             %abbr{ title: "Campo requerido" } *
                             = t(:revisor_contable)
                           %br
-                          - current_fin_id = @rendicion&.revisor_financiero_id
+                          
+                          -# BÚSQUEDA DEL REVISOR FINANCIERO/CONTABLE EN EL MAPA DE ACTORES / POSTULACIÓN PARA PRECARGARLO
+                          - current_fin_id = @rendicion&.revisor_financiero_id || fpl_objeto.try(:revisor_financiero_id) || fpl_objeto.try(:revisor_contable_id) || fpl_objeto.flujo.try(:revisor_financiero_id) || fpl_objeto.flujo.try(:revisor_contable_id)
+                          
                           = f.select :revisor_financiero_id, options_for_select([['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, current_fin_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
                         - else
                           .form-group

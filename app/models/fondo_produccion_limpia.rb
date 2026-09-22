@@ -2439,7 +2439,7 @@ class FondoProduccionLimpia < ApplicationRecord
     Rails.logger.info "=== [PDF INFORME ACTIVIDADES MODELO] INICIANDO GENERACIÓN CORREGIDA ==="
 
     # Margen superior ajustado a 60 para alojar el encabezado sin requerir un bounding_box externo
-    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [60, 30, 25, 30])
+    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [60, 30, 30, 30])
 
     # Configuración de Fuentes DejaVuSans
     font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
@@ -2576,7 +2576,6 @@ class FondoProduccionLimpia < ApplicationRecord
     # Sección III
     self.pdf_sub_titulo_formato(pdf, "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
 
-    
     # Comprobar si la rendición fue marcada sin movimientos
     es_sin_movimientos = rendicion.present? && (
       [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
@@ -2676,24 +2675,23 @@ class FondoProduccionLimpia < ApplicationRecord
       end
 
       pdf.table(tabla_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
-      row(0).background_color = 'E0EFF6'
-      row(0).font_style = :bold
-      column(0).width = 25
-      column(0).align = :center
-      column(2).width = 55
-      column(2).align = :center
-      column(3).width = 55
-      column(3).align = :center
-      column(4).width = 65
-      column(4).align = :right
-      column(5).width = 30
-      column(5).align = :center
-    end
+        row(0).background_color = 'E0EFF6'
+        row(0).font_style = :bold
+        column(0).width = 25
+        column(0).align = :center
+        column(2).width = 55
+        column(2).align = :center
+        column(3).width = 55
+        column(3).align = :center
+        column(4).width = 65
+        column(4).align = :right
+        column(5).width = 30
+        column(5).align = :center
+      end
     else
-      tabla_act << [ "-", "Sin actividades reportadas", "-", "-", "$0", "0%", "-", "-" ]
+      tabla_act = [ [ "-", "Sin actividades reportadas", "-", "-", "$0", "0%", "-", "-" ] ]
+      pdf.table(tabla_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true })
     end
-
-    
 
     pdf.move_down 6
 
@@ -2712,6 +2710,14 @@ class FondoProduccionLimpia < ApplicationRecord
 
     pdf.move_down 8
 
+    # ==========================================================
+    # EVALUACIÓN DE ESPACIO PARA SECCIÓN IV Y FIRMA
+    # Si queda menos de 150pt en la página, traslada el bloque completo
+    # ==========================================================
+    if pdf.cursor < 150
+      pdf.start_new_page
+    end
+
     self.pdf_sub_titulo_formato(pdf, "IV.- DATOS DE LOS FUNCIONARIOS RESPONSABLES DE LA EJECUCIÓN DE LAS ACTIVIDADES") rescue nil
     pdf.move_down 5
 
@@ -2724,31 +2730,29 @@ class FondoProduccionLimpia < ApplicationRecord
 
     pdf.table(tabla_funcionarios, cell_style: { size: 7.5, padding: 2, borders: [] }) do
       column(0).font_style = :bold
-      column(3).font_style = :bold
-      column(2).width = 50
+      column(1).font_style = :normal
     end
 
-    pdf.move_down 12
+    pdf.move_down 10
 
     ancho_firma = 220
     posicion_x = pdf.bounds.width - ancho_firma
 
-    pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
+    pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 75) do
       #logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
       
       #if File.exist?(logo_firma_path)
       #  y_inicio = pdf.cursor
-      #  # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
       #  pdf.transparent(0.25) do
       #    pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
       #  end
       #end
 
-      # Posicionar la línea a la mitad del logo para que quede sobrepuesto
-      pdf.move_down 35
+      pdf.move_down 30
 
       pdf.stroke_color '333333'
-      pdf.line_width 0.8
+      #pdf.line_width 0.8
+      pdf.stroke_horizontal_rule
       
       pdf.move_down 4
 
@@ -2790,12 +2794,12 @@ class FondoProduccionLimpia < ApplicationRecord
     nil
   end
 
- # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
+  # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
   def generar_informe_evaluacion_tecnica_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil)
     t_inicio = Time.now
     Rails.logger.info "=== [PDF INFORME TÉCNICO ACTIVIDADES] INICIANDO GENERACIÓN ==="
 
-    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [30, 30, 30, 30])
+    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [85, 30, 40, 30])
 
     font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
     font_path_bold    = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
@@ -2807,7 +2811,7 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf.font "DejaVuSans"
 
     pdf.repeat :all do
-      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width, height: 50 do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top + 65], width: pdf.bounds.width, height: 50 do
         logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
         pdf.image logo_path, width: 119 if File.exist?(logo_path)
 
@@ -2897,250 +2901,271 @@ class FondoProduccionLimpia < ApplicationRecord
     fecha_recepcion  = f_recepcion_raw.respond_to?(:strftime)  ? f_recepcion_raw.strftime('%d/%m/%Y')  : "--"
     fecha_evaluacion = f_evaluacion_raw.respond_to?(:strftime) ? f_evaluacion_raw.strftime('%d/%m/%Y') : "--"
     
-    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 65], width: pdf.bounds.width do
+    # -------------------------------------------------------------
+    # COMIENZO DEL CONTENIDO
+    # -------------------------------------------------------------
 
-      pdf.font "DejaVuSans", style: :bold do
-        pdf.text "INFORME DE EVALUACIÓN DE ACTIVIDADES", size: 11, color: "000000"
-      end
+    pdf.font "DejaVuSans", style: :bold do
+      pdf.text "INFORME DE EVALUACIÓN DE ACTIVIDADES", size: 11, color: "000000"
+    end
+    pdf.move_down 8
+
+    # Sección I
+    self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
+
+    tabla_i = [
+      [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
+      [ { content: "<b>Origen recursos:</b>", inline_format: true }, "FPL", { content: "<b>Mes / Año:</b>", inline_format: true }, texto_mes_display ]
+    ]
+
+    pdf.table(tabla_i, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+      column(0).background_color = 'E0EFF6'
+      column(2).background_color = 'E0EFF6'
+    end
+
+    pdf.move_down 8
+
+    # Sección II
+    self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
+
+    tabla_ii = [
+      [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
+      [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
+      [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto } ],
+      [ { content: "<b>Fecha Recepción Informe:</b>", inline_format: true }, fecha_recepcion, { content: "<b>Fecha Evaluación de Actividades:</b>", inline_format: true }, fecha_evaluacion ]
+    ]
+
+    pdf.table(tabla_ii, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+      column(0).background_color = 'E0EFF6'
+      column(2).background_color = 'E0EFF6'
+    end
+
+    pdf.move_down 10
+
+    # Sección III
+    self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
+    pdf.move_down 6
+
+    # =========================================================================
+    # DETERMINACIÓN EXCLUSIVA DE EVALUACIÓN TÉCNICA
+    # =========================================================================
+    est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
+    detalles_tecnicos_todos = detalles_fpl_array.select { |d| es_tecnica_tab.call(d) }
+
+    # Verifica si existe algún ítem técnico con 'cumple' en rechazo/no
+    tiene_obs_tecnica_directa = detalles_tecnicos_todos.any? do |d|
+      c = (d.read_attribute_before_type_cast(:cumple) rescue d.cumple).to_s.downcase
+      ['2', 'no', 'false'].include?(c)
+    end
+
+    es_observado_tecnico = tiene_obs_tecnica_directa || est_global == 3
+    es_aprobado_tecnico  = !es_observado_tecnico && (
+      [5, 6].include?(est_global) ||
+      (detalles_tecnicos_todos.present? && detalles_tecnicos_todos.all? { |d| ['1', 'si', 'true'].include?((d.read_attribute_before_type_cast(:cumple) rescue d.cumple).to_s.downcase) })
+    )
+
+    # Leyenda dinámica de dictamen técnico de la Subdirección
+    if es_aprobado_tecnico
+      texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático <b>APRUEBA</b> el informe de actividades asociado a la rendición del mes de <b>#{texto_mes_display}</b>."
+      pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'D4EDDA', border_color: 'C3E6CB', text_color: '155724' })
       pdf.move_down 8
-
-      # Sección I
-      self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
-
-      tabla_i = [
-        [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
-        [ { content: "<b>Origen recursos:</b>", inline_format: true }, "FPL", { content: "<b>Mes / Año:</b>", inline_format: true }, texto_mes_display ]
-      ]
-
-      pdf.table(tabla_i, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
-        column(0).background_color = 'E0EFF6'
-        column(2).background_color = 'E0EFF6'
-      end
-
+    elsif es_observado_tecnico
+      texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático informa que existen <b>OBSERVACIONES</b> en el informe de actividades asociado a la rendición de <b>#{texto_mes_display}</b>. Le solicitamos revisarlas y subsanarlas."
+      pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'F8D7DA', border_color: 'F5C6CB', text_color: '721C24' })
       pdf.move_down 8
+    end
 
-      # Sección II
-      self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
+    # Comprobar si la rendición fue marcada sin movimientos
+    es_sin_movimientos = rendicion.present? && (
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+      (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+      (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+    )
 
-      tabla_ii = [
-        [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
-        [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
-        [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto } ],
-        [ { content: "<b>Fecha Recepción Informe:</b>", inline_format: true }, fecha_recepcion, { content: "<b>Fecha Evaluación de Actividades:</b>", inline_format: true }, fecha_evaluacion ]
+    if es_sin_movimientos
+      tabla_sin_mov = [
+        [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
       ]
+      pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+    elsif actividades.present?
 
-      pdf.table(tabla_ii, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
-        column(0).background_color = 'E0EFF6'
-        column(2).background_color = 'E0EFF6'
-      end
+      actividades.each do |act|
+        if pdf.cursor < 140
+          pdf.start_new_page
+        end
 
-      pdf.move_down 10
+        act_id_num = act.id.to_i
 
-      # Sección III
-      self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
-      pdf.move_down 6
+        plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || act
+        pk_id_num = plan_act.try(:id).to_i
+        mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+        es_reitimizada = (mis_ids & reitimizadas_ids).any?
 
-      # Determinación del estado global de la rendición
-      est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
-      es_aprobado_global  = [5, 6].include?(est_global)
-      es_observado_global = [3, 4].include?(est_global)
+        obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
+        obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: flujo_id_ref).pluck(:objetivos_especifico_id).first if plan_act.present?
+        obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
+        indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
 
-      # Leyenda dinámica de dictamen de la Subdirección
-      if es_aprobado_global
-        texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático <b>APRUEBA</b> el informe de actividades asociado a la rendición del mes de <b>#{texto_mes_display}</b>."
-        pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'D4EDDA', border_color: 'C3E6CB', text_color: '155724' })
-        pdf.move_down 8
-      elsif es_observado_global
-        texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático informa que existen <b>OBSERVACIONES</b> en el informe de actividades asociado a la rendición de <b>#{texto_mes_display}</b>. Le solicitamos revisarlas y subsanarlas."
-        pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'F8D7DA', border_color: 'F5C6CB', text_color: '721C24' })
-        pdf.move_down 8
-      end
+        # BÚSQUEDA DEL DETALLE TÉCNICO CON TRADUCCIÓN INVERSA DE IDs
+        detalle_tecnico = detalles_fpl_array.find do |d|
+          act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+          act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
+          es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
+        end
 
-      # Comprobar si la rendición fue marcada sin movimientos
-      es_sin_movimientos = rendicion.present? && (
-        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
-        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
-        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
-        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
-      )
+        val_cumple = if detalle_tecnico.present?
+                       (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
+                     else
+                       0
+                     end
 
-      if es_sin_movimientos
-        tabla_sin_mov = [
-          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
-        ]
-        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
-      elsif actividades.present?
-
-        actividades.each do |act|
-          act_id_num = act.id.to_i
-
-          plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || act
-          pk_id_num = plan_act.try(:id).to_i
-          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
-          es_reitimizada = (mis_ids & reitimizadas_ids).any?
-
-          obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
-          obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: flujo_id_ref).pluck(:objetivos_especifico_id).first if plan_act.present?
-          obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
-          indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
-
-          # BÚSQUEDA DEL DETALLE TÉCNICO CON TRADUCCIÓN INVERSA DE IDs
-          detalle_tecnico = detalles_fpl_array.find do |d|
-            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
-            act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
-            es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
-          end
-
-          val_cumple = if detalle_tecnico.present?
-                         (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
-                       else
-                         0
-                       end
-
-          es_observado = false
-          estado_html = if val_cumple == 1
+        es_observado = false
+        estado_html = if val_cumple == 1
+                        "<color rgb='28A745'><b>APROBADO</b></color>"
+                      elsif val_cumple == 2
+                        es_observado = true
+                        "<color rgb='DC3545'><b>OBSERVADO</b></color>"
+                      else
+                        if es_aprobado_tecnico
                           "<color rgb='28A745'><b>APROBADO</b></color>"
-                        elsif val_cumple == 2
+                        elsif es_observado_tecnico
                           es_observado = true
                           "<color rgb='DC3545'><b>OBSERVADO</b></color>"
+                        elsif [1, 2].include?(est_global)
+                          "<color rgb='FD7E14'><b>EN REVISIÓN</b></color>"
                         else
-                          if [5, 6].include?(est_global)
-                            "<color rgb='28A745'><b>APROBADO</b></color>"
-                          elsif [3, 4].include?(est_global)
-                            es_observado = true
-                            "<color rgb='DC3545'><b>OBSERVADO</b></color>"
-                          elsif [1, 2].include?(est_global)
-                            "<color rgb='FD7E14'><b>EN REVISIÓN</b></color>"
-                          else
-                            "<color rgb='6C757D'><b>EN BORRADOR</b></color>"
-                          end
+                          "<color rgb='6C757D'><b>EN BORRADOR</b></color>"
+                        end
+                      end
+
+        f_inicio = detalle_tecnico&.fecha_inicio
+        f_inicio_str = f_inicio.respond_to?(:strftime) ? f_inicio.strftime('%d/%m/%Y') : f_inicio.to_s.presence || "dd-mm-aaaa"
+
+        f_termino = detalle_tecnico&.fecha_termino
+        f_termino_str = f_termino.respond_to?(:strftime) ? f_termino.strftime('%d/%m/%Y') : f_termino.to_s.presence || "dd-mm-aaaa"
+
+        porcentaje_str = "#{detalle_tecnico&.nivel_avance.to_i}%"
+        obs_texto = detalle_tecnico&.observacion.presence || "--"
+
+        # DETERMINACIÓN DE ADJUNTO O ENLACE URL
+        nom_archivo = if detalle_tecnico.present?
+                        respaldos = []
+
+                        if detalle_tecnico.archivo.present?
+                          nom_f = detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+                          respaldos << "Archivo: #{nom_f}" if nom_f.present?
                         end
 
-          f_inicio = detalle_tecnico&.fecha_inicio
-          f_inicio_str = f_inicio.respond_to?(:strftime) ? f_inicio.strftime('%d/%m/%Y') : f_inicio.to_s.presence || "dd-mm-aaaa"
-
-          f_termino = detalle_tecnico&.fecha_termino
-          f_termino_str = f_termino.respond_to?(:strftime) ? f_termino.strftime('%d/%m/%Y') : f_termino.to_s.presence || "dd-mm-aaaa"
-
-          porcentaje_str = "#{detalle_tecnico&.nivel_avance.to_i}%"
-          obs_texto = detalle_tecnico&.observacion.presence || "--"
-
-          # DETERMINACIÓN DE ADJUNTO O ENLACE URL
-          nom_archivo = if detalle_tecnico.present?
-                          respaldos = []
-
-                          if detalle_tecnico.archivo.present?
-                            nom_f = detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
-                            respaldos << "Archivo: #{nom_f if nom_f.present?}"
-                          end
-
-                          url_val = detalle_tecnico.try(:url_respaldo).presence || detalle_tecnico.try(:url).presence
-                          if url_val.present?
-                            desc_val = detalle_tecnico.try(:descripcion_url).presence || url_val
-                            respaldos << "Enlace: #{desc_val} - #{url_val}"
-                          end
-
-                          respaldos.join(" / ").presence
+                        url_val = detalle_tecnico.try(:url_respaldo).presence || detalle_tecnico.try(:url).presence
+                        if url_val.present?
+                          desc_val = detalle_tecnico.try(:descripcion_url).presence || url_val
+                          respaldos << "Enlace: #{desc_val} - #{url_val}"
                         end
-          nom_archivo = nom_archivo.presence || "Sin adjuntos"
 
-          nombre_actividad_display = act.try(:nombre).to_s
-          if es_reitimizada
-            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitimización autorizada)</b></color>"
-          end
+                        respaldos.join(" / ").presence
+                      end
+        nom_archivo = nom_archivo.presence || "Sin adjuntos"
 
-          header_card = [
-            [
-              { content: "<color rgb='003DA6'><b>#{act.try(:correlativo)}</b></color> <b>#{nombre_actividad_display}</b>", inline_format: true },
-              { content: estado_html, align: :right, inline_format: true }
-            ]
-          ]
-
-          indicador_card = [
-            [ { content: "<color rgb='004085'><b>Indicador asociado al objetivo:</b> #{indicador_texto}</color>", inline_format: true } ]
-          ]
-
-          tabla_campos = [
-            [ "Fecha de Inicio", "Fecha de Término", "Nivel de avance", "Descripción del Avance" ],
-            [ f_inicio_str, f_termino_str, porcentaje_str, obs_texto ]
-          ]
-
-          pdf.table(header_card, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
-          pdf.table(indicador_card, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'B8DAFF', background_color: 'D0E7FF' })
-          pdf.table(tabla_campos, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', align: :center }) do
-            row(0).background_color = 'F8F9FA'
-            row(0).font_style = :bold
-            column(0).width = 80
-            column(1).width = 80
-            column(2).width = 75
-            column(3).align = :left
-          end
-
-          pdf.indent(2) do
-            pdf.move_down 2
-            pdf.font_size(6.5) do
-              pdf.text "<b>Documento de Respaldo técnico:</b> #{nom_archivo}", color: '555555', inline_format: true
-            end
-          end
-
-          if es_observado
-            comentario_revisor = detalle_tecnico.try(:comentario_revisor).presence ||
-                                 detalle_tecnico.try(:comentario_evaluacion).presence ||
-                                 detalle_tecnico.try(:comentario_tecnico).presence ||
-                                 detalle_tecnico.try(:comentario).presence ||
-                                 detalle_tecnico.try(:observacion_revisor).presence ||
-                                 "Actividad observada durante la revisión técnica."
-
-            tabla_comentario = [
-              [ { content: "<color rgb='721C24'><b>Comentario del Revisor:</b> #{comentario_revisor}</color>", inline_format: true } ]
-            ]
-            pdf.move_down 3
-            pdf.table(tabla_comentario, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'F5C6CB', background_color: 'F8D7DA' })
-          end
-
-          pdf.move_down 8
+        nombre_actividad_display = act.try(:nombre).to_s
+        if es_reitimizada
+          nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
         end
-      else
-        pdf.text "Rendición Sin Movimientos", size: 8, style: :italic
+
+        header_card = [
+          [
+            { content: "<color rgb='003DA6'><b>#{act.try(:correlativo)}</b></color> <b>#{nombre_actividad_display}</b>", inline_format: true },
+            { content: estado_html, align: :right, inline_format: true }
+          ]
+        ]
+
+        indicador_card = [
+          [ { content: "<color rgb='004085'><b>Indicador asociado al objetivo:</b> #{indicador_texto}</color>", inline_format: true } ]
+        ]
+
+        tabla_campos = [
+          [ "Fecha de Inicio", "Fecha de Término", "Nivel de avance", "Descripción del Avance" ],
+          [ f_inicio_str, f_termino_str, porcentaje_str, obs_texto ]
+        ]
+
+        pdf.table(header_card, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
+        pdf.table(indicador_card, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'B8DAFF', background_color: 'D0E7FF' })
+        pdf.table(tabla_campos, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', align: :center }) do
+          row(0).background_color = 'F8F9FA'
+          row(0).font_style = :bold
+          column(0).width = 80
+          column(1).width = 80
+          column(2).width = 75
+          column(3).align = :left
+        end
+
+        pdf.indent(2) do
+          pdf.move_down 2
+          pdf.font_size(6.5) do
+            pdf.text "<b>Documento de Respaldo técnico:</b> #{nom_archivo}", color: '555555', inline_format: true
+          end
+        end
+
+        if es_observado
+          comentario_revisor = detalle_tecnico.try(:comentario_revisor).presence ||
+                               detalle_tecnico.try(:comentario_evaluacion).presence ||
+                               detalle_tecnico.try(:comentario_tecnico).presence ||
+                               detalle_tecnico.try(:comentario).presence ||
+                               detalle_tecnico.try(:observacion_revisor).presence ||
+                               "Actividad observada durante la revisión técnica."
+
+          tabla_comentario = [
+            [ { content: "<color rgb='721C24'><b>Comentario del Revisor:</b> #{comentario_revisor}</color>", inline_format: true } ]
+          ]
+          pdf.move_down 3
+          pdf.table(tabla_comentario, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'F5C6CB', background_color: 'F8D7DA' })
+        end
+
+        pdf.move_down 8
       end
+    else
+      pdf.text "Rendición Sin Movimientos", size: 8, style: :italic
+    end
 
-      pdf.move_down 15
+    # VERIFICACIÓN DE ESPACIO PARA FIRMA
+    if pdf.cursor < 110
+      pdf.start_new_page
+    end
 
-      ancho_firma = 220
-      posicion_x = pdf.bounds.width - ancho_firma
+    pdf.move_down 15
 
-      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
-        logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
-        
-        if File.exist?(logo_firma_path)
-          y_inicio = pdf.cursor
-          # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
-          pdf.transparent(0.25) do
-            pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
-          end
-        end
+    ancho_firma = 220
+    posicion_x = pdf.bounds.width - ancho_firma
 
-        # Posicionar la línea a la mitad del logo para que quede sobrepuesto
-        pdf.move_down 35
-
-        pdf.stroke_color '333333'
-        pdf.line_width 0.8
-        
-        pdf.move_down 4
-
-        pdf.font "DejaVuSans", style: :bold do
-          pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
-        end
-
-        pdf.font "DejaVuSans", style: :bold do
-          pdf.text rut_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
-        end
-
-        pdf.font "DejaVuSans", style: :normal do
-          pdf.text "Revisor Técnico", size: 7.5, align: :center, color: '555555'
+    pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
+      logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+      
+      if File.exist?(logo_firma_path)
+        y_inicio = pdf.cursor
+        pdf.transparent(0.25) do
+          pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
         end
       end
 
+      pdf.move_down 35
+
+      pdf.stroke_color '333333'
+      pdf.line_width 0.8
+      #pdf.stroke_horizontal_rule
+      
+      pdf.move_down 4
+
+      pdf.font "DejaVuSans", style: :bold do
+        pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
+      end
+
+      pdf.font "DejaVuSans", style: :bold do
+        pdf.text rut_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
+      end
+
+      pdf.font "DejaVuSans", style: :normal do
+        pdf.text "Revisor Técnico", size: 7.5, align: :center, color: '555555'
+      end
     end
 
     pdf_string = pdf.render

@@ -688,6 +688,10 @@
             - es_actividad_observada_fpl = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
+            -# OBTENER DETALLE TÉCNICO Y AVANCE
+            - detalle_tec_act = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i] || @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+            - avance_tecnico = detalle_tec_act&.nivel_avance.to_i
+
             .card.mb-3.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: (es_actividad_observada_fpl ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada_fpl)}
                 .d-flex.align-items-center.flex-wrap
@@ -704,12 +708,25 @@
                     %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión financiera"}
                       %i.fa.fa-exclamation-triangle.mr-1
                       Observada
+                  - if avance_tecnico < 100
+                    %span.badge.badge-warning.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #ffc107; color: #212529;", title: "Avance técnico inferior al 100%"}
+                      %i.fa.fa-exclamation-circle.mr-1
+                      Avance Técnico: #{avance_tecnico}%
                 %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_fpl_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
               .collapse{id: "collapse_fpl_eval_#{actividad.id}"}
                 .card-body.p-2
+                  - if avance_tecnico < 100
+                    .alert.alert-warning.d-flex.align-items-center.py-2.px-3.mb-2{style: "border-radius: 4px; font-size: 12px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404;"}
+                      %i.fa.fa-exclamation-triangle.fa-lg.mr-2{style: "color: #856404;"}
+                      %span
+                        %strong Advertencia de Avance Técnico:
+                        Esta actividad presenta un nivel de avance técnico de solo
+                        %strong= "#{avance_tecnico}%"
+                        en este período (no se ha reportado el 100% de ejecución técnica).
+
                   = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
                   - if @es_revision_financiera
@@ -854,6 +871,10 @@
             - es_actividad_observada_aporte = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
+            -# OBTENER DETALLE TÉCNICO Y AVANCE
+            - detalle_tec_act = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i] || @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+            - avance_tecnico = detalle_tec_act&.nivel_avance.to_i
+
             .card.mb-3.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: (es_actividad_observada_aporte ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl{class: ('header-actividad-observada' if es_actividad_observada_aporte)}
                 .d-flex.align-items-center.flex-wrap
@@ -870,12 +891,25 @@
                     %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;", title: "Esta actividad fue observada en la revisión de aporte propio"}
                       %i.fa.fa-exclamation-triangle.mr-1
                       Observada
+                  - if avance_tecnico < 100
+                    %span.badge.badge-warning.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #ffc107; color: #212529;", title: "Avance técnico inferior al 100%"}
+                      %i.fa.fa-exclamation-circle.mr-1
+                      Avance Técnico: #{avance_tecnico}%
                 %a.btn.btn-sm.btn-outline-info.collapsed{"data-toggle" => "collapse", href: "#collapse_aporte_eval_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
               .collapse{id: "collapse_aporte_eval_#{actividad.id}"}
                 .card-body.p-2
+                  - if avance_tecnico < 100
+                    .alert.alert-warning.d-flex.align-items-center.py-2.px-3.mb-2{style: "border-radius: 4px; font-size: 12px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404;"}
+                      %i.fa.fa-exclamation-triangle.fa-lg.mr-2{style: "color: #856404;"}
+                      %span
+                        %strong Advertencia de Avance Técnico:
+                        Esta actividad presenta un nivel de avance técnico de solo
+                        %strong= "#{avance_tecnico}%"
+                        en este período (no se ha reportado el 100% de ejecución técnica).
+
                   = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false, map_base: @rendicion_gastos_map, es_reitimizada: es_reitimizada
 
                   - if @es_revision_financiera
@@ -939,24 +973,30 @@
         .card.mt-2
           .card-body.text-center.text-muted No se enviaron documentos de aporte para evaluar.
 
-  .float-right.mt-3
-    = volver_root
-    - if @tiene_permisos
-      = button_tag "Grabar Avance", 
-        type: 'submit', 
-        name: 'commit_type', 
-        value: 'grabar', 
-        class: "btn btn-sm btn-primary mr-2", 
-        data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+  .d-flex.justify-content-between.align-items-center.mt-3
+    .float-left
+      - if @es_revision_financiera && @rendicion.present?
+        = link_to descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info text-white shadow-sm", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Evaluación Técnica en PDF" do
+          %i.fa.fa-file-pdf-o.mr-1
+          Descargar Informe Técnico PDF
+    .float-right
+      = volver_root
+      - if @tiene_permisos
+        = button_tag "Grabar Avance", 
+          type: 'submit', 
+          name: 'commit_type', 
+          value: 'grabar', 
+          class: "btn btn-sm btn-primary mr-2", 
+          data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
 
-      = button_tag t(:enviar_evaluacion), 
-        type: 'submit', 
-        name: 'commit_type', 
-        value: 'enviar', 
-        id: 'enviar-button', 
-        class: "btn btn-sm btn-success btn-disabled", 
-        disabled: true, 
-        data: { confirm: "¿Está seguro que desea enviar la evaluación de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }
+        = button_tag t(:enviar_evaluacion), 
+          type: 'submit', 
+          name: 'commit_type', 
+          value: 'enviar', 
+          id: 'enviar-button', 
+          class: "btn btn-sm btn-success btn-disabled", 
+          disabled: true, 
+          data: { confirm: "¿Está seguro que desea enviar la evaluación de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }
 
 / ----------------------------------------------------
 / MODAL POPUP: BITÁCORA Y HISTORIAL DE COMENTARIOS
