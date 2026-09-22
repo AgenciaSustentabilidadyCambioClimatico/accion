@@ -5305,27 +5305,55 @@ class FondoProduccionLimpiasController < ApplicationController
       t_inicio = Time.now
       Rails.logger.info "=== [RADAR INFORME GASTOS] Iniciando generación de PDF (Tarea ID: #{params[:id]}) ==="
 
-      # 1. Búsqueda de tarea pendiente y carga de datos
-      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
-      cargar_datos_verificacion_contable
+      # 1. Búsqueda de tarea pendiente y carga de datos protegida para Staging/Producción (IDs encriptados)
+      if params[:id].present? && params[:id].to_s.match?(/^\d+$/)
+        @tarea_pendiente ||= TareaPendiente.find_by(id: params[:id])
+      end
+
+      begin
+        cargar_datos_verificacion_contable
+      rescue StandardError => e
+        Rails.logger.error "=== [ERROR cargar_datos_verificacion_contable en GASTOS] #{e.class} - #{e.message} ==="
+        if @tarea_pendiente.present? || params[:flujo_id].present?
+          set_actividades_x_linea if respond_to?(:set_actividades_x_linea, true)
+        else
+          @actividad_x_linea = []
+        end
+      end
+
+      # 2. Extracción segura del flujo_id
+      flujo_id_actual = @tarea_pendiente&.flujo_id || params[:flujo_id]
+      
+      # Solo buscamos por ID directo si es numérico y no tenemos flujo aún
+      if flujo_id_actual.blank? && params[:id].present? && params[:id].to_s.match?(/^\d+$/)
+        temp_fpl = FondoProduccionLimpia.find_by(id: params[:id])
+        flujo_id_actual = temp_fpl&.flujo_id
+      end
+
+      @fondo_produccion_limpia ||= FondoProduccionLimpia.find_by(flujo_id: flujo_id_actual)
+      mes_a_rendir = params[:mes_a_rendir].presence || @rendicion&.mes_a_rendir
+      @rendicion ||= RendicionFpl.find_by(flujo_id: flujo_id_actual, mes_a_rendir: mes_a_rendir)
 
       if @rendicion.nil? || @fondo_produccion_limpia.nil?
-        Rails.logger.warn "=== [RADAR INFORME GASTOS] Rendición o FPL no encontrados para la Tarea ID: #{params[:id]} ==="
+        Rails.logger.warn "=== [RADAR INFORME GASTOS] Rendición o FPL no encontrados. ==="
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de la rendición para generar el PDF.")
         return
       end
 
       begin
-        # 2. Filtrar únicamente las actividades correspondientes a esta rendición usando Traducción Inversa
-        map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+        # 3. Filtrar únicamente las actividades correspondientes a esta rendición usando Traducción Inversa
+        map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_actual).index_by(&:id)
         get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
         actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.map(&get_act_id).uniq
-        actividades_filtradas = (@actividad_x_linea || []).select { |a| actividades_rendicion_ids.include?(a.id) }
+        
+        todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: flujo_id_actual)
+        actividades_filtradas = todas_actividades.select { |a| actividades_rendicion_ids.include?(a.id) }
+        actividades_filtradas = todas_actividades if actividades_filtradas.blank?
 
         Rails.logger.info "=== [RADAR INFORME GASTOS] Generando binario PDF Prawn (Mes #{@rendicion.mes_a_rendir}) ==="
 
-        # 3. Generación del contenido PDF mediante Prawn
+        # 4. Generación del contenido PDF mediante Prawn
         pdf_binary = @fondo_produccion_limpia.generar_informe_gastos_pdf(
           "v1",
           @fondo_produccion_limpia,
@@ -5335,9 +5363,8 @@ class FondoProduccionLimpiasController < ApplicationController
           @documentos_aporte
         )
 
-        # 4. Verificación del binario y envío de respuesta
+        # 5. Verificación del binario y envío de respuesta
         if pdf_binary.present?
-          # Sanitizar el nombre del archivo reemplazando caracteres especiales
           codigo_proy = @fondo_produccion_limpia.codigo_proyecto.to_s.gsub(/[^0-9A-Za-z.\-]/, '_')
           nombre_archivo = "Informe_Gastos_Mes_#{@rendicion.mes_a_rendir}_#{codigo_proy}.pdf"
 
@@ -5347,7 +5374,7 @@ class FondoProduccionLimpiasController < ApplicationController
           send_data pdf_binary,
                     filename: nombre_archivo,
                     type: 'application/pdf',
-                    disposition: 'inline' # Muestra el PDF en el visor del navegador ('attachment' para descarga forzada)
+                    disposition: 'inline'
         else
           Rails.logger.error "=== [RADAR INFORME GASTOS] El método generador de PDF devolvió un contenido vacío ==="
           redirect_back(fallback_location: root_path, alert: "Ocurrió un error al generar el contenido del documento PDF.")
@@ -5365,17 +5392,30 @@ class FondoProduccionLimpiasController < ApplicationController
       t_inicio = Time.now
       Rails.logger.info "=== [RADAR INFORME ACTIVIDADES PDF] Iniciando generación de PDF (Tarea ID: #{params[:id]}) ==="
 
-      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+      # CORRECCIÓN CLAVE: Usar ||= evita sobrescribir la variable con nil si un before_action ya desencriptó el Hash.
+      # Además, solo buscamos por id si params[:id] es realmente un número.
+      if params[:id].present? && params[:id].to_s.match?(/^\d+$/)
+        @tarea_pendiente ||= TareaPendiente.find_by(id: params[:id])
+      end
       
       begin
         cargar_datos_verificacion_contable
-      rescue
-        set_actividades_x_linea if respond_to?(:set_actividades_x_linea, true)
+      rescue StandardError => e
+        Rails.logger.error "=== [ERROR cargar_datos_verificacion_contable] #{e.class} - #{e.message} ==="
+        # CORRECCIÓN 2: Proteger la carga en el rescue para evitar que set_actividades falle si no hay tarea
+        if @tarea_pendiente.present?
+          set_actividades_x_linea if respond_to?(:set_actividades_x_linea, true)
+        else
+          @actividad_x_linea = []
+        end
       end
 
-      @fondo_produccion_limpia ||= FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      # CORRECCIÓN 3: Navegación segura (&.) al extraer el flujo_id
+      flujo_id_actual = @tarea_pendiente&.flujo_id || params[:flujo_id]
+
+      @fondo_produccion_limpia ||= FondoProduccionLimpia.find_by(flujo_id: flujo_id_actual)
       mes_a_rendir = params[:mes_a_rendir].presence || @rendicion&.mes_a_rendir
-      @rendicion ||= RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: mes_a_rendir)
+      @rendicion ||= RendicionFpl.find_by(flujo_id: flujo_id_actual, mes_a_rendir: mes_a_rendir)
 
       if @rendicion.nil? || @fondo_produccion_limpia.nil?
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de la rendición para generar el PDF.")
@@ -5383,11 +5423,11 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       begin
-        map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+        map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_actual).index_by(&:id)
         get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
         actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.map(&get_act_id).uniq rescue []
-        todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)
+        todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: flujo_id_actual)
         
         actividades_filtradas = todas_actividades.select { |a| actividades_rendicion_ids.include?(a.id) }
         actividades_filtradas = todas_actividades if actividades_filtradas.blank?
@@ -5425,17 +5465,33 @@ class FondoProduccionLimpiasController < ApplicationController
       t_inicio = Time.now
       Rails.logger.info "=== [RADAR INFORME TÉCNICO PDF] Iniciando generación de PDF (Tarea ID: #{params[:id]}) ==="
 
-      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+      # 1. Búsqueda de tarea pendiente protegida
+      if params[:id].present? && params[:id].to_s.match?(/^\d+$/)
+        @tarea_pendiente ||= TareaPendiente.find_by(id: params[:id])
+      end
 
       begin
         cargar_datos_verificacion_contable
-      rescue
-        set_actividades_x_linea if respond_to?(:set_actividades_x_linea, true)
+      rescue StandardError => e
+        Rails.logger.error "=== [ERROR cargar_datos_verificacion_contable en TÉCNICO] #{e.class} - #{e.message} ==="
+        if @tarea_pendiente.present? || params[:flujo_id].present?
+          set_actividades_x_linea if respond_to?(:set_actividades_x_linea, true)
+        else
+          @actividad_x_linea = []
+        end
       end
 
-      @fondo_produccion_limpia ||= FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      # 2. Extracción segura del flujo_id
+      flujo_id_actual = @tarea_pendiente&.flujo_id || params[:flujo_id]
+      
+      if flujo_id_actual.blank? && params[:id].present? && params[:id].to_s.match?(/^\d+$/)
+        temp_fpl = FondoProduccionLimpia.find_by(id: params[:id])
+        flujo_id_actual = temp_fpl&.flujo_id
+      end
+
+      @fondo_produccion_limpia ||= FondoProduccionLimpia.find_by(flujo_id: flujo_id_actual)
       mes_a_rendir = params[:mes_a_rendir].presence || @rendicion&.mes_a_rendir
-      @rendicion ||= RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: mes_a_rendir)
+      @rendicion ||= RendicionFpl.find_by(flujo_id: flujo_id_actual, mes_a_rendir: mes_a_rendir)
 
       if @rendicion.nil? || @fondo_produccion_limpia.nil?
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de la rendición para generar el PDF.")
@@ -5443,11 +5499,11 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       begin
-        map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+        map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_actual).index_by(&:id)
         get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
         actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.map(&get_act_id).uniq rescue []
-        todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)
+        todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: flujo_id_actual)
         
         actividades_filtradas = todas_actividades.select { |a| actividades_rendicion_ids.include?(a.id) }
         actividades_filtradas = todas_actividades if actividades_filtradas.blank?
@@ -5469,7 +5525,7 @@ class FondoProduccionLimpiasController < ApplicationController
           send_data pdf_binary,
                     filename: nombre_archivo,
                     type: 'application/pdf',
-                    disposition: 'inline' # Permite visualizar el PDF en el navegador
+                    disposition: 'inline'
         else
           redirect_back(fallback_location: root_path, alert: "El generador de PDF devolvió un documento vacío.")
         end

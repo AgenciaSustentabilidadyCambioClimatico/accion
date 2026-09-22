@@ -2739,19 +2739,19 @@ class FondoProduccionLimpia < ApplicationRecord
     posicion_x = pdf.bounds.width - ancho_firma
 
     pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 75) do
-      logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+      #logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
       
-      if File.exist?(logo_firma_path)
-        y_inicio = pdf.cursor
-        pdf.transparent(0.25) do
-          pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
-        end
-      end
+      #if File.exist?(logo_firma_path)
+      #  y_inicio = pdf.cursor
+      #  pdf.transparent(0.25) do
+      #    pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+      #  end
+      #end
 
       pdf.move_down 30
 
       pdf.stroke_color '333333'
-      pdf.line_width 0.8
+      #pdf.line_width 0.8
       pdf.stroke_horizontal_rule
       
       pdf.move_down 4
@@ -2799,7 +2799,6 @@ class FondoProduccionLimpia < ApplicationRecord
     t_inicio = Time.now
     Rails.logger.info "=== [PDF INFORME TÉCNICO ACTIVIDADES] INICIANDO GENERACIÓN ==="
 
-    # Ajuste clave: Se aumenta el margen superior (Top: 85) para que el contenido fluya libremente sin Bounding Box global
     pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [85, 30, 40, 30])
 
     font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
@@ -2811,7 +2810,6 @@ class FondoProduccionLimpia < ApplicationRecord
     })
     pdf.font "DejaVuSans"
 
-    # Header repetitivo posicionado en el espacio del margen superior
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top + 65], width: pdf.bounds.width, height: 50 do
         logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
@@ -2904,7 +2902,7 @@ class FondoProduccionLimpia < ApplicationRecord
     fecha_evaluacion = f_evaluacion_raw.respond_to?(:strftime) ? f_evaluacion_raw.strftime('%d/%m/%Y') : "--"
     
     # -------------------------------------------------------------
-    # COMIENZO DEL CONTENIDO (YA NO USA BOUNDING BOX GLOBAL)
+    # COMIENZO DEL CONTENIDO
     # -------------------------------------------------------------
 
     pdf.font "DejaVuSans", style: :bold do
@@ -2948,17 +2946,30 @@ class FondoProduccionLimpia < ApplicationRecord
     self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
     pdf.move_down 6
 
-    # Determinación del estado global de la rendición
+    # =========================================================================
+    # DETERMINACIÓN EXCLUSIVA DE EVALUACIÓN TÉCNICA
+    # =========================================================================
     est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
-    es_aprobado_global  = [5, 6].include?(est_global)
-    es_observado_global = [3, 4].include?(est_global)
+    detalles_tecnicos_todos = detalles_fpl_array.select { |d| es_tecnica_tab.call(d) }
 
-    # Leyenda dinámica de dictamen de la Subdirección
-    if es_aprobado_global
+    # Verifica si existe algún ítem técnico con 'cumple' en rechazo/no
+    tiene_obs_tecnica_directa = detalles_tecnicos_todos.any? do |d|
+      c = (d.read_attribute_before_type_cast(:cumple) rescue d.cumple).to_s.downcase
+      ['2', 'no', 'false'].include?(c)
+    end
+
+    es_observado_tecnico = tiene_obs_tecnica_directa || est_global == 3
+    es_aprobado_tecnico  = !es_observado_tecnico && (
+      [5, 6].include?(est_global) ||
+      (detalles_tecnicos_todos.present? && detalles_tecnicos_todos.all? { |d| ['1', 'si', 'true'].include?((d.read_attribute_before_type_cast(:cumple) rescue d.cumple).to_s.downcase) })
+    )
+
+    # Leyenda dinámica de dictamen técnico de la Subdirección
+    if es_aprobado_tecnico
       texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático <b>APRUEBA</b> el informe de actividades asociado a la rendición del mes de <b>#{texto_mes_display}</b>."
       pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'D4EDDA', border_color: 'C3E6CB', text_color: '155724' })
       pdf.move_down 8
-    elsif es_observado_global
+    elsif es_observado_tecnico
       texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático informa que existen <b>OBSERVACIONES</b> en el informe de actividades asociado a la rendición de <b>#{texto_mes_display}</b>. Le solicitamos revisarlas y subsanarlas."
       pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'F8D7DA', border_color: 'F5C6CB', text_color: '721C24' })
       pdf.move_down 8
@@ -2980,10 +2991,6 @@ class FondoProduccionLimpia < ApplicationRecord
     elsif actividades.present?
 
       actividades.each do |act|
-        
-        # ==========================================================
-        # CONTROL DE SALTO DE PÁGINA INTELIGENTE PARA ACTIVIDADES
-        # ==========================================================
         if pdf.cursor < 140
           pdf.start_new_page
         end
@@ -3020,9 +3027,9 @@ class FondoProduccionLimpia < ApplicationRecord
                         es_observado = true
                         "<color rgb='DC3545'><b>OBSERVADO</b></color>"
                       else
-                        if [5, 6].include?(est_global)
+                        if es_aprobado_tecnico
                           "<color rgb='28A745'><b>APROBADO</b></color>"
-                        elsif [3, 4].include?(est_global)
+                        elsif es_observado_tecnico
                           es_observado = true
                           "<color rgb='DC3545'><b>OBSERVADO</b></color>"
                         elsif [1, 2].include?(est_global)
@@ -3120,10 +3127,7 @@ class FondoProduccionLimpia < ApplicationRecord
       pdf.text "Rendición Sin Movimientos", size: 8, style: :italic
     end
 
-    # ==========================================================
     # VERIFICACIÓN DE ESPACIO PARA FIRMA
-    # ==========================================================
-    # Si queda poco espacio al fondo de la hoja, crea una página nueva
     if pdf.cursor < 110
       pdf.start_new_page
     end
@@ -3138,13 +3142,11 @@ class FondoProduccionLimpia < ApplicationRecord
       
       if File.exist?(logo_firma_path)
         y_inicio = pdf.cursor
-        # Dibujar el logo en el fondo con opacidad tenue sin desplazar el cursor
         pdf.transparent(0.25) do
           pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
         end
       end
 
-      # Posicionar la línea a la mitad del logo para que quede sobrepuesto
       pdf.move_down 35
 
       pdf.stroke_color '333333'
