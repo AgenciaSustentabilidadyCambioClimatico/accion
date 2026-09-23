@@ -16,7 +16,7 @@ class FondoProduccionLimpiasController < ApplicationController
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
     :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
     :enviar_observaciones_admisibilidad_tecnica, :seleccionar_documentos_juridicos, :adjuntar_rendicion_subir_documentos_actividades, :rendicion_subir_documentos_actividades,
-    :asignar_revisor_rendicion, :revision_tecnica_rendicion, :revision_financiera_rendicion]
+    :asignar_revisor_rendicion, :revision_tecnica_rendicion, :revision_financiera_rendicion, :cargar_datos_autorizar_reitimizacion]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -35,7 +35,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado, 
                                         :guardar_fondo_temporal, :carga_responsable_postulante, :carga_responsable_postulante,
                                         :rendicion_subir_documentos_actividades, :asignar_revisor_rendicion, :revision_tecnica_rendicion, 
-                                        :revision_financiera_rendicion]
+                                        :revision_financiera_rendicion, :cargar_datos_autorizar_reitimizacion]
     before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
       :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
                                         :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
@@ -7019,8 +7019,11 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def set_actividades_x_linea
-        @actividad_x_linea = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id, @tarea_pendiente.flujo.tipo_instrumento_id)
-        @actividad_detalle = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
+        # Usamos @flujo para evitar caídas si la tarea pendiente no se logra cargar
+        return unless @flujo
+
+        @actividad_x_linea = Actividad.actividad_x_linea(@flujo.id, @flujo.tipo_instrumento_id)
+        @actividad_detalle = PlanActividad.actividad_detalle(@flujo.id)
       end
 
       def set_actividades_x_linea_2
@@ -7958,12 +7961,13 @@ class FondoProduccionLimpiasController < ApplicationController
   end
 
   def cargar_datos_autorizar_reitimizacion
-    # SOLUCIÓN: Si @tarea_pendiente ya existe (cargada por el before_action), NO LA RECONSULTAR NI SOBREESCRIBIR
+    # SOLUCIÓN: Si @tarea_pendiente ya existe, NO LA RECONSULTAR NI SOBREESCRIBIR
     if @tarea_pendiente.blank? && params[:id].present?
       if params[:id].to_s.match?(/^\d+$/)
         @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
-      elsif TareaPendiente.respond_to?(:find_by_hash)
-        @tarea_pendiente = TareaPendiente.find_by_hash(params[:id]) rescue nil
+      else
+        # Se cambia find_by_hash por find_by_hashid que es el estándar de hashid-rails
+        @tarea_pendiente = TareaPendiente.find_by_hashid(params[:id]) rescue nil
       end
     end
 
