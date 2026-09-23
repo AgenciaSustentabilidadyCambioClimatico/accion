@@ -8039,7 +8039,7 @@ class FondoProduccionLimpiasController < ApplicationController
     solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
     @tiene_permisos = solo_lectura.nil?
 
-    set_actividades_x_linea_2
+    set_actividades_x_linea
   end
 
   # Helper para convertir texto a Float reconociendo miles y decimales
