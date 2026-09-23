@@ -5211,7 +5211,15 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # PATCH /:id/guardar_autorizar_reitimizacion_rendicion
     def guardar_autorizar_reitimizacion_rendicion
-      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+      # 1. ARREGLO: Búsqueda compatible con ID numérico (Dev) y HashID encriptado (Staging)
+      if params[:id].present?
+        if params[:id].to_s.match?(/^\d+$/)
+          @tarea_pendiente = TareaPendiente.find_by(id: params[:id])
+        else
+          @tarea_pendiente = TareaPendiente.find_by_hashid(params[:id]) rescue nil
+        end
+      end
+      
       flujo_id_ref = @tarea_pendiente.try(:flujo_id)
 
       mes_a_cargar = params[:mes_a_rendir].presence || params[:mes_actual].presence
@@ -5259,10 +5267,12 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       end
 
-      # Configurar URL de retorno (Para recargar la misma página)
+      # Configurar URL de retorno
       url_params = {}
       url_params[:mes_a_rendir] = @rendicion.mes_a_rendir if @rendicion.present?
-      url_destino = autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(@tarea_pendiente, url_params)
+      
+      # 2. ARREGLO: Pasamos params[:id] directo para no perder la encriptación original en la redirección
+      url_destino = autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(params[:id], url_params)
 
       # Respuesta y Mensajes Flash
       if hubo_errores_archivos
