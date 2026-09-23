@@ -147,7 +147,7 @@
           %h5.no-margin= titulo_apl.html_safe
           %h5.no-margin= datos_beneficiario_fpl.html_safe
 
-= simple_form_for fpl_objeto, url: guardar_autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(@tarea_pendiente || params[:id]), html: { id: "form-autorizar-reitimizacion", multipart: true, autocomplete: :off } do |f| 
+= simple_form_for fpl_objeto, url: guardar_autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(@tarea_pendiente), html: { id: "form-autorizar-reitimizacion", multipart: true, autocomplete: :off }, remote: true  do |f| 
   = hidden_field_tag "mes_a_rendir", mes_actual.presence || @rendicion&.mes_a_rendir || 1
 
   .mt-3
