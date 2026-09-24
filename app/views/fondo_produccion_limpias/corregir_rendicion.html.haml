@@ -261,6 +261,7 @@
   .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
   .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
   .header-actividad-observada { background-color: #f8d7da !important; border-bottom: 2px solid #dc3545 !important; }
+  .is-invalid { border-color: #dc3545 !important; }
 
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new  
 - titulo t(:rendicion_por_actividad)
@@ -309,7 +310,25 @@
   - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - g_adm    = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
+  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operations: g_op, administracion: g_adm }
+
+-# =========================================================================
+-# CALCULO DE TABS OBSERVADOS PARA INDICADORES VISUALES
+-# =========================================================================
+- tab_tecnica_observada = false
+- tab_fpl_observada = false
+- tab_aporte_observada = false
+
+- if @rendicion.present?
+  - @rendicion.rendicion_detalles_fpl.each do |det|
+    - tab_num = (det.read_attribute_before_type_cast(:tipo_tab) || det.tipo_tab).to_i
+    - cumple_val = (det.read_attribute_before_type_cast(:cumple) || det.cumple).to_s.downcase
+    - es_obs = ['2', 'no', 'false'].include?(cumple_val)
+
+    - if es_obs
+      - tab_tecnica_observada = true if tab_num == 0
+      - tab_fpl_observada = true if tab_num == 1
+      - tab_aporte_observada = true if tab_num == 2
 
 .row
   .col-12
@@ -337,8 +356,11 @@
 #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
   %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
     - tabs.each do |tab, active|
+      - tiene_obs = (tab == 'tecnica' && tab_tecnica_observada) || (tab == 'financiera-fpl' && tab_fpl_observada) || (tab == 'financiera-aporte' && tab_aporte_observada)
       %li.nav-item.tab-block{id: "#{tab}-tab"}
         %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => (active ? "true" : "false"), "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+          - if tiene_obs
+            %i.fa.fa-exclamation-circle.text-danger.mr-1{title: "Contiene observaciones"}
           = t(tab.to_s.gsub('-','_'))
 
 - url_post = @es_correccion_tecnica ? guardar_correccion_tecnica_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) : guardar_correccion_financiera_rendicion_fondo_produccion_limpia_path(@tarea_pendiente)

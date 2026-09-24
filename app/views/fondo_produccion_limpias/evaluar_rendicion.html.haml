@@ -277,13 +277,15 @@
     / ----------------------------------------------------
     .tab-pane.fade#tecnica{class: ('show active' if @es_revision_tecnica), :role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
       - if es_sin_mov
-        - detalle_eval = @rendicion.rendicion_detalles_fpl.first_or_create!(tipo_tab: 0) if @rendicion.present?
+        -# CORRECCIÓN CLAVE: Usar find_or_create_by! en lugar de first_or_create! para buscar exactamente el tipo_tab: 0
+        - detalle_eval = @rendicion.rendicion_detalles_fpl.find_or_create_by!(tipo_tab: 0) if @rendicion.present?
         - if detalle_eval.present?
           - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
           - val_str = raw_cumple.to_s.downcase
           - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
           - valor_comentario = detalle_eval.comentario_revisor
           - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+          - esta_observada = valor_cumple_int == 2
 
           .alert.alert-warning.mb-3.p-3{style: "border-left: 4px solid #ffc107;"}
             .d-flex.align-items-center
@@ -292,9 +294,14 @@
                 %h6.font-weight-bold.mb-1 Rendición Sin Movimientos Técnicos
                 %p.mb-0{style: "font-size: 12px;"} Esta rendición fue enviada por el postulante declarando que no existieron ejecuciones ni movimientos técnicos en este período.
 
-          .card.border-warning.mb-3
-            .card-header.bg-light.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+          -# CORRECCIÓN VISUAL: Añadir estilos de 'Observada' cuando esta_observada es true
+          .card.mb-3{class: (esta_observada ? 'border-danger' : 'border-warning'), style: (esta_observada ? 'border: 2px solid #dc3545;' : '')}
+            .card-header.font-weight-bold{class: (esta_observada ? 'header-actividad-observada' : 'bg-light text-secondary'), style: "font-size: 13px;"}
               Evaluación Técnica de la Rendición Sin Movimientos
+              - if esta_observada
+                %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;"}
+                  %i.fa.fa-exclamation-triangle.mr-1
+                  Observada
             .card-body.p-3
               .table-responsive
                 %table.table.table-striped.no-margin
@@ -308,10 +315,10 @@
                       %td.contenido-form
                         %span.font-weight-bold Rendición Sin Movimientos Técnicos
                         %br
-                        %small.text-muted= detalle_eval.observacion.presence || "Sin avances técnicos registrados en el período."
+                        %small.text-muted= detalle_eval.observacion.presence || "Sin advances técnicos registrados en el período."
                       %td.contenido-form.text-center.align-middle{style: "vertical-align: middle !important;"}
                         - if @es_revision_tecnica
-                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text mx-auto", style: "max-width: 150px;", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
+                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text mx-auto #{'is-invalid border-danger' if esta_observada}", style: "max-width: 150px;", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
                         - else
                           - if valor_cumple_int == 1
                             %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
@@ -323,7 +330,7 @@
                         - if @es_revision_tecnica
                           = hidden_field_tag "comentario_postulante_#{detalle_eval.id}", "", id: "comentario_postulante_#{detalle_eval.id}"
                           = hidden_field_tag "detalles[#{detalle_eval.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_eval.id}"
-                          %button.btn.btn-sm.btn-primary.mx-auto{type: 'button', style: "max-width: 200px; width: 100%;", onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                          %button.btn.btn-sm.mx-auto{class: (esta_observada ? 'btn-danger' : 'btn-primary'), type: 'button', style: "max-width: 200px; width: 100%;", onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'comentario_revisor_', 'comentario_postulante_', false)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
                           .mt-1{id: "preview_comentario_revisor_#{detalle_eval.id}"}
@@ -335,6 +342,10 @@
                           %button.btn.btn-sm.btn-outline-primary.mx-auto{type: 'button', style: "max-width: 200px; width: 100%;", onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Técnicos', 'read_tec_comentario_', 'comentario_postulante_', true)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
+                          .mt-1{id: "preview_read_tec_comentario_#{detalle_eval.id}"}
+                            %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                              %i.fa.fa-comments
+                              = "#{num_comentarios_rev} registro(s)"
       - elsif @actividad_x_linea.present?
         - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
 
@@ -619,6 +630,7 @@
           - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
           - valor_comentario = detalle_eval.comentario_revisor
           - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+          - esta_observada = valor_cumple_int == 2
 
           .alert.alert-warning.mb-3.p-3{style: "border-left: 4px solid #ffc107;"}
             .d-flex.align-items-center
@@ -627,9 +639,13 @@
                 %h6.font-weight-bold.mb-1 Rendición Sin Movimientos Financieros FPL
                 %p.mb-0{style: "font-size: 12px;"} Esta rendición fue enviada por el postulante declarando que no existieron gastos ni movimientos financieros FPL en este período.
 
-          .card.border-warning.mb-3
-            .card-header.bg-light.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+          .card.mb-3{class: (esta_observada ? 'border-danger' : 'border-warning'), style: (esta_observada ? 'border: 2px solid #dc3545;' : '')}
+            .card-header.font-weight-bold{class: (esta_observada ? 'header-actividad-observada' : 'bg-light text-secondary'), style: "font-size: 13px;"}
               Evaluación Financiera FPL de la Rendición Sin Movimientos
+              - if esta_observada
+                %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;"}
+                  %i.fa.fa-exclamation-triangle.mr-1
+                  Observada
             .card-body.p-3
               .table-responsive
                 %table.table.table-striped.no-margin
@@ -646,7 +662,7 @@
                         %small.text-muted Sin gastos ni comprobantes rendidos en el período.
                       %td.contenido-form
                         - if @es_revision_financiera
-                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
+                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if esta_observada}", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
                         - else
                           - if valor_cumple_int == 1
                             %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
@@ -658,7 +674,7 @@
                         - if @es_revision_financiera
                           = hidden_field_tag "comentario_postulante_#{detalle_eval.id}", "", id: "comentario_postulante_#{detalle_eval.id}"
                           = hidden_field_tag "detalles[#{detalle_eval.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_eval.id}"
-                          %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos FPL', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                          %button.btn.btn-sm.w-100{class: (esta_observada ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos FPL', 'comentario_revisor_', 'comentario_postulante_', false)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
                           .mt-1{id: "preview_comentario_revisor_#{detalle_eval.id}"}
@@ -670,6 +686,10 @@
                           %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos FPL', 'read_fin_comentario_', 'comentario_postulante_', true)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
+                          .mt-1{id: "preview_read_fin_comentario_#{detalle_eval.id}"}
+                            %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                              %i.fa.fa-comments
+                              = "#{num_comentarios_rev} registro(s)"
       - elsif @actividad_x_linea.present?
         - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
         - docs_fpl_base = @documentos_fpl.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_fpl?) && d.financiera_fpl?) || d.tipo_tab.to_s.include?('fpl') || d.tipo_tab.to_s == '1' }) || []
@@ -802,6 +822,7 @@
           - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
           - valor_comentario = detalle_eval.comentario_revisor
           - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
+          - esta_observada = valor_cumple_int == 2
 
           .alert.alert-warning.mb-3.p-3{style: "border-left: 4px solid #ffc107;"}
             .d-flex.align-items-center
@@ -810,9 +831,13 @@
                 %h6.font-weight-bold.mb-1 Rendición Sin Movimientos de Aporte Propio
                 %p.mb-0{style: "font-size: 12px;"} No se registraron aportes propios líquidos ni valorados para este período.
 
-          .card.border-warning.mb-3
-            .card-header.bg-light.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+          .card.mb-3{class: (esta_observada ? 'border-danger' : 'border-warning'), style: (esta_observada ? 'border: 2px solid #dc3545;' : '')}
+            .card-header.font-weight-bold{class: (esta_observada ? 'header-actividad-observada' : 'bg-light text-secondary'), style: "font-size: 13px;"}
               Evaluación Aporte Propio de la Rendición Sin Movimientos
+              - if esta_observada
+                %span.badge.badge-danger.ml-2{style: "font-size: 11px; padding: 4px 8px; background-color: #dc3545;"}
+                  %i.fa.fa-exclamation-triangle.mr-1
+                  Observada
             .card-body.p-3
               .table-responsive
                 %table.table.table-striped.no-margin
@@ -829,7 +854,7 @@
                         %small.text-muted Sin aportes propios registrados en el período.
                       %td.contenido-form
                         - if @es_revision_financiera
-                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if valor_cumple_int == 2}", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
+                          = select_tag "detalles[#{detalle_eval.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text #{'is-invalid border-danger' if esta_observada}", id: "cumple_#{detalle_eval.id}", onchange: "toggleComentariosRevisor(this, '#{detalle_eval.id}')"
                         - else
                           - if valor_cumple_int == 1
                             %span.badge.badge-success{style: 'font-size: 10px; padding: 5px 10px;'} Sí
@@ -841,7 +866,7 @@
                         - if @es_revision_financiera
                           = hidden_field_tag "comentario_postulante_#{detalle_eval.id}", "", id: "comentario_postulante_#{detalle_eval.id}"
                           = hidden_field_tag "detalles[#{detalle_eval.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle_eval.id}"
-                          %button.btn.btn-sm.w-100{class: (valor_cumple_int == 2 && valor_comentario.to_s.strip.empty? ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Aporte Propio', 'comentario_revisor_', 'comentario_postulante_', false)"}
+                          %button.btn.btn-sm.w-100{class: (esta_observada ? 'btn-danger' : 'btn-primary'), type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Aporte Propio', 'comentario_revisor_', 'comentario_postulante_', false)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
                           .mt-1{id: "preview_comentario_revisor_#{detalle_eval.id}"}
@@ -853,6 +878,10 @@
                           %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_eval.id}', 'Declaración Sin Movimientos Aporte Propio', 'read_apo_comentario_', 'comentario_postulante_', true)"}
                             %i.fa.fa-comments.mr-1
                             Bitácora
+                          .mt-1{id: "preview_read_apo_comentario_#{detalle_eval.id}"}
+                            %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
+                              %i.fa.fa-comments
+                              = "#{num_comentarios_rev} registro(s)"
       - elsif @actividad_x_linea.present?
         - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
         - docs_aporte_base = @documentos_aporte.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_aporte?) && d.financiera_aporte?) || d.tipo_tab.to_s.include?('aporte') || d.tipo_tab.to_s == '2' }) || []

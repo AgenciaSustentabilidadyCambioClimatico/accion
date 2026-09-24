@@ -154,7 +154,7 @@
     .card.mb-3{style: "border: 2px solid #dee2e6;"}
       .card-header.header-actividad-fpl
         .d-flex.align-items-center
-          %span.font-weight-bold{style: "color: #333; font-size: 14px;"} Resumen General de Avances y Reitimización
+          %span.font-weight-bold{style: "color: #333; font-size: 14px;"} Resumen General de Avances y Reitemización
 
       .card-body.p-3
         .row
@@ -269,13 +269,13 @@
                 %thead
                   %tr
                     %th.encabezado-form{colspan: 2, style: "border-bottom: none;"}
-                    %th.encabezado-form{colspan: 3} Informes Revisión
+                    %th.encabezado-form{colspan: 3} Informes
                   %tr
                     %th.encabezado-form Estado Rendiciones
                     %th.encabezado-form Estado
-                    %th.encabezado-form Postulación
+                    %th.encabezado-form Ejecución Actividades
                     %th.encabezado-form Evaluación Técnica
-                    %th.encabezado-form Gastos
+                    %th.encabezado-form Evaluación Gastos
                 %tbody
                   - rendiciones_todas.each do |r|
                     - estado_desc = estados_map[get_estado_num.call(r)] || 'En proceso'
@@ -297,15 +297,15 @@
                       %td.contenido-form.text-center= estado_desc
                       - if get_estado_num.call(r) >= 1 
                         - if tiene_tp_13
-                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          %td.contenido-form.text-center= link_to 'Descargar PDF', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
                         - else
                           %td.contenido-form.text-center --
                         - if tiene_tp_15
-                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          %td.contenido-form.text-center= link_to 'Descargar PDF', descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
                         - else
                           %td.contenido-form.text-center --
                         - if tiene_tp_14
-                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          %td.contenido-form.text-center= link_to 'Descargar PDF', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
                         - else
                           %td.contenido-form.text-center --
                       - else
