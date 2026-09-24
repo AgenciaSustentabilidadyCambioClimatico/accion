@@ -2752,7 +2752,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       pdf.stroke_color '333333'
       #pdf.line_width 0.8
-      pdf.stroke_horizontal_rule
+      #pdf.stroke_horizontal_rule
       
       pdf.move_down 4
 

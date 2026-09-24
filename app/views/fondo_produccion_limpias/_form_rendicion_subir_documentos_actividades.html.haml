@@ -30,6 +30,13 @@
 - es_sin_movimientos = ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos)) || params[:sin_movimientos].to_s == '1'
 
 -# ==========================================================
+-# LAMBDAS PARA DETECTAR SI UNA ACTIVIDAD TIENE GASTOS CONFIGURADOS
+-# ==========================================================
+- f_id_actual = @tarea_pendiente&.flujo_id || @rendicion&.flujo_id
+- tiene_gastos_fpl_fn = lambda { |act_id| tipos = ['solicitado al fondo', 'solicitado_al_fondo']; (PlanActividad.recursos_internos(f_id_actual, act_id).to_a + PlanActividad.recursos_externos(f_id_actual, act_id).to_a + PlanActividad.gastos_operaciones(f_id_actual, act_id).to_a + PlanActividad.gastos_administraciones(f_id_actual, act_id).to_a).any? { |i| tipos.any? { |t| i.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue false }
+- tiene_gastos_aporte_fn = lambda { |act_id| tipos = ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido']; (PlanActividad.recursos_internos(f_id_actual, act_id).to_a + PlanActividad.recursos_externos(f_id_actual, act_id).to_a + PlanActividad.gastos_operaciones(f_id_actual, act_id).to_a + PlanActividad.gastos_administraciones(f_id_actual, act_id).to_a).any? { |i| tipos.any? { |t| i.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue false }
+
+-# ==========================================================
 -# CÁLCULO Y CONTROL DE GASTOS DE ADMINISTRACIÓN TOTAL (LÍMITE 10%)
 -# ==========================================================
 - c_costos_obj = PlanActividad.costos(@tarea_pendiente&.flujo_id) rescue nil
@@ -475,27 +482,6 @@
           const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
           const tieneUrlInput = urlInput && urlInput.value.trim() !== '';
           const tieneArchivo = tieneArchivoPrevio || tieneArchivoNuevo || tieneUrlInput;
-          let resumenValido = true;
-          const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
-          const inputConclusion = document.getElementById('rendicion_conclusion');
-
-          if (inputResultado) {
-            if (inputResultado.value.trim() === '') {
-              resumenValido = false;
-              $(inputResultado).addClass('is-invalid');
-            } else {
-              $(inputResultado).removeClass('is-invalid');
-            }
-          }
-
-          if (inputConclusion) {
-            if (inputConclusion.value.trim() === '') {
-              resumenValido = false;
-              $(inputConclusion).addClass('is-invalid');
-            } else {
-              $(inputConclusion).removeClass('is-invalid');
-            }
-          }
 
           if (fechaInicio === '') {
             tabTecnicaValido = false;
@@ -551,6 +537,15 @@
       document.querySelectorAll('.actividad-fpl-block').forEach(block => {
         if (block.style.display === 'none') return;
         const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'FPL';
+        const tieneGastos = $(block).attr('data-tiene-gastos') === 'true' || $(block).data('tiene-gastos') === true;
+
+        // Si la actividad NO tiene ítems/gastos configurados en la propuesta, el archivo NO es obligatorio
+        if (!tieneGastos) {
+          block.querySelectorAll('tbody input[type="file"]').forEach(fileInput => {
+            $(fileInput).removeClass('is-invalid');
+          });
+          return;
+        }
 
         let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
@@ -584,6 +579,15 @@
       document.querySelectorAll('.actividad-aporte-block').forEach(block => {
         if (block.style.display === 'none') return;
         const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'Aporte Propio';
+        const tieneGastos = $(block).attr('data-tiene-gastos') === 'true' || $(block).data('tiene-gastos') === true;
+
+        // Si la actividad NO tiene ítems/gastos configurados en la propuesta, el archivo NO es obligatorio
+        if (!tieneGastos) {
+          block.querySelectorAll('tbody input[type="file"]').forEach(fileInput => {
+            $(fileInput).removeClass('is-invalid');
+          });
+          return;
+        }
 
         let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
@@ -615,11 +619,22 @@
     const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
     const inputConclusion = document.getElementById('rendicion_conclusion');
 
-    if (inputResultado && inputResultado.value.trim() === '') {
-      resumenValido = false;
+    if (inputResultado) {
+      if (inputResultado.value.trim() === '') {
+        resumenValido = false;
+        $(inputResultado).addClass('is-invalid');
+      } else {
+        $(inputResultado).removeClass('is-invalid');
+      }
     }
-    if (inputConclusion && inputConclusion.value.trim() === '') {
-      resumenValido = false;
+
+    if (inputConclusion) {
+      if (inputConclusion.value.trim() === '') {
+        resumenValido = false;
+        $(inputConclusion).addClass('is-invalid');
+      } else {
+        $(inputConclusion).removeClass('is-invalid');
+      }
     }
 
     const tieneExcesoMonto = $('.has-exceso-error').length > 0;
@@ -1148,6 +1163,7 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
             
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tiene_gastos_act = tiene_gastos_fpl_fn.call(actividad.id) || tiene_gastos_fpl_fn.call(plan_act_id_num)
             - tipo_act_val = actividad.try(:tipo_actividad)
             - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
 
@@ -1155,7 +1171,7 @@
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
             - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
 
-            .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
+            .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, 'data-tiene-gastos' => tiene_gastos_act.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
@@ -1193,7 +1209,8 @@
                           - if es_editable
                             %th.encabezado-form{style: 'width: 55%;'}
                               Subir Documento Rendición
-                              %span.text-danger *
+                              - if tiene_gastos_act
+                                %span.text-danger *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-fpl-#{actividad.id}"}
                         - if docs_act.present?
@@ -1238,6 +1255,7 @@
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
             
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+            - tiene_gastos_act = tiene_gastos_aporte_fn.call(actividad.id) || tiene_gastos_aporte_fn.call(plan_act_id_num)
             - tipo_act_val = actividad.try(:tipo_actividad)
             - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
 
@@ -1245,7 +1263,7 @@
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
             - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
 
-            .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
+            .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, 'data-tiene-gastos' => tiene_gastos_act.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
@@ -1283,7 +1301,8 @@
                           - if es_editable
                             %th.encabezado-form{style: 'width: 55%;'}
                               Subir Documento Rendición
-                              %span.text-danger *
+                              - if tiene_gastos_act
+                                %span.text-danger *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-aporte-#{actividad.id}"}
                         - if docs_act.present?
