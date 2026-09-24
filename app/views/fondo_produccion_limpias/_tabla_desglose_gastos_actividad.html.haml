@@ -311,7 +311,7 @@
                   %th.encabezado-form{style: "width: 7%;", title: "Saldo restante para esta rendición"} Monto Disponible
                   %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
                   %th.encabezado-form{style: "width: 9%;"} Valor Und. Rendido
-                  %th.encabezado-form{style: "width: 8%;"} Monto Rendido
+                  %th.encabezado-form{style: "width: 8%;"} Monto a Rendir
                   %th.encabezado-form{style: "width: 6%;"} Saldo
                   %th.encabezado-form{style: "width: 8%;"} Detalle Medios Verificación
               %tbody
@@ -353,9 +353,9 @@
                       - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
                       - comprobante_ref_val = g_guardado.try(:comprobante_ref).to_s
                     - else
-                      - cantidad_rendida = hh_postulada
+                      - cantidad_rendida = 0
                       - v_unitario_rendido = v_unitario_solicitado
-                      - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
+                      - monto_rendido = 0
 
                     - saldo_actual = monto_postulado - monto_rendido
 

@@ -435,7 +435,7 @@
                           -# BÚSQUEDA DEL REVISOR FINANCIERO/CONTABLE EN EL MAPA DE ACTORES / POSTULACIÓN PARA PRECARGARLO
                           - current_fin_id = @rendicion&.revisor_financiero_id || fpl_objeto.try(:revisor_financiero_id) || fpl_objeto.try(:revisor_contable_id) || fpl_objeto.flujo.try(:revisor_financiero_id) || fpl_objeto.flujo.try(:revisor_contable_id)
                           
-                          = f.select :revisor_financiero_id, options_for_select([['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, current_fin_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
+                          = f.select :revisor_financiero_id, options_for_select([['Seleccione un revisor contable', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, current_fin_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor contable", id: 'revisor_financiero_fpl_id' }
                         - else
                           .form-group
                             - rev_financiero = @rendicion&.revisor_financiero&.nombre_completo

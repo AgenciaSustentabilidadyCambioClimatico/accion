@@ -1121,7 +1121,7 @@
                               .upload-action-box
                                 .d-flex.align-items-center.justify-content-between.flex-wrap
                                   .flex-grow-1.mr-2{style: "min-width: 180px;"}
-                                    = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control-file smaller-text border-text w-100", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+                                    = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control-file smaller-text border-text w-100", onchange: "validarFormulario();"
                                   .text-right.mt-1.mt-sm-0
                                     %button.btn.btn-sm.btn-primary.shadow-sm{type: "button", style: "font-size: 11px; padding: 4px 10px;", onclick: "abrirModalUrl(#{actividad.id})"}
                                       %i.fa.fa-link.mr-1

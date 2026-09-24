@@ -4747,6 +4747,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
           if es_sin_mov
             # Para Sin Movimientos (C) NO se abre nueva tarea, solo se envía el mensaje
+            @tarea_pendiente.pasar_a_siguiente_tarea('C')
             flash[:notice] = "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} (Sin movimientos) enviada con observaciones. Se devolvió a la tarea (FPL-12)."
           else
             # Para Con Movimientos (B) se pasa a la tarea de corrección técnica (FPL-18)
@@ -4893,6 +4894,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
           if es_sin_mov
             # Para Sin Movimientos NO se pasa a FPL-17; se devuelve a la tarea FPL-12
+            @tarea_pendiente.pasar_a_siguiente_tarea('C')
             flash[:notice] = "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} (Sin movimientos) enviada con observaciones. Se devolvió a la tarea (FPL-12)."
           else
             if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
