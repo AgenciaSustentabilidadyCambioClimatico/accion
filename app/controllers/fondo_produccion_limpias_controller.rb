@@ -4528,37 +4528,51 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       # =========================================================================
-      # MAPA DUAL DE LECTURA (PARA FPL-13)
-      # Asegura que al visualizar el detalle, empate la vista (101) con BD (711)
+      # MAPA DUAL DE LECTURA (PARA FPL-13) - RESOLUCIÓN DE COLISIÓN (2 PASADAS)
       # =========================================================================
       @detalles_tecnicos_map = {}
       @rendicion_gastos_map  = {}
 
       if @rendicion.present?
         planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
-
         tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+
+        # Pasada 1: Cargar por PK
         @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
           det.rendicion_detalle_actividades_fpl.each do |rda|
-            p_id = rda.plan_actividad_id.to_i
-            plan = planes_flujo[p_id]
-            
-            @detalles_tecnicos_map[p_id] = det
-            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+            @detalles_tecnicos_map[rda.plan_actividad_id.to_i] = det
           end
         end
 
-        @rendicion.rendicion_gastos_fpl.each do |gasto|
-          p_id = gasto.plan_actividad_id.to_i
-          cat = gasto.categoria.to_s.strip.downcase
-          item_id = gasto.item_origen_id.to_i
-          plan = planes_flujo[p_id]
+        # Pasada 2: Sobrescribir con actividad_id
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            plan = planes_flujo[rda.plan_actividad_id.to_i]
+            if plan.present? && plan.actividad_id.present?
+              @detalles_tecnicos_map[plan.actividad_id.to_i] = det
+            end
+          end
+        end
 
+        # Mapeo de Gastos Pasada 1
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
           @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
-          @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+        end
+
+        # Mapeo de Gastos Pasada 2
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          plan    = planes_flujo[p_id]
+          if plan.present? && plan.actividad_id.present?
+            @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto
+          end
         end
       end
-      # =========================================================================
 
       # 4. Permisos
       @solo_lectura = true
@@ -4678,34 +4692,54 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
 
       # =========================================================================
-      # MAPA DUAL DE LECTURA (PARA FPL-15)
+      # MAPA DUAL DE LECTURA ESTRICTA (PARA FPL-15) - RESOLUCIÓN DE COLISIÓN (2 PASADAS)
       # =========================================================================
       @detalles_tecnicos_map = {}
       @rendicion_gastos_map  = {}
 
       if @rendicion.present?
         planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
-
         tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+
+        # Pasada 1: Cargar por PK
         @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
           det.rendicion_detalle_actividades_fpl.each do |rda|
-            p_id = rda.plan_actividad_id.to_i
-            plan = planes_flujo[p_id]
-            
-            @detalles_tecnicos_map[p_id] = det
-            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+            @detalles_tecnicos_map[rda.plan_actividad_id.to_i] = det
           end
         end
 
-        @rendicion.rendicion_gastos_fpl.each do |gasto|
-          p_id = gasto.plan_actividad_id.to_i
-          cat = gasto.categoria.to_s.strip.downcase
-          item_id = gasto.item_origen_id.to_i
-          plan = planes_flujo[p_id]
-
-          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
-          @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+        # Pasada 2: Sobrescribir con actividad_id
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            plan = planes_flujo[rda.plan_actividad_id.to_i]
+            if plan.present? && plan.actividad_id.present?
+              @detalles_tecnicos_map[plan.actividad_id.to_i] = det
+            end
+          end
         end
+
+        # Mapeo de Gastos Pasada 1
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+        end
+
+        # Mapeo de Gastos Pasada 2
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          plan    = planes_flujo[p_id]
+          if plan.present? && plan.actividad_id.present?
+            @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto
+          end
+        end
+        
+        # Precarga de documentos financieros
+        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
       end
       # =========================================================================
 
@@ -4821,57 +4855,73 @@ class FondoProduccionLimpiasController < ApplicationController
       unless @rendicion.present?
         estados_evaluacion = RendicionFpl.estados.slice('en_evaluacion', 'enviada_a_revision').values.presence || [1, 2]
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .where(estado: estados_evaluacion)
-                                .order(mes_a_rendir: :asc, id: :asc)
-                                .first
+                                 .where(estado: estados_evaluacion)
+                                 .order(mes_a_rendir: :asc, id: :asc)
+                                 .first
       end
 
       # 3. Fallback final
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc, id: :desc).first
 
-      if @rendicion.present?
-        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
-        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
-      else
-        @documentos_fpl    = RendicionDetalleFpl.none
-        @documentos_aporte = RendicionDetalleFpl.none
-      end
+      set_actividades_x_linea
 
       # =========================================================================
-      # MAPA DUAL DE LECTURA (PARA FPL-14)
+      # MAPA DUAL DE LECTURA ESTRICTA (PARA FPL-14) - RESOLUCIÓN DE COLISIÓN (2 PASADAS)
       # =========================================================================
       @detalles_tecnicos_map = {}
       @rendicion_gastos_map  = {}
 
       if @rendicion.present?
         planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
-
         tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+
+        # Pasada 1: Cargar por PK
         @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
           det.rendicion_detalle_actividades_fpl.each do |rda|
-            p_id = rda.plan_actividad_id.to_i
-            plan = planes_flujo[p_id]
-            
-            @detalles_tecnicos_map[p_id] = det
-            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+            @detalles_tecnicos_map[rda.plan_actividad_id.to_i] = det
           end
         end
 
-        @rendicion.rendicion_gastos_fpl.each do |gasto|
-          p_id = gasto.plan_actividad_id.to_i
-          cat = gasto.categoria.to_s.strip.downcase
-          item_id = gasto.item_origen_id.to_i
-          plan = planes_flujo[p_id]
-
-          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
-          @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+        # Pasada 2: Sobrescribir con actividad_id
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            plan = planes_flujo[rda.plan_actividad_id.to_i]
+            if plan.present? && plan.actividad_id.present?
+              @detalles_tecnicos_map[plan.actividad_id.to_i] = det
+            end
+          end
         end
+
+        # Mapeo de Gastos Pasada 1
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+        end
+
+        # Mapeo de Gastos Pasada 2
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          plan    = planes_flujo[p_id]
+          if plan.present? && plan.actividad_id.present?
+            @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto
+          end
+        end
+        
+        # Precarga de documentos financieros
+        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
+      else
+        @documentos_fpl    = RendicionDetalleFpl.none
+        @documentos_aporte = RendicionDetalleFpl.none
       end
       # =========================================================================
 
       @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
       @tiene_permisos = !@solo_lectura
-      set_actividades_x_linea
 
       render 'evaluar_rendicion'
     end
@@ -5067,10 +5117,75 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendiente.reload
       end
 
+      # =========================================================================
+      # TRADUCTOR DE IDs PARA ACTUALIZACIÓN (DOBLE PASADA ESTRICTA)
+      # Intercepta los parámetros que vienen de la vista y los traduce
+      # a la Primary Key real antes de que los procesadores los guarden.
+      # =========================================================================
+      map_act_ids = {}
+      map_pk_ids  = {}
+
+      PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).each do |p|
+        map_act_ids[p.actividad_id.to_s] = p.id.to_s if p.actividad_id.present?
+        map_pk_ids[p.id.to_s]            = p.id.to_s
+      end
+
+      traductor_pk = lambda do |id_param|
+        val = id_param.to_s
+        map_act_ids[val] || map_pk_ids[val] || val
+      end
+
+      # INTERCEPTAR Y TRADUCIR IDs EN DOCUMENTOS FPL
+      if params[:documentos_fpl].respond_to?(:each)
+        iterable_fpl = params[:documentos_fpl].respond_to?(:values) ? params[:documentos_fpl].values : params[:documentos_fpl]
+        iterable_fpl.each do |doc_param|
+          if doc_param[:actividad_ids].present?
+            ids = doc_param[:actividad_ids].is_a?(Array) ? doc_param[:actividad_ids] : doc_param[:actividad_ids].values
+            doc_param[:actividad_ids] = ids.map { |id| traductor_pk.call(id) }.compact
+          end
+        end
+      end
+
+      # INTERCEPTAR Y TRADUCIR IDs EN DOCUMENTOS APORTE
+      if params[:documentos_aporte].respond_to?(:each)
+        iterable_aporte = params[:documentos_aporte].respond_to?(:values) ? params[:documentos_aporte].values : params[:documentos_aporte]
+        iterable_aporte.each do |doc_param|
+          if doc_param[:actividad_ids].present?
+            ids = doc_param[:actividad_ids].is_a?(Array) ? doc_param[:actividad_ids] : doc_param[:actividad_ids].values
+            doc_param[:actividad_ids] = ids.map { |id| traductor_pk.call(id) }.compact
+          end
+        end
+      end
+
+      # INTERCEPTAR Y TRADUCIR IDs EN LA TABLA DE GASTOS
+      if params[:gastos_rendidos].present?
+        gastos_hash = params[:gastos_rendidos].respond_to?(:to_unsafe_h) ? params[:gastos_rendidos].to_unsafe_h : params[:gastos_rendidos]
+        gastos_corregidos = {}
+        
+        gastos_hash.each do |act_id, datos|
+          real_pk = traductor_pk.call(act_id)
+          gastos_corregidos[real_pk.to_s] = datos
+        end
+        
+        params[:gastos_rendidos] = params.respond_to?(:permit!) ? ActionController::Parameters.new(gastos_corregidos) : gastos_corregidos
+      end
+      # =========================================================================
+
       # 4. PROCESAR DESGLOSE DE GASTOS (HH, VALORES Y COMPROBANTES) Y DOCUMENTOS
       procesar_gastos_rendidos(params[:gastos_rendidos]) if params[:gastos_rendidos].present?
       procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
       procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
+
+      # Asegurar que se guarden los comentarios del postulante si vienen anidados en los documentos
+      [params[:documentos_fpl], params[:documentos_aporte]].compact.each do |docs_param|
+        iterable = docs_param.respond_to?(:values) ? docs_param.values : docs_param
+        iterable.each do |doc_param|
+          if doc_param[:id].present? && doc_param.key?(:comentario_postulante)
+            detalle = RendicionDetalleFpl.find_by(id: doc_param[:id])
+            detalle.update_column(:comentario_postulante, doc_param[:comentario_postulante]) if detalle
+          end
+        end
+      end
 
       # 5. Flujo de envío o grabado de avance
       if params[:commit_type] == 'enviar'
@@ -5136,23 +5251,33 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendiente.reload
       end
 
-      # TRADUCTOR DE IDs PARA BÚSQUEDA Y ACTUALIZACIÓN
-      mapa_plan_ids = {}
+      # =========================================================================
+      # TRADUCTOR DE IDs PARA BÚSQUEDA Y ACTUALIZACIÓN (DOBLE PASADA ESTRICTA)
+      # =========================================================================
+      map_act_ids = {}
+      map_pk_ids  = {}
+
       PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).each do |p|
-        mapa_plan_ids[p.actividad_id.to_i] = p.id
-        mapa_plan_ids[p.id.to_i]           = p.id
+        map_act_ids[p.actividad_id.to_i] = p.id if p.actividad_id.present?
+        map_pk_ids[p.id.to_i]            = p.id
       end
+
+      obtener_pk_real = lambda do |id_param|
+        val = id_param.to_i
+        map_act_ids[val] || map_pk_ids[val]
+      end
+      # =========================================================================
 
       # 3. Guardar avance, nivel de avance, fechas, observaciones, enlaces y archivos de actividades
       if params[:actividades_ids].present?
         params[:actividades_ids].each do |act_id|
-          real_pk = mapa_plan_ids[act_id.to_i] || act_id.to_i
+          real_pk = obtener_pk_real.call(act_id)
+          next if real_pk.blank?
 
+          # BÚSQUEDA ESTRICTA DEL DETALLE ASOCIADO A LA PK
           detalle = @rendicion.rendicion_detalles_fpl.find do |d|
             is_tec = (d.tecnica? rescue (d.tipo_tab.to_s == 'tecnica' || d.tipo_tab.to_i == 0))
-            act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&:to_i)
-            act_ids += d.plan_actividades.map(&:id).map(&:to_i) if d.respond_to?(:plan_actividades) && d.plan_actividades.present?
-            is_tec && (act_ids.include?(real_pk) || act_ids.include?(act_id.to_i))
+            is_tec && d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == real_pk }
           end
 
           if detalle.present?
@@ -7532,21 +7657,21 @@ class FondoProduccionLimpiasController < ApplicationController
 
       if estado_filtro.present?
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id, estado: estado_filtro)
-                                .order(mes_a_rendir: :asc)
-                                .first
+                                 .order(mes_a_rendir: :asc)
+                                 .first
       else
         estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                                .where.not(estado: estado_aprobado_val)
-                                .order(mes_a_rendir: :asc)
-                                .first
+                                 .where.not(estado: estado_aprobado_val)
+                                 .order(mes_a_rendir: :asc)
+                                 .first
       end
     end
 
     # 4. Fallback final
     @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                              .order(mes_a_rendir: :desc)
-                              .first
+                               .order(mes_a_rendir: :desc)
+                               .first
 
     if @rendicion.present?
       @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
@@ -7557,33 +7682,49 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     # =========================================================================
-    # MAPAS DUALES DE LECTURA (PARA FPL-17 Y FPL-18)
+    # MAPAS DUALES ESTRICTOS (PARA FPL-17 Y FPL-18) - DOBLE PASADA
     # =========================================================================
     @detalles_tecnicos_map = {}
     @rendicion_gastos_map  = {}
 
     if @rendicion.present?
       planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
-
       tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+
+      # Pasada 1: Cargar por PK
       @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
         det.rendicion_detalle_actividades_fpl.each do |rda|
-          p_id = rda.plan_actividad_id.to_i
-          plan = planes_flujo[p_id]
-          
-          @detalles_tecnicos_map[p_id] = det
-          @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+          @detalles_tecnicos_map[rda.plan_actividad_id.to_i] = det
         end
       end
 
-      @rendicion.rendicion_gastos_fpl.each do |gasto|
-        p_id = gasto.plan_actividad_id.to_i
-        cat = gasto.categoria.to_s.strip.downcase
-        item_id = gasto.item_origen_id.to_i
-        plan = planes_flujo[p_id]
+      # Pasada 2: Sobrescribir con actividad_id
+      @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+        det.rendicion_detalle_actividades_fpl.each do |rda|
+          plan = planes_flujo[rda.plan_actividad_id.to_i]
+          if plan.present? && plan.actividad_id.present?
+            @detalles_tecnicos_map[plan.actividad_id.to_i] = det
+          end
+        end
+      end
 
+      # Mapeo de Gastos Pasada 1
+      @rendicion.rendicion_gastos_fpl.each do |gasto|
+        p_id    = gasto.plan_actividad_id.to_i
+        cat     = gasto.categoria.to_s.strip.downcase
+        item_id = gasto.item_origen_id.to_i
         @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
-        @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+      end
+
+      # Mapeo de Gastos Pasada 2
+      @rendicion.rendicion_gastos_fpl.each do |gasto|
+        p_id    = gasto.plan_actividad_id.to_i
+        cat     = gasto.categoria.to_s.strip.downcase
+        item_id = gasto.item_origen_id.to_i
+        plan    = planes_flujo[p_id]
+        if plan.present? && plan.actividad_id.present?
+          @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto
+        end
       end
     end
     # =========================================================================

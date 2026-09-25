@@ -546,28 +546,12 @@
         const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'FPL';
         const tieneGastos = $(block).attr('data-tiene-gastos') === 'true' || $(block).data('tiene-gastos') === true;
 
-        // Detección del monto rendido en esta actividad
-        let montoRendidoBlock = 0;
-        block.querySelectorAll('.real-cantidad-rendida').forEach(inputCant => {
-          const $tr = $(inputCant).closest('tr');
-          const valUni = parseFloat($tr.find('.real-valor-unitario-rendido').val() || 0);
-          const cant = parseFloat(inputCant.value || 0);
-          montoRendidoBlock += (cant * valUni);
-        });
-
-        const $asterisco = $(block).find('.asterisco-requerido');
-
-        // Si NO hay gastos a rendir ($0), el archivo NO es obligatorio y el asterisco rojo se oculta
-        if (montoRendidoBlock === 0) {
-          $asterisco.hide();
+        if (!tieneGastos) {
           block.querySelectorAll('tbody input[type="file"]').forEach(fileInput => {
             $(fileInput).removeClass('is-invalid');
           });
           return;
         }
-
-        // Si SÍ hay monto a rendir (> $0), mostramos el asterisco rojo y exigimos el documento
-        $asterisco.show();
 
         let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
@@ -603,28 +587,12 @@
         const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'Aporte Propio';
         const tieneGastos = $(block).attr('data-tiene-gastos') === 'true' || $(block).data('tiene-gastos') === true;
 
-        // Detección del monto rendido en esta actividad
-        let montoRendidoBlock = 0;
-        block.querySelectorAll('.real-cantidad-rendida').forEach(inputCant => {
-          const $tr = $(inputCant).closest('tr');
-          const valUni = parseFloat($tr.find('.real-valor-unitario-rendido').val() || 0);
-          const cant = parseFloat(inputCant.value || 0);
-          montoRendidoBlock += (cant * valUni);
-        });
-
-        const $asterisco = $(block).find('.asterisco-requerido');
-
-        // Si NO hay gastos a rendir ($0), el archivo NO es obligatorio y el asterisco rojo se oculta
-        if (montoRendidoBlock === 0) {
-          $asterisco.hide();
+        if (!tieneGastos) {
           block.querySelectorAll('tbody input[type="file"]').forEach(fileInput => {
             $(fileInput).removeClass('is-invalid');
           });
           return;
         }
-
-        // Si SÍ hay monto a rendir (> $0), mostramos el asterisco rojo y exigimos el documento
-        $asterisco.show();
 
         let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
@@ -1254,7 +1222,7 @@
                             %th.encabezado-form{style: 'width: 55%;'}
                               Subir Documento Rendición
                               - if tiene_gastos_act
-                                %span.text-danger.asterisco-requerido{style: "display: none;"} *
+                                %span.text-danger *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-fpl-#{actividad.id}"}
                         - if docs_act.present?
@@ -1350,7 +1318,7 @@
                             %th.encabezado-form{style: 'width: 55%;'}
                               Subir Documento Rendición
                               - if tiene_gastos_act
-                                %span.text-danger.asterisco-requerido{style: "display: none;"} *
+                                %span.text-danger *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-aporte-#{actividad.id}"}
                         - if docs_act.present?
