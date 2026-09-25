@@ -84,14 +84,25 @@
 -# Obtención del mes guardado en rendiciones_fpl
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 
+-# ==========================================================
+-# DICCIONARIO ESTRICTO PARA RESOLVER PK DE PLAN_ACTIVIDAD
+-# (Doble pasada para EVITAR colisiones de ID)
+-# ==========================================================
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- map_act_ids = {}
+- map_pk_ids  = {}
+- arr_planes.each do |p|
+  - map_act_ids[p.actividad_id.to_i] = p.id if p.actividad_id.present?
+  - map_pk_ids[p.id.to_i]            = p.id
+- obtener_pk_real = lambda { |id_param| val = id_param.to_i; map_act_ids[val] || map_pk_ids[val] }
+
 -# Identificar ÚNICAMENTE las actividades que fueron seleccionadas y guardadas en esta rendición
-- actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
-- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+- pks_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+- act_ids_en_rendicion = pks_en_rendicion.map { |pk| arr_planes.find { |p| p.id == pk }&.actividad_id }.compact.map(&:to_i) + pks_en_rendicion.map(&:to_i)
 
 -# ==========================================================
 -# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
 -# ==========================================================
-- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
 - reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
 
 -# -------------------------------------------------------------
@@ -104,10 +115,6 @@
   - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
 
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual})" : "Rendición #{mes_actual}"
-
--# TRADUCCIÓN INVERSA DE IDS
-- map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
-- get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
 -# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
@@ -177,32 +184,30 @@
           .tab-content#manifestacionContent
             
             / -------------------------------------------------------------
-            / Pestaña 1: Técnica (Modo Lectura NUEVO FORMATO)
+            / Pestaña 1: Técnica (Modo Lectura NUEVO FORMATO ESTRICTO)
             / -------------------------------------------------------------
             .tab-pane.fade#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
               - if @actividad_x_linea.present?
-                -# Filtrar usando la traducción al ID original
-                - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) }
+                - actividades_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
 
                 - if actividades_filtradas.present?
                   - actividades_filtradas.each do |actividad|
-                    - act_id_num = actividad.id.to_i
-                    - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
-                    - plan_act_id_num = plan_act.try(:id).to_i
-                    - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+                    - pk_real_plan = obtener_pk_real.call(actividad.id)
+                    - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+                    - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
                     - tipo_act_val = actividad.try(:tipo_actividad)
                     - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
                     
                     - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
-                    - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
+                    - obj_esp_id ||= PlanActividad.where(actividad_id: pk_real_plan, flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
 
                     - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
                     - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
 
-                    -# USO DEL MAPA DEL CONTROLADOR
-                    - detalle_tecnico = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i]
+                    -# BÚSQUEDA ESTRICTA A LA BBDD SIN DICCIONARIO
+                    - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
                     
                     - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || '--'
                     - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || '--'
@@ -286,22 +291,23 @@
                 .card.mt-2
                   .card-body.text-center.text-muted No hay actividades registradas.
 
-            / Pestaña 2: Financiera FPL (Modo Lectura con Desglose)
+            / Pestaña 2: Financiera FPL (Modo Lectura ESTRICTO)
             .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
               - if @actividad_x_linea.present?
-                - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) }
+                - actividades_fpl_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
 
                 - if actividades_fpl_filtradas.present?
                   - actividades_fpl_filtradas.each do |actividad|
-                    - act_id_num = actividad.id.to_i
-                    - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
-                    - plan_act_id_num = plan_act.try(:id).to_i
-                    - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+                    - pk_real_plan = obtener_pk_real.call(actividad.id)
+                    - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+                    - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
                     - tipo_act_val = actividad.try(:tipo_actividad)
                     - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
-                    - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+                    
+                    -# SELECCIÓN ESTRICTA POR PK ÚNICA
+                    - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
                     - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
                     .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
@@ -343,22 +349,23 @@
                   .card.mt-2
                     .card-body.text-center.text-muted Rendición Sin Movimientos
 
-            / Pestaña 3: Financiera Aporte Propio (Modo Lectura con Desglose)
+            / Pestaña 3: Financiera Aporte Propio (Modo Lectura ESTRICTO)
             .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
               - if @actividad_x_linea.present?
-                - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) }
+                - actividades_aporte_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
 
                 - if actividades_aporte_filtradas.present?
                   - actividades_aporte_filtradas.each do |actividad|
-                    - act_id_num = actividad.id.to_i
-                    - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
-                    - plan_act_id_num = plan_act.try(:id).to_i
-                    - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+                    - pk_real_plan = obtener_pk_real.call(actividad.id)
+                    - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+                    - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
                     - tipo_act_val = actividad.try(:tipo_actividad)
                     - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
-                    - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+                    
+                    -# SELECCIÓN ESTRICTA POR PK ÚNICA
+                    - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
                     - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
                     .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}

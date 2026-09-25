@@ -1,5 +1,18 @@
 :javascript
   $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    }).change(function() {
+      validarFormulario();
+    });
+
+    $("input:file").on('change', function () {
+      $(this).parent().siblings("label").html($(this)[0].files[0].name);
+      validarFormulario();
+    });
+
     htmlErrorToTooltip('top');
     validarFormulario();
   });
@@ -206,17 +219,18 @@
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 - es_sin_mov = @rendicion.try(:sin_movimientos?) || ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos))
 
--# TRADUCTOR INVERSO DE IDs
-- map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
-- get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+-# ==========================================================
+-# OBTENCIÓN DE PLANES Y TRADUCTOR PK DIRECTO (SIN DICCIONARIO CRUZADO)
+-# ==========================================================
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- get_pk_real = lambda { |a_id| (arr_planes.find { |p| p.actividad_id.to_i == a_id.to_i } || arr_planes.find { |p| p.id.to_i == a_id.to_i }).try(:id).to_i }
 
-- actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
-- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+-# Identificar las PKs de las actividades guardadas
+- pks_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.compact.map(&:to_i).uniq || []
 
 -# ==========================================================
 -# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
 -# ==========================================================
-- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
 - reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
 
 -# CÁLCULO DEL MES EN CURSO
@@ -277,7 +291,6 @@
     / ----------------------------------------------------
     .tab-pane.fade#tecnica{class: ('show active' if @es_revision_tecnica), :role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
       - if es_sin_mov
-        -# CORRECCIÓN CLAVE: Usar find_or_create_by! en lugar de first_or_create! para buscar exactamente el tipo_tab: 0
         - detalle_eval = @rendicion.rendicion_detalles_fpl.find_or_create_by!(tipo_tab: 0) if @rendicion.present?
         - if detalle_eval.present?
           - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
@@ -294,7 +307,6 @@
                 %h6.font-weight-bold.mb-1 Rendición Sin Movimientos Técnicos
                 %p.mb-0{style: "font-size: 12px;"} Esta rendición fue enviada por el postulante declarando que no existieron ejecuciones ni movimientos técnicos en este período.
 
-          -# CORRECCIÓN VISUAL: Añadir estilos de 'Observada' cuando esta_observada es true
           .card.mb-3{class: (esta_observada ? 'border-danger' : 'border-warning'), style: (esta_observada ? 'border: 2px solid #dc3545;' : '')}
             .card-header.font-weight-bold{class: (esta_observada ? 'header-actividad-observada' : 'bg-light text-secondary'), style: "font-size: 13px;"}
               Evaluación Técnica de la Rendición Sin Movimientos
@@ -347,26 +359,27 @@
                               %i.fa.fa-comments
                               = "#{num_comentarios_rev} registro(s)"
       - elsif @actividad_x_linea.present?
-        - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
+        - actividades_filtradas = @actividad_x_linea.select { |a| pks_en_rendicion.include?(get_pk_real.call(a.id)) }
 
         - if actividades_filtradas.present?
           - actividades_filtradas.each do |actividad|
-            - act_id_num = actividad.id.to_i
-            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
-            - plan_act_id_num = plan_act.try(:id).to_i
-            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            - pk_real_plan = get_pk_real.call(actividad.id)
+            - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
+            - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
             - tipo_act_val = actividad.try(:tipo_actividad)
             - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
             
             - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
-            - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
+            - obj_esp_id ||= PlanActividad.where(actividad_id: pk_real_plan, flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
 
             - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
             - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
 
-            - detalle_tecnico = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i] || @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+            -# BÚSQUEDA TÉCNICA ESTRICTA A LA BBDD
+            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
+            
             - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || '--'
             - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || '--'
             - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
@@ -610,13 +623,9 @@
                                       = "#{num_comentarios_rev} registro(s)"
                                 - else
                                   %span.text-muted --
-
         - else
           .card.mt-2
-            .card-body.text-center.text-muted Rendición Sin Movimientos
-      - else
-        .card.mt-2
-          .card-body.text-center.text-muted No hay actividades configuradas para esta línea.
+            .card-body.text-center.text-muted No hay actividades configuradas para esta línea.
 
     / ----------------------------------------------------
     / Pestaña 2: Evaluación Financiera FPL
@@ -691,25 +700,25 @@
                               %i.fa.fa-comments
                               = "#{num_comentarios_rev} registro(s)"
       - elsif @actividad_x_linea.present?
-        - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
-        - docs_fpl_base = @documentos_fpl.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_fpl?) && d.financiera_fpl?) || d.tipo_tab.to_s.include?('fpl') || d.tipo_tab.to_s == '1' }) || []
+        - actividades_fpl_filtradas = @actividad_x_linea.select { |a| pks_en_rendicion.include?(get_pk_real.call(a.id)) }
 
         - if actividades_fpl_filtradas.present?
           - actividades_fpl_filtradas.each do |actividad|
-            - act_id_num = actividad.id.to_i
-            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
-            - plan_act_id_num = plan_act.try(:id).to_i
-            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            - pk_real_plan = get_pk_real.call(actividad.id)
+            - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
+            - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
             - tipo_act_val = actividad.try(:tipo_actividad)
             - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
-            - docs_act = docs_fpl_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
+            
+            -# BÚSQUEDA FINANCIERA ESTRICTA A LA BBDD
+            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
             - es_actividad_observada_fpl = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
-            -# OBTENER DETALLE TÉCNICO Y AVANCE
-            - detalle_tec_act = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i] || @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+            -# OBTENER DETALLE TÉCNICO Y AVANCE (BÚSQUEDA POR PK REAL)
+            - detalle_tec_act = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
             - avance_tecnico = detalle_tec_act&.nivel_avance.to_i
 
             .card.mb-3.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: (es_actividad_observada_fpl ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
@@ -883,25 +892,25 @@
                               %i.fa.fa-comments
                               = "#{num_comentarios_rev} registro(s)"
       - elsif @actividad_x_linea.present?
-        - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.map(&get_act_id).include?(a.id) || actividades_en_rendicion.include?(a.id) }
-        - docs_aporte_base = @documentos_aporte.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_aporte?) && d.financiera_aporte?) || d.tipo_tab.to_s.include?('aporte') || d.tipo_tab.to_s == '2' }) || []
+        - actividades_aporte_filtradas = @actividad_x_linea.select { |a| pks_en_rendicion.include?(get_pk_real.call(a.id)) }
 
         - if actividades_aporte_filtradas.present?
           - actividades_aporte_filtradas.each do |actividad|
-            - act_id_num = actividad.id.to_i
-            - plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act_id_num)
-            - plan_act_id_num = plan_act.try(:id).to_i
-            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            - pk_real_plan = get_pk_real.call(actividad.id)
+            - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
+            - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
             - tipo_act_val = actividad.try(:tipo_actividad)
             - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
-            - docs_act = docs_aporte_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
+            
+            -# BÚSQUEDA FINANCIERA ESTRICTA A LA BBDD
+            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
             - es_actividad_observada_aporte = docs_act.any? { |d| ['2', 'no', 'false'].include?((d.read_attribute_before_type_cast(:cumple) || d.cumple).to_s.downcase) }
             - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
-            -# OBTENER DETALLE TÉCNICO Y AVANCE
-            - detalle_tec_act = @detalles_tecnicos_map[actividad.id.to_i] || @detalles_tecnicos_map[plan_act.try(:id).to_i] || @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id).include?(actividad.id) }
+            -# OBTENER DETALLE TÉCNICO Y AVANCE (BÚSQUEDA POR PK REAL)
+            - detalle_tec_act = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
             - avance_tecnico = detalle_tec_act&.nivel_avance.to_i
 
             .card.mb-3.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: (es_actividad_observada_aporte ? "border: 2px solid #dc3545;" : "border: 2px solid #dee2e6;")}
