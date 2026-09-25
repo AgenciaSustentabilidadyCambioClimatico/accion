@@ -20,6 +20,13 @@
 - detalles_hash = (@actividad_detalle.presence || arr_planes).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
 -# ==========================================================
+-# DICCIONARIO ESTRICTO PARA RESOLVER PK DE PLAN_ACTIVIDAD
+-# ==========================================================
+- mapa_actividad_a_plan = {}
+- arr_planes.each do |p|
+  - mapa_actividad_a_plan[p.actividad_id.to_i] = p.id if p.actividad_id.present?
+
+-# ==========================================================
 -# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
 -# ==========================================================
 - reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
@@ -539,13 +546,28 @@
         const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'FPL';
         const tieneGastos = $(block).attr('data-tiene-gastos') === 'true' || $(block).data('tiene-gastos') === true;
 
-        // Si la actividad NO tiene ítems/gastos configurados en la propuesta, el archivo NO es obligatorio
-        if (!tieneGastos) {
+        // Detección del monto rendido en esta actividad
+        let montoRendidoBlock = 0;
+        block.querySelectorAll('.real-cantidad-rendida').forEach(inputCant => {
+          const $tr = $(inputCant).closest('tr');
+          const valUni = parseFloat($tr.find('.real-valor-unitario-rendido').val() || 0);
+          const cant = parseFloat(inputCant.value || 0);
+          montoRendidoBlock += (cant * valUni);
+        });
+
+        const $asterisco = $(block).find('.asterisco-requerido');
+
+        // Si NO hay gastos a rendir ($0), el archivo NO es obligatorio y el asterisco rojo se oculta
+        if (montoRendidoBlock === 0) {
+          $asterisco.hide();
           block.querySelectorAll('tbody input[type="file"]').forEach(fileInput => {
             $(fileInput).removeClass('is-invalid');
           });
           return;
         }
+
+        // Si SÍ hay monto a rendir (> $0), mostramos el asterisco rojo y exigimos el documento
+        $asterisco.show();
 
         let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
@@ -581,13 +603,28 @@
         const actNombre = $(block).find('.header-actividad-fpl .font-weight-bold').text().trim() || 'Aporte Propio';
         const tieneGastos = $(block).attr('data-tiene-gastos') === 'true' || $(block).data('tiene-gastos') === true;
 
-        // Si la actividad NO tiene ítems/gastos configurados en la propuesta, el archivo NO es obligatorio
-        if (!tieneGastos) {
+        // Detección del monto rendido en esta actividad
+        let montoRendidoBlock = 0;
+        block.querySelectorAll('.real-cantidad-rendida').forEach(inputCant => {
+          const $tr = $(inputCant).closest('tr');
+          const valUni = parseFloat($tr.find('.real-valor-unitario-rendido').val() || 0);
+          const cant = parseFloat(inputCant.value || 0);
+          montoRendidoBlock += (cant * valUni);
+        });
+
+        const $asterisco = $(block).find('.asterisco-requerido');
+
+        // Si NO hay gastos a rendir ($0), el archivo NO es obligatorio y el asterisco rojo se oculta
+        if (montoRendidoBlock === 0) {
+          $asterisco.hide();
           block.querySelectorAll('tbody input[type="file"]').forEach(fileInput => {
             $(fileInput).removeClass('is-invalid');
           });
           return;
         }
+
+        // Si SÍ hay monto a rendir (> $0), mostramos el asterisco rojo y exigimos el documento
+        $asterisco.show();
 
         let tieneDocEnBlock = false;
         block.querySelectorAll('tbody tr').forEach(fila => {
@@ -871,9 +908,10 @@
             - total_total_suma = 0
             - if @actividad_x_linea.present?
               - @actividad_x_linea.each do |actividad|
-                - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+                - pk_real_plan = mapa_actividad_a_plan[actividad.id.to_i] || actividad.id.to_i
+                - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
                 - act_id_num = actividad.id.to_i
-                - plan_act_id_num = plan_act.try(:id).to_i
+                - plan_act_id_num = pk_real_plan
                 - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
                 - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -1017,9 +1055,11 @@
 
         - if @actividad_x_linea.present?
           - @actividad_x_linea.uniq(&:id).each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+            - pk_real_plan = mapa_actividad_a_plan[actividad.id.to_i] || actividad.id.to_i
+            - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+            
             - act_id_num = actividad.id.to_i
-            - plan_act_id_num = plan_act.try(:id).to_i
+            - plan_act_id_num = pk_real_plan
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -1033,7 +1073,7 @@
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
 
-            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
+            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
             - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
             - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
             
@@ -1157,9 +1197,11 @@
       .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
         - if @actividad_x_linea.present?
           - @actividad_x_linea.each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+            - pk_real_plan = mapa_actividad_a_plan[actividad.id.to_i] || actividad.id.to_i
+            - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+            
             - act_id_num = actividad.id.to_i
-            - plan_act_id_num = plan_act.try(:id).to_i
+            - plan_act_id_num = pk_real_plan
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
             
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -1169,7 +1211,9 @@
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
-            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
+            
+            -# SELECCIÓN ESTRICTA POR PK ÚNICA PARA EVITAR REPLICACIÓN VISUAL
+            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
 
             .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, 'data-tiene-gastos' => tiene_gastos_act.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
@@ -1210,7 +1254,7 @@
                             %th.encabezado-form{style: 'width: 55%;'}
                               Subir Documento Rendición
                               - if tiene_gastos_act
-                                %span.text-danger *
+                                %span.text-danger.asterisco-requerido{style: "display: none;"} *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-fpl-#{actividad.id}"}
                         - if docs_act.present?
@@ -1249,9 +1293,11 @@
       .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
         - if @actividad_x_linea.present?
           - @actividad_x_linea.each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || map_planes_by_act_id[actividad.id.to_i] || map_planes_by_id[actividad.id.to_i]
+            - pk_real_plan = mapa_actividad_a_plan[actividad.id.to_i] || actividad.id.to_i
+            - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+            
             - act_id_num = actividad.id.to_i
-            - plan_act_id_num = plan_act.try(:id).to_i
+            - plan_act_id_num = pk_real_plan
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
             
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -1261,7 +1307,9 @@
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
-            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
+            
+            -# SELECCIÓN ESTRICTA POR PK ÚNICA PARA EVITAR REPLICACIÓN VISUAL
+            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| rda.plan_actividad_id.to_i == pk_real_plan } }
 
             .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, 'data-tiene-gastos' => tiene_gastos_act.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
@@ -1302,7 +1350,7 @@
                             %th.encabezado-form{style: 'width: 55%;'}
                               Subir Documento Rendición
                               - if tiene_gastos_act
-                                %span.text-danger *
+                                %span.text-danger.asterisco-requerido{style: "display: none;"} *
                             %th.encabezado-form{style: 'width: 10%;'} Acciones
                       %tbody{id: "filas-aporte-#{actividad.id}"}
                         - if docs_act.present?

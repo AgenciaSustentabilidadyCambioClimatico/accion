@@ -4194,22 +4194,37 @@ class FondoProduccionLimpiasController < ApplicationController
         @documentos_aporte = RendicionDetalleFpl.none
       end
 
-      # Diccionarios duales para lectura en la vista
+      # Diccionarios para lectura en la vista
       @detalles_tecnicos_map = {}
       @rendicion_gastos_map  = {}
 
       if @rendicion.present?
         planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
-
         tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+
+        # Pasada 1: Cargar por PK (Baja prioridad)
         @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
           det.rendicion_detalle_actividades_fpl.each do |rda|
-            p_id = rda.plan_actividad_id.to_i
-            plan = planes_flujo[p_id]
-            
-            @detalles_tecnicos_map[p_id] = det
-            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+            @detalles_tecnicos_map[rda.plan_actividad_id.to_i] = det
           end
+        end
+
+        # Pasada 2: Sobrescribir con actividad_id (Alta prioridad para la interfaz)
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            plan = planes_flujo[rda.plan_actividad_id.to_i]
+            if plan.present? && plan.actividad_id.present?
+              @detalles_tecnicos_map[plan.actividad_id.to_i] = det
+            end
+          end
+        end
+
+        # Mapeo de Gastos
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
         end
 
         @rendicion.rendicion_gastos_fpl.each do |gasto|
@@ -4217,9 +4232,7 @@ class FondoProduccionLimpiasController < ApplicationController
           cat     = gasto.categoria.to_s.strip.downcase
           item_id = gasto.item_origen_id.to_i
           plan    = planes_flujo[p_id]
-
-          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
-          if plan.present?
+          if plan.present? && plan.actividad_id.present?
             @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto
           end
         end
@@ -4310,15 +4323,19 @@ class FondoProduccionLimpiasController < ApplicationController
           r.estado = :borrador
         end
 
-        # CONSTRUCCIÓN SEGURA DEL DICCIONARIO (Mapea tanto actividad_id como id)
-        mapa_plan_ids = {}
+        # CONSTRUCCIÓN SEGURA SIN COLISIONES DE CLAVES (SEPARA ACTIVIDAD_ID DE PK)
+        map_act_ids = {}
+        map_pk_ids  = {}
+
         PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).each do |p|
-          mapa_plan_ids[p.actividad_id.to_i] = p.id
-          mapa_plan_ids[p.id.to_i]           = p.id
+          map_act_ids[p.actividad_id.to_i] = p.id if p.actividad_id.present?
+          map_pk_ids[p.id.to_i]            = p.id
         end
 
+        # Priorizar la búsqueda por actividad_id (ID proveniente de la interfaz)
         obtener_pk_real = lambda do |id_param|
-          mapa_plan_ids[id_param.to_i]
+          val = id_param.to_i
+          map_act_ids[val] || map_pk_ids[val]
         end
 
         es_sin_mov = (params[:sin_movimientos].to_s == '1' || params[:sin_movimientos_paso1].to_s == '1')
@@ -4445,9 +4462,9 @@ class FondoProduccionLimpiasController < ApplicationController
           @rendicion.update!(estado: :enviada_a_revision) rescue @rendicion.update!(estado: 1)
           todas_actividades_ids = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).pluck(:id)
           actividades_completadas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl, :rendicion_fpl)
-                                                       .where(rendiciones_fpl: { flujo_id: @tarea_pendiente.flujo_id })
-                                                       .where("rendicion_detalles_fpl.nivel_avance = 100 OR rendicion_detalles_fpl.realizada = ?", true)
-                                                       .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+                                                      .where(rendiciones_fpl: { flujo_id: @tarea_pendiente.flujo_id })
+                                                      .where("rendicion_detalles_fpl.nivel_avance = 100 OR rendicion_detalles_fpl.realizada = ?", true)
+                                                      .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
           debe_cerrar = (@rendicion.respond_to?(:ultima_rendicion) && @rendicion.ultima_rendicion) || (todas_actividades_ids - actividades_completadas).empty?
 
           @tarea_pendiente.pasar_a_siguiente_tarea('A', { rendicion_fpl_id: @rendicion.id, mes_a_rendir: mes_seleccionado.to_i }, debe_cerrar)
