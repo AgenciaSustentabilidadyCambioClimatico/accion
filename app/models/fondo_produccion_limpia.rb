@@ -2750,11 +2750,11 @@ class FondoProduccionLimpia < ApplicationRecord
 
       pdf.move_down 30
 
-      pdf.stroke_color '333333'
+      #pdf.stroke_color '333333'
       #pdf.line_width 0.8
-      pdf.stroke_horizontal_rule
+      #pdf.stroke_horizontal_rule
       
-      pdf.move_down 4
+     #pdf.move_down 4
 
       pdf.font "DejaVuSans", style: :bold do
         pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
