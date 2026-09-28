@@ -875,7 +875,7 @@
                 - @actividad_x_linea.each do |actividad|
                   - pk_real_plan = get_pk_real_from_act.call(actividad)
                   - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
-                  
+                  - plan_act_totales = (@actividad_detalle.presence || arr_planes).find { |p| p.try(:actividad_id).to_i == actividad.id.to_i || p.id.to_i == actividad.id.to_i } || actividad
                   - es_reitimizada = reitimizadas_ids.include?(pk_real_plan)
 
                   - duracion_act = plan_act.try(:duracion).to_s
@@ -901,10 +901,10 @@
                   - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador || es_observada
                   - debe_marcarse = !esta_deshabilitada && !es_sin_movimientos && es_sugerida_defecto
 
-                  - valor_hh_tipo_3 = plan_act.try(:valor_hh_tipo_3).to_f
-                  - valor_hh_tipos_1_2 = plan_act.try(:valor_hh_tipos_1_2).to_f
-                  - total_gastos_tipo_1 = plan_act.try(:total_gastos_tipo_1).to_f
-                  - total_gastos_tipo_2 = plan_act.try(:total_gastos_tipo_2).to_f
+                  - valor_hh_tipo_3 = plan_act_totales.try(:valor_hh_tipo_3).to_f
+                  - valor_hh_tipos_1_2 = plan_act_totales.try(:valor_hh_tipos_1_2).to_f
+                  - total_gastos_tipo_1 = plan_act_totales.try(:total_gastos_tipo_1).to_f
+                  - total_gastos_tipo_2 = plan_act_totales.try(:total_gastos_tipo_2).to_f
                   - suma = valor_hh_tipo_3 + valor_hh_tipos_1_2 + total_gastos_tipo_1 + total_gastos_tipo_2
                   - total_total_suma += suma
 
