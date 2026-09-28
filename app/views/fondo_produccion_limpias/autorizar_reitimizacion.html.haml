@@ -188,8 +188,8 @@
                       - est_r = get_estado_num.call(r)
                       - r.rendicion_detalles_fpl.each do |det|
                         - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
-                        - ids_asoc = det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&:to_i)
-                        - if (ids_asoc & mis_ids).present?
+                        - ids_asoc = det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id)
+                        - if ids_asoc.include?(act_info[:id].to_i)
                           - av = det.nivel_avance.to_i
                           - if [1, 2].include?(est_r)
                             - es_en_proceso = true
