@@ -468,13 +468,14 @@
 
     .right-actions
       = volver_root
-      - if @tiene_permisos
-        = button_tag "Aprobar Verificación Contable", 
-          type: 'submit', 
-          name: 'commit_type', 
-          value: 'enviar', 
-          id: 'enviar-button', 
-          class: "btn btn-sm btn-success ml-2 #{'btn-disabled' unless es_valido_para_aprobar}", 
-          disabled: !es_valido_para_aprobar, 
-          title: (es_proyecto_100 ? (excede_admin ? "Los gastos de administración superan el límite del 9%" : "") : "El porcentaje de avance del proyecto debe estar al 100% para aprobar la verificación contable"), 
-          data: { confirm: "¿Está seguro que desea dar por APROBADA la verificación contable de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }
+      -#
+        - if @tiene_permisos
+          = button_tag "Aprobar Verificación Contable", 
+            type: 'submit', 
+            name: 'commit_type', 
+            value: 'enviar', 
+            id: 'enviar-button', 
+            class: "btn btn-sm btn-success ml-2 #{'btn-disabled' unless es_valido_para_aprobar}", 
+            disabled: !es_valido_para_aprobar, 
+            title: (es_proyecto_100 ? (excede_admin ? "Los gastos de administración superan el límite del 9%" : "") : "El porcentaje de avance del proyecto debe estar al 100% para aprobar la verificación contable"), 
+            data: { confirm: "¿Está seguro que desea dar por APROBADA la verificación contable de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }
