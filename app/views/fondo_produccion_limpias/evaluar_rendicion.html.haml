@@ -295,7 +295,7 @@
         - if detalle_eval.present?
           - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
           - val_str = raw_cumple.to_s.downcase
-          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : 1)
           - valor_comentario = detalle_eval.comentario_revisor
           - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
           - esta_observada = valor_cumple_int == 2
@@ -392,7 +392,7 @@
             
             - raw_cumple = detalle_tecnico ? (detalle_tecnico.read_attribute_before_type_cast(:cumple) || detalle_tecnico.cumple) : nil
             - val_str = raw_cumple.to_s.downcase
-            - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+            - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : 1)
             - valor_comentario = detalle_tecnico&.comentario_revisor
             - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
             - es_actividad_observada = valor_cumple_int == 2
@@ -636,7 +636,7 @@
         - if detalle_eval.present?
           - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
           - val_str = raw_cumple.to_s.downcase
-          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : 1)
           - valor_comentario = detalle_eval.comentario_revisor
           - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
           - esta_observada = valor_cumple_int == 2
@@ -771,7 +771,7 @@
                             - docs_act.each do |doc|
                               - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
                               - val_str = raw_cumple.to_s.downcase
-                              - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+                              - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : 1)
                               - valor_comentario = doc.comentario_revisor
                               - comentario_postulante_val = doc.try(:comentario_postulante)
                               - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
@@ -828,7 +828,7 @@
         - if detalle_eval.present?
           - raw_cumple = detalle_eval.read_attribute_before_type_cast(:cumple) || detalle_eval.cumple
           - val_str = raw_cumple.to_s.downcase
-          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+          - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : 1)
           - valor_comentario = detalle_eval.comentario_revisor
           - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
           - esta_observada = valor_cumple_int == 2
@@ -963,7 +963,7 @@
                             - docs_act.each do |doc|
                               - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
                               - val_str = raw_cumple.to_s.downcase
-                              - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+                              - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : 1)
                               - valor_comentario = doc.comentario_revisor
                               - comentario_postulante_val = doc.try(:comentario_postulante)
                               - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
