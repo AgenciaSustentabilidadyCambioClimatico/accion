@@ -36,7 +36,6 @@
       $('#collapseTabs').removeClass("show");
       $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
       $('a.nav-link#'+tab+'-tab').tab('show');
-
     });
 
     $('#collapseTabs').on('show.bs.collapse', function () {
@@ -113,28 +112,45 @@
                         -if tab.to_s != 'asignar-revisor'
                           %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
                             =t(tab.to_s.gsub('-','_'))
-                            -#%span.badge.badge-danger.badge-pill 1
 
             = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
-              - if @revisor      
+              - if @revisor     
                 #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs[:"asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs[:"asignar-revisor"])}
                   .card
                     .card-body
                       .row
-                        .col-12.col-lg-6
+                        -# FILA 1: Código Proyecto (width: 100%), Programa y Revisor Técnico
+                        .col-12.col-lg-2.mb-3
                           -if !solo_lectura
                             %label.label-estilo{ for: 'codigo_proyecto' }
                               %abbr{ title: "Campo requerido" } *
                               = t(:codigo_proyecto)
                             %br
-                            = f.text_field :codigo_proyecto, class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 2; border: 1px solid #ced4da; border-radius: 0.25rem; padding-left: 8px;', required: true, id: 'codigo_proyecto'
+                            = f.text_field :codigo_proyecto, class: "required-field", maxlength: 12, style: 'width: 100%; height: 35px; border: 1px solid #ced4da; border-radius: 0.25rem; padding-left: 8px;', required: true, id: 'codigo_proyecto'
                           -else
                             .form-group
-                            -no_data = f.object.codigo_proyecto.blank?
-                            %label.control-label.string=t(:codigo_proyecto)
-                            %p#manifestacion_de_interes_comentario_jefe_de_linea.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.codigo_proyecto)
-                        .col-12.col-lg-6
+                              -no_data = f.object.codigo_proyecto.blank?
+                              %label.control-label.string=t(:codigo_proyecto)
+                              %p#manifestacion_de_interes_comentario_jefe_de_linea.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                =(no_data ? 'No se ingresó respuesta' : f.object.codigo_proyecto)
+
+                        .col-12.col-lg-4.mb-3
+                          -if !solo_lectura
+                            %label.label-estilo{ for: 'programa_fpl_id' }
+                              %abbr{ title: "Campo requerido" } *
+                              Programa
+                            %br
+                            - opciones_programa = @programas.presence || ['01 - Ley Presupuesto', '07 - DPS', 'Extrapresupuestario']
+                            = f.select :programa, [['Seleccionar Programa...', '']] + opciones_programa.map { |p| [p, p] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccionar Programa...", id: 'programa_fpl_id' }
+                          -else
+                            .form-group
+                              -prog_val = f.object.try(:programa)
+                              -no_data = prog_val.blank?
+                              %label.control-label.string Programa
+                              %p.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                =(no_data ? 'No se ingresó respuesta' : prog_val)
+
+                        .col-12.col-lg-6.mb-3
                           -if !solo_lectura
                             %label.label-estilo{ for: 'revisor_tecnico_id' }
                               %abbr{ title: "Campo requerido" } *
@@ -143,13 +159,15 @@
                             = f.select :revisor_tecnico_id, [['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
                           - else
                             .form-group
-                            -mapa_tecnico= MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
-                            -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
-                            -no_data = rev_tecnico.nil?
-                            %label.control-label.string=t(:revisor_tecnico)
-                            %p#manifestacion_de_interes_revisor_juridico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
-                        .col-12.col-lg-6
+                              -mapa_tecnico= MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
+                              -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
+                              -no_data = rev_tecnico.nil?
+                              %label.control-label.string=t(:revisor_tecnico)
+                              %p#manifestacion_de_interes_revisor_juridico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
+
+                        -# FILA 2: Revisor Financiero y Revisor Jurídico
+                        .col-12.col-lg-6.mb-3
                           -if !solo_lectura
                             %label.label-estilo{ for: 'revisor_financiero_id' }
                               %abbr{ title: "Campo requerido" } *
@@ -158,13 +176,14 @@
                             = f.select :revisor_financiero_id, [['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
                           - else
                             .form-group
-                            -mapa_financiero = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_FINANCIERO).first
-                            -rev_financiero = mapa_financiero.nil? ? nil : mapa_financiero.persona.user.nombre_completo
-                            -no_data = rev_financiero.nil?
-                            %label.control-label.string=t(:revisor_financiero)
-                            %p#manifestacion_de_interes_revisor_juridico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : rev_financiero)
-                        .col-12.col-lg-6
+                              -mapa_financiero = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_FINANCIERO).first
+                              -rev_financiero = mapa_financiero.nil? ? nil : mapa_financiero.persona.user.nombre_completo
+                              -no_data = rev_financiero.nil?
+                              %label.control-label.string=t(:revisor_financiero)
+                              %p#manifestacion_de_interes_revisor_juridico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                =(no_data ? 'No se ingresó respuesta' : rev_financiero)
+
+                        .col-12.col-lg-6.mb-3
                           -if !solo_lectura
                             %label.label-estilo{ for: 'revisor_juridico_id' }
                               %abbr{ title: "Campo requerido" } *
@@ -173,27 +192,29 @@
                             = f.select :revisor_juridico_id, [['Seleccione un revisor jurídico', '']] + @revisores_juridicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id' }
                           - else
                             .form-group
-                            -mapa_juridico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_JURIDICO).first
-                            -rev_juridico = mapa_juridico.nil? ? nil : mapa_juridico.persona.user.nombre_completo
-                            -no_data = rev_juridico.nil?
-                            %label.control-label.string=t(:revisor_juridico)
-                            %p#manifestacion_de_interes_revisor_juridico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : rev_juridico)
-                        .col-12
+                              -mapa_juridico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_JURIDICO).first
+                              -rev_juridico = mapa_juridico.nil? ? nil : mapa_juridico.persona.user.nombre_completo
+                              -no_data = rev_juridico.nil?
+                              %label.control-label.string=t(:revisor_juridico)
+                              %p#manifestacion_de_interes_revisor_juridico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                =(no_data ? 'No se ingresó respuesta' : rev_juridico)
+
+                        -# FILA 3: Comentario
+                        .col-12.mb-3
                           -if !solo_lectura
                             %label.label-estilo{ for: 'comentario_asignar_revisor' }
                               %abbr{ title: "Campo requerido" } *
                               = t(:comentario)
                             %br
-                            = f.text_area :comentario_asignar_revisor, class: "form-control text required tooltip-block", required: 'required', type: 'text', id: 'comentario_asignar_revisor_fpl', style: 'width: 100%;'
+                            = f.text_area :comentario_asignar_revisor, class: "form-control text required tooltip-block", required: 'required', type: 'text', id: 'comentario_asignar_revisor_fpl', style: 'width: 100%;', rows: 3
                           - else
                             .form-group
-                            -no_data = f.object.comentario_asignar_revisor.blank?
-                            %label.control-label.string=t(:comentario)
-                            %p#manifestacion_de_interes_comentario_jefe_de_linea.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.comentario_asignar_revisor)
-                      %br
-                      .col-12
+                              -no_data = f.object.comentario_asignar_revisor.blank?
+                              %label.control-label.string=t(:comentario)
+                              %p#manifestacion_de_interes_comentario_jefe_de_linea.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                =(no_data ? 'No se ingresó respuesta' : f.object.comentario_asignar_revisor)
+
+                      .col-12.mt-2
                         .float-right
                           = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
                           -if @tiene_permisos

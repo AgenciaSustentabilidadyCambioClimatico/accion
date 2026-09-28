@@ -21,14 +21,15 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.default_options = {from: email['default_options_from']}
   config.action_mailer.asset_host = email['asset_host']
-  config.action_mailer.smtp_settings = {
+ config.action_mailer.smtp_settings = {
     :address              => email['smtp_settings_address'],
-    :port                 => email['smtp_settings_port'],
+    :port                 => ENV.fetch('MAILER_SMTP_SETTINGS_PORT', email['smtp_settings_port']).to_i,
     :domain               => email['smtp_settings_domain'],
     :user_name            => email['smtp_settings_user_name'],
-    :password             => email['smtp_settings_password'],
+    :password             => ENV.fetch('MAILER_SMTP_SETTINGS_PASSWORD', email['smtp_settings_password']),
     :authentication       => email['smtp_settings_authentication'],
-    :enable_starttls_auto => email['smtp_settings_enable_starttls_auto'],
+    :enable_starttls_auto => ENV['MAILER_SMTP_SETTINGS_ENABLE_STARTTLS_AUTO'] == 'true',
+    :tls                  => ENV['MAILER_SMTP_SETTINGS_TLS'] == 'true'
   }
 
   config.action_mailer.perform_caching = false

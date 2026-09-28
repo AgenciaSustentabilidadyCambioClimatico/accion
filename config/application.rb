@@ -47,5 +47,9 @@ module Ascc
     def updating_record?
       persisted? # This checks if the record already exists (i.e., it's an update)
     end
+
+    if Rails.env.development?
+      config.hosts = nil
+    end
   end
 end

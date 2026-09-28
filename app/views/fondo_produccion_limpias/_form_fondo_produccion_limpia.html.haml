@@ -2491,6 +2491,7 @@
 
   function guardarAsignarRevisores() {
     var codigo_proyecto = document.getElementById('codigo_proyecto').value;
+    var programa = document.getElementById('programa_fpl_id').value;
     var revisor_tecnico_id = document.getElementById('revisor_tecnico_fpl_id').value;
     var revisor_financiero_id = document.getElementById('revisor_financiero_fpl_id').value;
     var revisor_juridico_id = document.getElementById('revisor_juridico_fpl_id').value;
@@ -2552,6 +2553,7 @@
       data: {
         flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
         codigo_proyecto: codigo_proyecto,
+        programa: programa,
         revisor_tecnico_id: revisor_tecnico_id,
         revisor_financiero_id: revisor_financiero_id,
         revisor_juridico_id: revisor_juridico_id,

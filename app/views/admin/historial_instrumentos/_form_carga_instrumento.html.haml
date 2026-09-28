@@ -51,7 +51,7 @@
               - @instancias.sort_by { |ins| ins[:id] }.each do |ins|
                 %tr.accion
                   %td=ins[:id_instrumento]
-                  %td=ins[:nombre_tarea]
+                  %td=ins[:pendiente].present? ? (nombre_tarea_con_rendicion(ins[:pendiente]) rescue ins[:nombre_tarea]) : ins[:nombre_tarea]
                   %td=ins[:responsables].to_sentence
                   %td=ins[:instancia].to_sentence
                   %td=ins[:activacion]

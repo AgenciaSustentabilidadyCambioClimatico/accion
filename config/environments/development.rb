@@ -87,7 +87,8 @@ Rails.application.configure do
   # Configurar límite de upload para archivos grandes
   config.middleware.insert_before Rack::Runtime, Rack::ContentLength
   
-
-  
-
+  # Permitir conexiones desde cualquier host e IP en desarrollo
+  config.hosts = nil
+  config.web_console.permissions = '0.0.0.0/0'
+  config.action_controller.allow_forgery_protection = false
 end

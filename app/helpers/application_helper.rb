@@ -138,10 +138,19 @@ module ApplicationHelper
   end
 
   def datos_beneficiario_fpl
-    if @fondo_produccion_limpia.institucion_entregables_id.present?
-      @flujo.present? ? "<b>Beneficiario: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).razon_social} <br><b>Rut: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).dv}" : ""
+    return "" unless @flujo.present?
+
+    if @fondo_produccion_limpia&.institucion_entregables_id.present?
+      contribuyente = obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id) rescue nil
+      if contribuyente.present?
+        "<b>Beneficiario: </b> #{contribuyente.razon_social} <br><b>Rut: </b> #{contribuyente.rut}-#{contribuyente.dv}".html_safe
+      else
+        ""
+      end
+    elsif @manifestacion_de_interes.present?
+      "<b>Beneficiario: </b> #{@manifestacion_de_interes.try(:institucion_gestora_acuerdo)} <br><b>Rut: </b> #{@manifestacion_de_interes.try(:rut_institucion_gestora_acuerdo)}".html_safe
     else
-      @flujo.present? ? "<b>Beneficiario: </b> #{@manifestacion_de_interes.institucion_gestora_acuerdo} <br><b>Rut: </b> #{@manifestacion_de_interes.rut_institucion_gestora_acuerdo}" : ""
+      ""
     end
   end
   #**
@@ -778,6 +787,8 @@ end
       data[:icon] = "<i class='fa fa-edit'></i>"
     end
   else
+    rend = buscar_rendicion_por_pendiente(pendiente)
+    mes_param = rend&.mes_a_rendir
     case tarea.codigo
     when Tarea::COD_APL_001
     data[:url] = manifestacion_de_interes_path(pendiente)
@@ -1080,6 +1091,30 @@ end
     when Tarea::COD_FPL_11
       data[:url] =  resolucion_contrato_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_11_1
+      data[:url] = autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_12
+      data[:url] = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_13
+      data[:url] = asignar_revisor_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_14
+      data[:url] = revision_financiera_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_15
+      data[:url] = revision_tecnica_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_16
+      data[:url] = verificacion_contable_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_17
+      data[:url] = corregir_rendicion_financiera_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_18
+      data[:url] = corregir_rendicion_tecnica_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:icon] = "<i class='fa fa-edit'></i>"
     #Nuevo flujo postulacion FPL  
     end
   end
@@ -1151,6 +1186,64 @@ end
     "#{formatted_rut}-#{dv.upcase}"
   end
   
-  
+  def buscar_rendicion_por_pendiente(pendiente)
+    # 1. Prioridad: Obtener la rendición exacta guardada en el Hash 'data' de la tarea
+    rend = pendiente.determina_rendicion if pendiente.respond_to?(:determina_rendicion)
+    return rend if rend.present?
+
+    flujo_id = pendiente.flujo_id
+    codigo = pendiente.tarea.codigo.to_s
+
+    # 2. Fallback por estado solo si la tarea no poseía 'data' guardado
+    case codigo
+    when 'FPL-13', 'FPL-14', 'FPL-15'
+      RendicionFpl.where(flujo_id: flujo_id, estado: [:enviada_a_revision, 1, :en_evaluacion, 2])
+                  .order(mes_a_rendir: :asc).first
+    when 'FPL-17'
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_financiera, 4])
+    when 'FPL-18'
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_tecnica, 3])
+    when 'FPL-12' # Rendición Documentos por Actividades (Postulante)
+      rend = RendicionFpl.where(flujo_id: flujo_id, estado: [:borrador, 0, :observada_tecnica, 3, :observada_financiera, 4])
+                        .order(mes_a_rendir: :asc).first
+
+      # Si no hay borrador abierto, calcular (último mes enviado con estado >= 1) + 1
+      unless rend.present?
+        estados_enviados = [1, 2, 3, 4, 5, 6]
+        ultimo_mes_enviado = RendicionFpl.where(flujo_id: flujo_id, estado: estados_enviados)
+                                        .pluck(:mes_a_rendir).compact.max || 0
+        mes_sugerido = ultimo_mes_enviado + 1
+        rend = Struct.new(:mes_a_rendir).new(mes_sugerido)
+      end
+      rend
+    else
+      RendicionFpl.where(flujo_id: flujo_id).order(mes_a_rendir: :desc).first
+    end
+  end
+
+  def nombre_tarea_con_rendicion(pendiente)
+    tarea = pendiente.tarea
+    nombre_base = tarea.nombre
+    codigos_fpl_paralelos = ['FPL-12', 'FPL-13', 'FPL-14', 'FPL-15', 'FPL-17', 'FPL-18']
+
+    if codigos_fpl_paralelos.any? { |cod| tarea.codigo.to_s.include?(cod) || tarea.nombre.to_s.include?(cod) }
+      rend = buscar_rendicion_por_pendiente(pendiente)
+
+      if rend.present? && rend.try(:mes_a_rendir).present?
+        fpl_obj = pendiente.flujo.try(:proyecto)&.fondo_produccion_limpia || FondoProduccionLimpia.find_by(flujo_id: pendiente.flujo_id)
+        fecha_res = fpl_obj.try(:fecha_resolucion)
+
+        if fecha_res.present?
+          fecha_target = fecha_res.to_date + (rend.mes_a_rendir.to_i - 1).months
+          mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+          return "#{nombre_base} - #{mes_nombre} (Rendición #{rend.mes_a_rendir})"
+        else
+          return "#{nombre_base} - Rendición #{rend.mes_a_rendir}"
+        end
+      end
+    end
+
+    nombre_base
+  end
   
 end

@@ -1621,4 +1621,1587 @@ class FondoProduccionLimpia < ApplicationRecord
     end
   end
 
+  # Método generador del Informe de Evaluación de Rendición de Gastos en PDF con Prawn
+  def generar_informe_gastos_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil, detalles_fpl = nil, detalles_beneficiaria = nil)
+    t_inicio = Time.now
+    Rails.logger.info "=== [PDF INFORME GASTOS] INICIANDO GENERACIÓN (t=0s) ==="
+
+    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :portrait, margin: [30, 30, 30, 30])
+
+    # ---------------------------------------------------------------------------
+    # CONFIGURACIÓN DE FAMILIA DE FUENTES
+    # ---------------------------------------------------------------------------
+    font_path_regular     = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
+    font_path_bold        = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
+    font_path_italic      = Rails.root.join("app/assets/fonts/DejaVuSans-Oblique.ttf").to_s
+    font_path_bold_italic = Rails.root.join("app/assets/fonts/DejaVuSans-BoldOblique.ttf").to_s
+
+    pdf.font_families.update("DejaVuSans" => {
+      normal:      font_path_regular,
+      bold:        File.exist?(font_path_bold) ? font_path_bold : font_path_regular,
+      italic:      File.exist?(font_path_italic) ? font_path_italic : font_path_regular,
+      bold_italic: File.exist?(font_path_bold_italic) ? font_path_bold_italic : (File.exist?(font_path_bold) ? font_path_bold : font_path_regular)
+    })
+    pdf.font "DejaVuSans"
+
+    # ---------------------------------------------------------------------------
+    # HEADER REPETITIVO EN TODAS LAS PÁGINAS
+    # ---------------------------------------------------------------------------
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width do
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119 if File.exist?(Rails.root.join("app/assets/images/logo-ascc-nuevo.png"))
+        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
+          pdf.font "DejaVuSans", style: :bold do
+            pdf.text "INFORME DE EVALUACIÓN DE RENDICIÓN DE GASTOS - FPL", size: 10, color: "003DA6", align: :right
+          end
+        end
+        pdf.move_down 5
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 3
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    fpl = fondo_produccion_limpia || self
+    contribuyente = obtiene_contribuyente(fpl&.institucion_entregables_id) rescue nil
+    razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
+    rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
+
+    flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id) rescue []
+    mdi_id = Flujo.where(id: flujo_mdi).pluck(:manifestacion_de_interes_id) rescue []
+    nombre_acuerdo = ManifestacionDeInteres.where(id: mdi_id).pluck(:nombre_acuerdo).first rescue nil
+
+    cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
+    titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
+    programa_texto = fpl.try(:programa).presence || "--"
+
+    # =========================================================================
+    # LÓGICA DE VALIDACIÓN DE IMPUTACIÓN
+    # =========================================================================
+    prog_clean = programa_texto.to_s.strip
+    imputacion_texto = if prog_clean.include?('01 - Ley Presupuesto') || prog_clean.include?('07 - DPS') || prog_clean =~ /^01|^07|Ley Presupuesto|DPS/i
+                         '24.01.070'
+                       elsif prog_clean.downcase.include?('extrapresupuestario')
+                         '92.01.618'
+                       else
+                         programa_texto
+                       end
+    origen_texto = if prog_clean.include?('01 - Ley Presupuesto') || prog_clean.include?('07 - DPS') || prog_clean =~ /^01|^07|Ley Presupuesto|DPS/i
+                     'ASCC'
+                   elsif prog_clean.downcase.include?('extrapresupuestario')
+                     'Gobierno Regional'
+                   else
+                     programa_texto
+                   end
+
+    revisor = User.find_by(id: (rendicion.try(:revisor_financiero_id)))
+    nombre_revisor = revisor.try(:nombre_completo)
+    rut_revisor = revisor.try(:rut)
+
+    mes_actual_num  = rendicion&.mes_a_rendir.to_i
+    flujo_actual_id = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
+
+    fecha_res = fpl.try(:fecha_resolucion)
+    mes_nombre = nil
+    if fecha_res.present? && mes_actual_num > 0
+      fecha_target = fecha_res.to_date + (mes_actual_num - 1).months
+      mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+    end
+    texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
+
+    # =========================================================================
+    # MAPA DUAL Y TRADUCCIÓN DE IDs
+    # =========================================================================
+    map_planes_by_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:id)
+    map_planes_by_act_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:actividad_id)
+    get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+    # IDENTIFICACIÓN ROBUSTA DE ACTIVIDADES REITIMIZADAS
+    arr_planes = map_planes_by_id.values
+    reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
+    # FECHAS TAREAS
+    tarea_fondo_fpl_14 = Tarea.find_by_codigo(Tarea::COD_FPL_14) rescue nil
+    tarea_fondo_fpl_16 = Tarea.find_by_codigo(Tarea::COD_FPL_16) rescue nil
+
+    extraer_mes_data = lambda do |tp|
+      return nil if tp&.data.blank?
+      d = tp.data
+      if d.is_a?(String)
+        begin
+          d = YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue YAML.load(d)
+        rescue StandardError
+        end
+      end
+      if d.is_a?(Hash) || d.respond_to?(:[])
+        h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d
+        if rendicion.present? && (h[:rendicion_fpl_id].present? || h[:rendicion_id].present?)
+          rend_id = h[:rendicion_fpl_id] || h[:rendicion_id]
+          return mes_actual_num if rend_id.to_i == rendicion.id.to_i
+        end
+        val_mes = h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir)
+        return val_mes.to_i if val_mes.present?
+      end
+      match = d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)
+      match ? match[1].to_i : nil
+    end
+
+    tps_14_todas = TareaPendiente.where(tarea_id: tarea_fondo_fpl_14&.id, flujo_id: flujo_actual_id).order(created_at: :asc)
+    tps_14_mes   = tps_14_todas.select { |tp| extraer_mes_data.call(tp) == mes_actual_num }
+    tp_14_primera = tps_14_mes.first
+
+    tps_16 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_16&.id, flujo_id: flujo_actual_id).order(created_at: :asc).first
+
+    f_recepcion_raw  = tp_14_primera&.created_at
+    f_evaluacion_raw = tps_16&.created_at || tps_16&.updated_at
+
+    fecha_recepcion  = f_recepcion_raw.respond_to?(:strftime)  ? f_recepcion_raw.strftime('%d/%m/%Y')  : "--"
+    fecha_evaluacion = f_evaluacion_raw.respond_to?(:strftime) ? f_evaluacion_raw.strftime('%d/%m/%Y') : "--"
+
+    obtener_gastos = lambda do |act_id, tipos_validos|
+      rec_int = PlanActividad.recursos_internos(flujo_actual_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+      rec_ext = PlanActividad.recursos_externos(flujo_actual_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+      g_op    = PlanActividad.gastos_operaciones(flujo_actual_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+      g_adm   = PlanActividad.gastos_administraciones(flujo_actual_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+      { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
+    end
+
+    # Mapeo dual de Gastos Rendidos
+    rendicion_gastos_map = {}
+    if rendicion.present?
+      rendicion.rendicion_gastos_fpl.each do |g|
+        p_id = g.plan_actividad_id.to_i
+        cat_s = g.categoria.to_s.strip.downcase
+        item_s = g.item_origen_id.to_s.strip
+        plan = map_planes_by_id[p_id]
+
+        rendicion_gastos_map["#{p_id}_#{cat_s}_#{item_s}"] = g
+        rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat_s}_#{item_s}"] = g if plan.present? && plan.actividad_id.present?
+      end
+    end
+
+    totales_resumen = {
+      rrhh_propios: { fpl: 0.0, aporte: 0.0 },
+      rrhh_externos: { fpl: 0.0, aporte: 0.0 },
+      operaciones: { fpl: 0.0, aporte: 0.0 },
+      administracion: { fpl: 0.0, aporte: 0.0 }
+    }
+
+    total_fpl = 0.0
+    total_aporte = 0.0
+
+    fmt_clp = lambda { |m| ActiveSupport::NumberHelper.number_to_currency(m.to_f, delimiter: '.', precision: 0, format: "%u%n", unit: "$") }
+    fmt_pct = lambda { |p| ActiveSupport::NumberHelper.number_to_percentage(p.to_f, precision: 1, separator: ',') rescue "#{p.round(1)}%" }
+
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 60], width: pdf.bounds.width do
+
+      self.pdf_titulo_formato(pdf, "INFORME DE EVALUACIÓN DE RENDICIÓN DE GASTOS") rescue nil
+      self.pdf_sub_titulo_formato(pdf, "PROYECTOS EN EJECUCIÓN FONDO DE PROMOCIÓN DE LA PRODUCCIÓN LIMPIA") rescue nil
+      self.pdf_separador(pdf, 6) rescue nil
+
+      # 1. ANTECEDENTES GENERALES
+      self.pdf_sub_titulo_formato(pdf, "ANTECEDENTES GENERALES DEL PROYECTO") rescue nil
+
+      tabla_antecedentes = [
+        [ { content: "<b>Código:</b>", inline_format: true }, fpl&.codigo_proyecto.to_s, { content: "<b>Programa:</b>", inline_format: true }, programa_texto ],
+        [ { content: "<b>Título del proyecto:</b>", inline_format: true }, titulo_proyecto, { content: "<b>Imputación:</b>", inline_format: true }, imputacion_texto ],
+        [ { content: "<b>Nombre Entidad Beneficiaria:</b>", inline_format: true }, { content: razon_social, colspan: 3 } ],
+        [ { content: "<b>N° de informe:</b>", inline_format: true }, texto_mes_display, { content: "<b>Origen:</b>", inline_format: true }, origen_texto],  
+        [ { content: "<b>Fecha aprobación informe evaluación actividades:</b>", inline_format: true }, fecha_recepcion, { content: "<b>Fecha de evaluación de gastos:</b>", inline_format: true }, fecha_evaluacion ]
+      ]
+
+      pdf.table(tabla_antecedentes, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+        column(0).background_color = 'E0EFF6'
+        column(2).background_color = 'E0EFF6'
+      end
+
+      self.pdf_separador(pdf, 8) rescue nil
+
+      # 2. DESCRIPCIÓN DE ACTIVIDADES
+      self.pdf_titulo_formato(pdf, "DESCRIPCIÓN DE ACTIVIDADES") rescue nil
+  
+      # Comprobar si la rendición fue marcada sin movimientos
+      es_sin_movimientos = rendicion.present? && (
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+        [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+        (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+        (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+      )
+
+      if es_sin_movimientos
+        tabla_sin_mov = [
+          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+        ]
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 5, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+      elsif actividades.present?
+        pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado.", size: 8, style: :italic
+
+        self.pdf_separador(pdf, 4) rescue nil
+
+        tabla_actividades = [
+          [ "Nº", "Etapa / Actividades", "Descripción de las actividades realizadas", "Estado\n(Nivel de avance)" ]
+        ]
+
+        actividades.each do |act|
+          act_id_num = act.id.to_i
+          plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
+          pk_id_num = plan_act.try(:id).to_i
+          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+          es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+          nombre_actividad_display = act.try(:nombre) || "Actividad"
+          if es_reitimizada
+            nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
+          end
+
+          detalle_tecnico = rendicion.rendicion_detalles_fpl.find do |d|
+            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+            act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
+            (d.tecnica? rescue false) && act_ids.include?(act_id_num)
+          end rescue nil
+
+          avance_num = detalle_tecnico&.nivel_avance.to_i
+          estado_label = "#{avance_num}%"
+          descripcion_avance = avance_num >= 100 ? "Finalizado" : "en Ejecución"
+
+          tabla_actividades << [
+            act.try(:correlativo) || "-",
+            nombre_actividad_display,
+            descripcion_avance,
+            estado_label
+          ]
+        end
+
+        pdf.table(tabla_actividades, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+          row(0).background_color = 'E0EFF6'
+          row(0).font_style = :bold
+          column(0).width = 30
+          column(0).align = :center
+          column(3).width = 80
+          column(3).align = :center
+        end
+      else
+        pdf.text "Sin movimientos.", size: 8, style: :italic, align: :center
+        pdf.move_down 4
+      end
+
+      self.pdf_separador(pdf, 8) rescue nil
+
+      # 3. PLANILLA DE RENDICIÓN DE GASTOS - FPL
+      pdf.start_new_page
+      self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DEL FPL") rescue nil
+
+      filas_fpl_presentes = false
+
+      if es_sin_movimientos
+        tabla_sin_mov = [
+          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+        ]
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 5, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+      elsif actividades.present?
+        self.pdf_separador(pdf, 6) rescue nil
+        actividades.each do |actividad|
+          act_id_num = actividad.id.to_i
+          plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
+          pk_id_num = plan_act.try(:id).to_i
+          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+          es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+          gastos_fpl = obtener_gastos.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
+
+          items_actividad = []
+          [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
+            gastos_fpl[cat_key].to_a.each do |item|
+              v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+              cat_key_str = cat_key.to_s.strip.downcase
+              item_id_num = item.id.to_i
+
+              g_guardado = rendicion_gastos_map["#{pk_id_num}_#{cat_key_str}_#{item_id_num}"] || rendicion_gastos_map["#{act_id_num}_#{cat_key_str}_#{item_id_num}"]
+              monto_rendido = g_guardado.present? ? g_guardado.costo_rendido.to_f : 0.0
+              cant_rendida = g_guardado.present? ? g_guardado.cantidad_rendida.to_f : 0.0
+
+              totales_resumen[cat_key][:fpl] += monto_rendido
+              total_fpl += monto_rendido
+
+              items_actividad << [
+                cat_key.to_s.humanize.titleize,
+                item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
+                item.try(:tipo_aporte).to_s,
+                ActiveSupport::NumberHelper.number_to_currency(v_unitario, delimiter: '.', precision: 0, format: "%u%n", unit: "$"),
+                cant_rendida.to_s,
+                ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', precision: 0, format: "%u%n", unit: "$")
+              ]
+            end
+          end
+
+          if items_actividad.present?
+            filas_fpl_presentes = true
+            
+            header_act_text = "<color rgb='003DA6'><b>#{actividad.correlativo}</b></color> <b>#{actividad.nombre}</b>"
+            if es_reitimizada
+              header_act_text += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
+            end
+
+            header_tabla_act = [ [ { content: header_act_text, inline_format: true } ] ]
+            pdf.table(header_tabla_act, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
+
+            tabla_items_act = [
+              [ "Categoría", "Ítem / Nombre", "Detalle / Aporte", "Valor Un.", "Cantidad", "Gasto [$]" ]
+            ] + items_actividad
+
+            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 2.5, border_color: 'CCCCCC', inline_format: true }) do
+              row(0).background_color = 'F8F9FA'
+              row(0).font_style = :bold
+              column(0).width = 95
+              column(1).width = 155
+              column(2).width = 110
+              column(3).width = 65
+              column(3).align = :right
+              column(4).width = 45
+              column(4).align = :center
+              column(5).width = 82
+              column(5).align = :right
+            end
+
+            pdf.move_down 5
+          end
+        end
+      end
+
+      # TOTALIZADOR FPL
+      if filas_fpl_presentes
+        tabla_total_fpl = [
+          [ { content: "<b>TOTAL RENDICIÓN FPL:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_fpl, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+        ]
+        pdf.table(tabla_total_fpl, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+          column(0).width = pdf.bounds.width - 100
+          column(1).width = 100
+          column(1).align = :right
+        end
+      end
+
+      self.pdf_separador(pdf, 10) rescue nil
+
+      # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA
+      self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DE LA BENEFICIARIA") rescue nil
+      
+      filas_ben_presentes = false
+
+      if es_sin_movimientos
+        tabla_sin_mov = [
+          [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+        ]
+        pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 6, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+      elsif actividades.present?
+        self.pdf_separador(pdf, 6) rescue nil
+        actividades.each do |actividad|
+          act_id_num = actividad.id.to_i
+          plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
+          pk_id_num = plan_act.try(:id).to_i
+          mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+          es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+          gastos_aporte = obtener_gastos.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
+
+          items_actividad = []
+          [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
+            gastos_aporte[cat_key].to_a.each do |item|
+              v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+              cat_key_str = cat_key.to_s.strip.downcase
+              item_id_num = item.id.to_i
+
+              g_guardado = rendicion_gastos_map["#{pk_id_num}_#{cat_key_str}_#{item_id_num}"] || rendicion_gastos_map["#{act_id_num}_#{cat_key_str}_#{item_id_num}"]
+              monto_rendido = g_guardado.present? ? g_guardado.costo_rendido.to_f : 0.0
+              cant_rendida = g_guardado.present? ? g_guardado.cantidad_rendida.to_f : 0.0
+
+              totales_resumen[cat_key][:aporte] += monto_rendido
+              total_aporte += monto_rendido
+
+              items_actividad << [
+                cat_key.to_s.humanize.titleize,
+                item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
+                item.try(:tipo_aporte).to_s,
+                ActiveSupport::NumberHelper.number_to_currency(v_unitario, delimiter: '.', precision: 0, format: "%u%n", unit: "$"),
+                cant_rendida.to_s,
+                ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', precision: 0, format: "%u%n", unit: "$")
+              ]
+            end
+          end
+
+          if items_actividad.present?
+            filas_ben_presentes = true
+            
+            header_act_text = "<color rgb='003DA6'><b>#{actividad.correlativo}</b></color> <b>#{actividad.nombre}</b>"
+            if es_reitimizada
+              header_act_text += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
+            end
+
+            header_tabla_act = [ [ { content: header_act_text, inline_format: true } ] ]
+            pdf.table(header_tabla_act, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
+
+            tabla_items_act = [
+              [ "Categoría", "Ítem / Nombre", "Detalle / Aporte", "Valor Un.", "Cantidad", "Gasto [$]" ]
+            ] + items_actividad
+
+            pdf.table(tabla_items_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 2.5, border_color: 'CCCCCC', inline_format: true }) do
+              row(0).background_color = 'F8F9FA'
+              row(0).font_style = :bold
+              column(0).width = 95
+              column(1).width = 155
+              column(2).width = 110
+              column(3).width = 65
+              column(3).align = :right
+              column(4).width = 45
+              column(4).align = :center
+              column(5).width = 82
+              column(5).align = :right
+            end
+
+            pdf.move_down 5
+          end
+        end
+      end
+
+      # TOTALIZADOR APORTE PROPIO
+      if filas_ben_presentes
+        tabla_total_ben = [
+          [ { content: "<b>TOTAL APORTE PROPIO BENEFICIARIA:</b>", inline_format: true, align: :right }, "<b>#{ActiveSupport::NumberHelper.number_to_currency(total_aporte, delimiter: '.', precision: 0, format: "%u%n", unit: "$")}</b>" ]
+        ]
+        pdf.table(tabla_total_ben, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, background_color: 'F0F0F0', border_color: 'CCCCCC', inline_format: true }) do
+          column(0).width = pdf.bounds.width - 100
+          column(1).width = 100
+          column(1).align = :right
+        end
+      end
+
+      self.pdf_separador(pdf, 10) rescue nil
+
+      # =========================================================================
+      # 5. ESTRUCTURA DE COSTOS Y RESUMEN FINANCIERO CONSOLIDADO DEL PROYECTO
+      # =========================================================================
+      # Si el espacio restante es menor a 280pt, se inicia una página nueva limpia
+      if pdf.cursor < 280
+        pdf.start_new_page
+      end
+
+      self.pdf_sub_titulo_formato(pdf, "RESUMEN FINANCIERO DEL PROYECTO") rescue nil
+      self.pdf_separador(pdf, 5) rescue nil
+
+      items_costo = [
+        { key: :rrhh_propios, nombre: 'RR HH Propios' },
+        { key: :rrhh_externos, nombre: 'RR HH Externos' },
+        { key: :gastos_operacion, nombre: 'Gastos de Operación' },
+        { key: :gastos_administracion, nombre: 'Gastos de Administración' }
+      ]
+
+      base_presupuesto_fpl = Hash.new(0.0)
+      base_presupuesto_apo = Hash.new(0.0)
+
+      # Sumar presupuestos aprobados por actividad para todo el proyecto
+      all_plan_acts = PlanActividad.where(flujo_id: flujo_actual_id)
+      all_plan_acts.each do |p_act|
+        act_id = p_act.actividad_id.presence || p_act.id
+        g_fpl = obtener_gastos.call(act_id, ['solicitado al fondo', 'solicitado_al_fondo'])
+        g_apo = obtener_gastos.call(act_id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
+
+        [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_k|
+          k_std = cat_k == :operaciones ? :gastos_operacion : (cat_k == :administracion ? :gastos_administracion : cat_k)
+
+          g_fpl[cat_k].to_a.each do |item|
+            v_u = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+            cant = (item.try(:hh) || item.try(:cantidad)).to_f
+            costo = item.try(:costo).presence || item.try(:total).presence || (v_u * cant)
+            base_presupuesto_fpl[k_std] += costo.to_f
+          end
+
+          g_apo[cat_k].to_a.each do |item|
+            v_u = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+            cant = (item.try(:hh) || item.try(:cantidad)).to_f
+            costo = item.try(:costo).presence || item.try(:total).presence || (v_u * cant)
+            base_presupuesto_apo[k_std] += costo.to_f
+          end
+        end
+      end
+
+      # Gastos rendidos acumulados de todas las rendiciones del proyecto
+      rend_ids_todas = RendicionFpl.where(flujo_id: flujo_actual_id).pluck(:id)
+      todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_todas).to_a rescue []
+
+      cat_key_map = { 
+        'rrhh_propios' => :rrhh_propios, 
+        'rrhh_externos' => :rrhh_externos, 
+        'operaciones' => :gastos_operacion, 
+        'gastos_operacion' => :gastos_operacion, 
+        'administracion' => :gastos_administracion, 
+        'gastos_administracion' => :gastos_administracion 
+      }
+
+      ren_acum_fpl = Hash.new(0.0)
+      ren_acum_apo = Hash.new(0.0)
+
+      todos_los_gastos.each do |g|
+        c_key = cat_key_map[g.categoria.to_s.downcase] || g.categoria.to_s.to_sym
+        val_rend = g.costo_rendido.to_f
+        es_fpl_item = g.tipo_aporte.to_s.downcase.include?('solicitado') || g.tipo_aporte.to_s.downcase.include?('fondo')
+
+        if es_fpl_item
+          ren_acum_fpl[c_key] += val_rend
+        else
+          ren_acum_apo[c_key] += val_rend
+        end
+      end
+
+      data_costos = { total: {}, fpl: {}, aporte: {} }
+      items_costo.each do |item|
+        k = item[:key]
+
+        tot_f = base_presupuesto_fpl[k].to_f
+        ren_f = ren_acum_fpl[k].to_f
+
+        tot_a = base_presupuesto_apo[k].to_f
+        ren_a = ren_acum_apo[k].to_f
+
+        data_costos[:fpl][k] = { tot: tot_f, ren: ren_f }
+        data_costos[:aporte][k] = { tot: tot_a, ren: ren_a }
+        data_costos[:total][k] = { tot: tot_f + tot_a, ren: ren_f + ren_a }
+      end
+
+      ancho_medio = (pdf.bounds.width - 10) / 2.0
+
+      # TABLA 5.1: A Cargo del Fondo PL
+      header_fpl_box = [ [ { content: "<b>A Cargo del Fondo PL</b>", inline_format: true } ] ]
+      nodes_fpl = data_costos[:fpl]
+      rows_fpl = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
+
+      items_costo.each do |item|
+        k = item[:key]
+        node = nodes_fpl[k] || { tot: 0.0, ren: 0.0 }
+        tot = node[:tot].to_f
+        ren = node[:ren].to_f
+        por_ren = tot - ren
+        pct = tot > 0 ? (ren / tot * 100) : 0.0
+
+        rows_fpl << [
+          item[:nombre],
+          fmt_clp.call(tot),
+          fmt_clp.call(ren),
+          fmt_clp.call(por_ren),
+          fmt_pct.call(pct)
+        ]
+      end
+
+      tot_gen_f = nodes_fpl.values.sum { |v| v[:tot].to_f }
+      ren_gen_f = nodes_fpl.values.sum { |v| v[:ren].to_f }
+      por_ren_f = tot_gen_f - ren_gen_f
+      pct_gen_f = tot_gen_f > 0 ? (ren_gen_f / tot_gen_f * 100) : 0.0
+
+      rows_fpl << [
+        "<b>TOTAL</b>",
+        "<b>#{fmt_clp.call(tot_gen_f)}</b>",
+        "<b>#{fmt_clp.call(ren_gen_f)}</b>",
+        "<b>#{fmt_clp.call(por_ren_f)}</b>",
+        "<b>#{fmt_pct.call(pct_gen_f)}</b>"
+      ]
+
+      tbl_fpl_head = pdf.make_table(header_fpl_box, width: ancho_medio, cell_style: { size: 8, padding: 3, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+      tbl_fpl_body = pdf.make_table(rows_fpl, width: ancho_medio, cell_style: { size: 6.5, padding: [2, 2, 2, 2], border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(0).font_style = :bold
+        column(0).width = 75
+        column(1).width = 49
+        column(1).align = :right
+        column(2).width = 51
+        column(2).align = :right
+        column(3).width = 51
+        column(3).align = :right
+        column(4).width = 45
+        column(4).align = :center
+        row(-1).background_color = 'F0F0F0'
+      end
+
+      # TABLA 5.2: A Cargo del Beneficiario
+      header_apo_box = [ [ { content: "<b>A Cargo del Beneficiario</b>", inline_format: true } ] ]
+      nodes_apo = data_costos[:aporte]
+      rows_apo = [ [ "Ítem de Gasto", "Total", "Gastos Rendidos", "por Rendir", "% Ejec." ] ]
+
+      items_costo.each do |item|
+        k = item[:key]
+        node = nodes_apo[k] || { tot: 0.0, ren: 0.0 }
+        tot = node[:tot].to_f
+        ren = node[:ren].to_f
+        por_ren = tot - ren
+        pct = tot > 0 ? (ren / tot * 100) : 0.0
+
+        rows_apo << [
+          item[:nombre],
+          fmt_clp.call(tot),
+          fmt_clp.call(ren),
+          fmt_clp.call(por_ren),
+          fmt_pct.call(pct)
+        ]
+      end
+
+      tot_gen_a = nodes_apo.values.sum { |v| v[:tot].to_f }
+      ren_gen_a = nodes_apo.values.sum { |v| v[:ren].to_f }
+      por_ren_a = tot_gen_a - ren_gen_a
+      pct_gen_a = tot_gen_a > 0 ? (ren_gen_a / tot_gen_a * 100) : 0.0
+
+      rows_apo << [
+        "<b>TOTAL</b>",
+        "<b>#{fmt_clp.call(tot_gen_a)}</b>",
+        "<b>#{fmt_clp.call(ren_gen_a)}</b>",
+        "<b>#{fmt_clp.call(por_ren_a)}</b>",
+        "<b>#{fmt_pct.call(pct_gen_a)}</b>"
+      ]
+
+      tbl_apo_head = pdf.make_table(header_apo_box, width: ancho_medio, cell_style: { size: 8, padding: 3, background_color: 'E0EFF6', border_color: 'B8DAFF' })
+      tbl_apo_body = pdf.make_table(rows_apo, width: ancho_medio, cell_style: { size: 6.5, padding: [2, 2, 2, 2], border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(0).font_style = :bold
+        column(0).width = 75
+        column(1).width = 49
+        column(1).align = :right
+        column(2).width = 51
+        column(2).align = :right
+        column(3).width = 51
+        column(3).align = :right
+        column(4).width = 45
+        column(4).align = :center
+        row(-1).background_color = 'F0F0F0'
+      end
+
+      # Medición exacta de la altura máxima para evitar saltos o brechas
+      h_fpl = tbl_fpl_head.height + tbl_fpl_body.height
+      h_apo = tbl_apo_head.height + tbl_apo_body.height
+      max_h = [h_fpl, h_apo].max
+
+      y_pos_tablas = pdf.cursor
+
+      # Renderizar Tabla 5.1 (Izquierda)
+      pdf.bounding_box([pdf.bounds.left, y_pos_tablas], width: ancho_medio, height: max_h) do
+        tbl_fpl_head.draw
+        tbl_fpl_body.draw
+      end
+
+      # Renderizar Tabla 5.2 (Derecha)
+      pdf.bounding_box([pdf.bounds.left + ancho_medio + 10, y_pos_tablas], width: ancho_medio, height: max_h) do
+        tbl_apo_head.draw
+        tbl_apo_body.draw
+      end
+
+      # Mover el cursor exactamente al final de las dos tablas con 8pt de separación
+      pdf.move_cursor_to(y_pos_tablas - max_h - 8)
+
+      # TABLA 5.3: Total del Proyecto (Consolidado)
+      header_total_box = [
+        [
+          { content: "<b>Total del Proyecto (Consolidado)</b>", inline_format: true },
+          { content: "Resumen General", align: :right, inline_format: true }
+        ]
+      ]
+      pdf.table(header_total_box, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, background_color: '5D759E', text_color: 'FFFFFF', border_color: '5D759E' })
+
+      rows_tot = [ [ "Ítem de Gasto", "Presupuesto Total", "Gastos Rendidos", "Pendiente por Rendir", "% Ejecución Acumulada" ] ]
+
+      nodes_tot = data_costos[:total]
+      items_costo.each do |item|
+        k = item[:key]
+        node = nodes_tot[k] || { tot: 0.0, ren: 0.0 }
+        tot = node[:tot].to_f
+        ren = node[:ren].to_f
+        por_ren = tot - ren
+        pct = tot > 0 ? (ren / tot * 100) : 0.0
+
+        rows_tot << [
+          "<b>#{item[:nombre]}</b>",
+          fmt_clp.call(tot),
+          fmt_clp.call(ren),
+          fmt_clp.call(por_ren),
+          fmt_pct.call(pct)
+        ]
+      end
+
+      tot_gen_t = nodes_tot.values.sum { |v| v[:tot].to_f }
+      ren_gen_t = nodes_tot.values.sum { |v| v[:ren].to_f }
+      por_ren_t = tot_gen_t - ren_gen_t
+      pct_gen_t = tot_gen_t > 0 ? (ren_gen_t / tot_gen_t * 100) : 0.0
+
+      rows_tot << [
+        "<color rgb='004085'><b>TOTAL CONSOLIDADO PROYECTO</b></color>",
+        "<color rgb='004085'><b>#{fmt_clp.call(tot_gen_t)}</b></color>",
+        "<color rgb='28A745'><b>#{fmt_clp.call(ren_gen_t)}</b></color>",
+        "<color rgb='DC3545'><b>#{fmt_clp.call(por_ren_t)}</b></color>",
+        "<b>#{fmt_pct.call(pct_gen_t)}</b>"
+      ]
+
+      pdf.table(rows_tot, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(0).font_style = :bold
+        column(0).width = 140
+        column(1).width = 103
+        column(1).align = :right
+        column(2).width = 103
+        column(2).align = :right
+        column(3).width = 103
+        column(3).align = :right
+        column(4).width = 103
+        column(4).align = :center
+        row(-1).background_color = 'E0EFF6'
+      end
+
+      self.pdf_separador(pdf, 6) rescue nil
+
+      texto_declaracion = "La información que respalda esta rendición de gastos, se encuentra disponible en las dependencias de <b>#{razon_social}</b>, para consulta o revisión del Agencia de Sustentabilidad y Cambio Climático u otro organismo fiscalizador.\n\nDeclaro bajo juramento que los datos contenidos en esta rendición de gastos son verídicos. Asimismo, declaro conocer las disposiciones relativas a sanciones en caso de suministrar información incompleta, falsa o errónea."
+      pdf.font_size(6.5) do
+        pdf.text texto_declaracion, inline_format: true, align: :justify, color: '333333'
+      end
+
+      self.pdf_separador(pdf, 6) rescue nil
+
+      # Bloque de Firma consolidado
+      ancho_firma = 220
+      posicion_x = pdf.bounds.width - ancho_firma
+
+      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 65) do
+        logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+        
+        if File.exist?(logo_firma_path)
+          y_inicio = pdf.cursor
+          pdf.transparent(0.25) do
+            pdf.image logo_firma_path, width: 70, at: [(ancho_firma - 70) / 2, y_inicio]
+          end
+        end
+
+        pdf.move_down 25
+        pdf.stroke_color '333333'
+        pdf.line_width 0.8
+        pdf.stroke_horizontal_rule
+
+        pdf.move_down 3
+
+        pdf.font "DejaVuSans", style: :bold do
+          pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
+        end
+
+        pdf.font "DejaVuSans", style: :bold do
+          pdf.text rut_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
+        end
+
+        pdf.font "DejaVuSans", style: :normal do
+          pdf.text "Revisor Contable", size: 7.5, align: :center, color: '555555'
+        end
+      end
+
+    end
+
+    # SUBIDA RÁPIDA VÍA CARRIERWAVE
+    pdf_string = pdf.render
+    pdf_file_name = "informe_gastos_#{self.try(:id) || 'temp'}_#{revision}.pdf"
+
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+    File.binwrite(ruta_temporal, pdf_string)
+
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/fondo_produccion_limpia/informe_gastos"
+        end
+      end
+
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+    end
+
+    File.delete(ruta_temporal) if File.exist?(ruta_temporal)
+
+    pdf_string
+
+  rescue StandardError => e
+    tiempo_total = Time.now - t_inicio
+    Rails.logger.error "=== [PDF INFORME GASTOS ERROR] FALLA a los #{tiempo_total}s: #{e.class} - #{e.message} ==="
+    Rails.logger.error e.backtrace.join("\n")
+    nil
+  end
+
+  def number_to_clp(numero)
+    ActiveSupport::NumberHelper.number_to_currency(numero, delimiter: '.', separator: ',', precision: 0, format: "%u%n", unit: "$")
+  end
+
+  def nombre
+    nombre_acuerdo.presence || codigo_proyecto
+  end
+
+  # Método generador del Informe de Ejecución de Actividades en PDF con Prawn
+  def generar_informe_actividades_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil)
+    t_inicio = Time.now
+    Rails.logger.info "=== [PDF INFORME ACTIVIDADES MODELO] INICIANDO GENERACIÓN CORREGIDA ==="
+
+    # Margen superior ajustado a 60 para alojar el encabezado sin requerir un bounding_box externo
+    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [60, 30, 30, 30])
+
+    # Configuración de Fuentes DejaVuSans
+    font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
+    font_path_bold    = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
+
+    pdf.font_families.update("DejaVuSans" => {
+      normal: font_path_regular,
+      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+    })
+    pdf.font "DejaVuSans"
+
+    # Header repetitivo posicionado dentro del margen superior
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top + 48], width: pdf.bounds.width, height: 45 do
+        logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
+        pdf.image logo_path, width: 115 if File.exist?(logo_path)
+
+        pdf.bounding_box [pdf.bounds.width - 300, 43], width: 300, height: 18 do
+          pdf.font "DejaVuSans", style: :bold do
+            pdf.text "INFORME DE EJECUCIÓN DE ACTIVIDADES", size: 9, color: "003DA6", align: :right
+          end
+        end
+
+        pdf.move_cursor_to 5
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 2
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    fpl = fondo_produccion_limpia || self
+    contribuyente = obtiene_contribuyente(fpl&.institucion_entregables_id) rescue nil
+    razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
+    rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
+    programa_texto = fpl.try(:programa).presence || "--"
+    
+    flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id) rescue []
+    mdi_id = Flujo.where(id: flujo_mdi).pluck(:manifestacion_de_interes_id) rescue []
+    nombre_acuerdo = ManifestacionDeInteres.where(id: mdi_id).pluck(:nombre_acuerdo).first rescue nil
+    
+    cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
+    titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
+
+    postulante = User.find_by(id: (fpl.try(:usuario_entregables_id)))
+    nombre_postulante = postulante.try(:nombre_completo)
+    rut_postulante = postulante.try(:rut)
+    
+    mes_actual_num = rendicion&.mes_a_rendir.to_i
+    fecha_res = fpl.try(:fecha_resolucion)
+    mes_nombre = nil
+
+    if fecha_res.present? && mes_actual_num > 0
+      fecha_target = fecha_res.to_date + (mes_actual_num - 1).months
+      mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+    end
+
+    texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
+
+    # MAPA DUAL DE TRADUCCIÓN DE IDs DE PLAN ACTIVIDADES
+    flujo_id_ref = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
+    map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_ref).index_by(&:id)
+    get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+    # IDENTIFICACIÓN ROBUSTA DE ACTIVIDADES REITIMIZADAS
+    arr_planes = map_planes_by_id.values
+    reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
+    tarea_fondo_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)
+
+    extraer_mes_data = lambda do |tp|
+      return nil if tp&.data.blank?
+      d = tp.data
+      if d.is_a?(Hash) || d.respond_to?(:[])
+        d[:mes_a_rendir] || d['mes_a_rendir'] || d.dig(:params, :mes_a_rendir) || d.dig('params', 'mes_a_rendir')
+      else
+        match = d.to_s.match(/mes_a_rendir[^\d]*(\d+)/)
+        match ? match[1] : nil
+      end
+    end
+
+    tps_13 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_13&.id, flujo_id: fpl.flujo_id)
+    tp_13  = tps_13.find { |tp| extraer_mes_data.call(tp).to_i == mes_actual_num } || tps_13.last
+
+    f_envio_raw  = tp_13&.created_at
+    fecha_envio_informe  = f_envio_raw.respond_to?(:strftime)  ? f_envio_raw.strftime('%d/%m/%Y')  : "--"
+  
+    es_tecnica_tab = lambda do |d|
+      return true if d.respond_to?(:tecnica?) && d.tecnica?
+      tipo = d.try(:tipo_tab).to_s.downcase
+      tipo == 'tecnica' || tipo == '0'
+    end
+
+    pdf.font "DejaVuSans", style: :bold do
+      pdf.text "INFORME DE EJECUCIÓN DE ACTIVIDADES", size: 11, color: "000000"
+    end
+    pdf.move_down 6
+
+    # Sección I
+    self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
+
+    tabla_i = [
+      [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
+      [ { content: "<b>Origen recursos:</b>", inline_format: true }, "FPL", { content: "<b>Mes / Año:</b>", inline_format: true }, texto_mes_display ]
+    ]
+
+    pdf.table(tabla_i, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+      column(0).background_color = 'E0EFF6'
+      column(2).background_color = 'E0EFF6'
+    end
+
+    pdf.move_down 6
+
+    # Sección II
+    self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
+
+    tabla_ii = [
+      [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
+      [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
+      [ { content: "<b>Aplica SISREC:</b>", inline_format: true }, "No Aplica", { content: "<b>Código SISREC:</b>", inline_format: true }, 'No Aplica' ],
+      [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto } ],
+      [ { content: "<b>Período de Rendición:</b>", inline_format: true }, { content: texto_mes_display, colspan: 3 } ],
+      [ { content: "<b>Fecha de Envío de Informe:</b>", inline_format: true }, { content: fecha_envio_informe, colspan: 3 } ],
+    ]
+
+    pdf.table(tabla_ii, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+      column(0).background_color = 'E0EFF6'
+      column(2).background_color = 'E0EFF6'
+    end
+
+    pdf.move_down 6
+
+    # Sección III
+    self.pdf_sub_titulo_formato(pdf, "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
+
+    # Comprobar si la rendición fue marcada sin movimientos
+    es_sin_movimientos = rendicion.present? && (
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+      (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+      (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+    )
+
+    if es_sin_movimientos
+      tabla_sin_mov = [
+        [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+      ]
+      pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+    elsif actividades.present?
+      tabla_act = [
+        [ "N°", "Nombre de la Actividad", "Fecha Inicio", "Fecha Término", "Monto Rendido", "%", "Descripción del Avance", "Medio de Verificación" ]
+      ]
+
+      detalles_fpl_array = (rendicion.present? && rendicion.respond_to?(:rendicion_detalles_fpl)) ? rendicion.rendicion_detalles_fpl.to_a : []
+      gastos_fpl_array   = (rendicion.present? && rendicion.respond_to?(:rendicion_gastos_fpl)) ? rendicion.rendicion_gastos_fpl.to_a : []
+
+      actividades.each do |act|
+        act_id_num = act.id.to_i
+        
+        # Recuperar ID interno y validación de reitimización
+        plan_act = map_planes_by_id.values.find { |p| p.actividad_id.to_i == act_id_num || p.id.to_i == act_id_num }
+        pk_id_num = plan_act.try(:id).to_i
+        mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+        es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+        nombre_actividad_display = act.try(:nombre).to_s
+        if es_reitimizada
+          nombre_actividad_display += "\n<color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
+        end
+
+        # BÚSQUEDA TRADUCIDA DEL DETALLE TÉCNICO
+        detalle_tecnico = detalles_fpl_array.find do |d|
+          act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+          act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
+          es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
+        end
+
+        # SUMA DE GASTOS ASOCIADOS TRADUCIDA
+        gastos_asociados = gastos_fpl_array.select do |g|
+          p_id = g.try(:plan_actividad_id).to_i
+          p_id == act_id_num || get_act_id.call(p_id) == act_id_num
+        end
+
+        monto_rendido_total = gastos_asociados.sum { |g| g.try(:costo_rendido).to_f }
+
+        avance_num = detalle_tecnico&.nivel_avance.to_i
+        porcentaje = "#{avance_num}%"
+        descripcion_avance = avance_num >= 100 ? "Finalizado" : "en Ejecución"
+
+        archivos_actividad = []
+
+        if detalle_tecnico.present? && detalle_tecnico.archivo.present?
+          nom = detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+          archivos_actividad << nom if nom.present?
+        end
+
+        if archivos_actividad.empty?
+          detalles_docs_fin = detalles_fpl_array.select do |d|
+            next false unless d.archivo.present?
+            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+            act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
+            !es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
+          end
+
+          detalles_docs_fin.each do |d|
+            nom = d.try(:archivo_identifier) || d.archivo.try(:identifier) || (File.basename(d.archivo.to_s) rescue nil)
+            archivos_actividad << nom if nom.present?
+          end
+        end
+
+        nombres_archivos = archivos_actividad.compact.uniq.join(", ")
+        nombres_archivos = "Sin adjuntos" if nombres_archivos.blank?
+
+        f_inicio = detalle_tecnico&.fecha_inicio
+        f_inicio_str = f_inicio.respond_to?(:strftime) ? f_inicio.strftime('%d/%m/%Y') : f_inicio.to_s.presence || "--"
+
+        f_termino = detalle_tecnico&.fecha_termino
+        f_termino_str = f_termino.respond_to?(:strftime) ? f_termino.strftime('%d/%m/%Y') : f_termino.to_s.presence || "--"
+
+        monto_fmt = ActiveSupport::NumberHelper.number_to_currency(monto_rendido_total, delimiter: '.', precision: 0, format: "%u%n", unit: "$")
+
+        tabla_act << [
+          act.try(:correlativo).to_s,
+          nombre_actividad_display,
+          f_inicio_str,
+          f_termino_str,
+          monto_fmt,
+          porcentaje,
+          descripcion_avance,
+          nombres_archivos
+        ]
+      end
+
+      pdf.table(tabla_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(0).font_style = :bold
+        column(0).width = 25
+        column(0).align = :center
+        column(2).width = 55
+        column(2).align = :center
+        column(3).width = 55
+        column(3).align = :center
+        column(4).width = 65
+        column(4).align = :right
+        column(5).width = 30
+        column(5).align = :center
+      end
+    else
+      tabla_act = [ [ "-", "Sin actividades reportadas", "-", "-", "$0", "0%", "-", "-" ] ]
+      pdf.table(tabla_act, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', inline_format: true })
+    end
+
+    pdf.move_down 6
+
+    pdf.font_size(7.5) do
+      pdf.text "<b>RESULTADO DE LAS ACTIVIDADES REALIZADAS:</b>", inline_format: true
+      pdf.text rendicion&.resultado_actividades_realizadas.presence || "No especificado.", color: '333333'
+      pdf.move_down 4
+
+      pdf.text "<b>INFORMACIÓN ADICIONAL (OPCIONAL):</b>", inline_format: true
+      pdf.text rendicion&.informacion_adicional.presence || "No especificada.", color: '333333'
+      pdf.move_down 4
+
+      pdf.text "<b>CONCLUSIÓN:</b>", inline_format: true
+      pdf.text rendicion&.conclusion.presence || "No especificada.", color: '333333'
+    end
+
+    pdf.move_down 8
+
+    # ==========================================================
+    # EVALUACIÓN DE ESPACIO PARA SECCIÓN IV Y FIRMA
+    # Si queda menos de 150pt en la página, traslada el bloque completo
+    # ==========================================================
+    if pdf.cursor < 150
+      pdf.start_new_page
+    end
+
+    self.pdf_sub_titulo_formato(pdf, "IV.- DATOS DE LOS FUNCIONARIOS RESPONSABLES DE LA EJECUCIÓN DE LAS ACTIVIDADES") rescue nil
+    pdf.move_down 5
+
+    tabla_funcionarios = [
+      [ "Nombre del Responsable", nombre_postulante.to_s.upcase ],
+      [ "RUT",                    rut_postulante.to_s.upcase ],
+      [ "Cargo",                  "Responsable Informe" ],
+      [ "Dependencia",            razon_social ]
+    ]
+
+    pdf.table(tabla_funcionarios, cell_style: { size: 7.5, padding: 2, borders: [] }) do
+      column(0).font_style = :bold
+      column(1).font_style = :normal
+    end
+
+    pdf.move_down 10
+
+    ancho_firma = 220
+    posicion_x = pdf.bounds.width - ancho_firma
+
+    pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 75) do
+      #logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+      
+      #if File.exist?(logo_firma_path)
+      #  y_inicio = pdf.cursor
+      #  pdf.transparent(0.25) do
+      #    pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+      #  end
+      #end
+
+      pdf.move_down 30
+
+      #pdf.stroke_color '333333'
+      #pdf.line_width 0.8
+      #pdf.stroke_horizontal_rule
+      
+     #pdf.move_down 4
+
+      pdf.font "DejaVuSans", style: :bold do
+        pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+      end
+
+      pdf.font "DejaVuSans", style: :bold do
+        pdf.text rut_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
+      end
+
+      pdf.font "DejaVuSans", style: :normal do
+        pdf.text "Responsable Informe", size: 7.5, align: :center, color: '555555'
+      end
+    end
+
+    pdf_string = pdf.render
+    pdf_file_name = "informe_ejecucion_actividades_#{self.try(:id) || 'temp'}.pdf"
+
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+    File.binwrite(ruta_temporal, pdf_string)
+
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/fondo_produccion_limpia/informe_actividades"
+        end
+      end
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+    end
+
+    File.delete(ruta_temporal) if File.exist?(ruta_temporal)
+
+    pdf_string
+  rescue StandardError => e
+    Rails.logger.error "=== [ERROR GENERANDO PDF ACTIVIDADES MODELO] #{e.class} - #{e.message} ==="
+    Rails.logger.error e.backtrace.join("\n")
+    nil
+  end
+
+  # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
+  def generar_informe_evaluacion_tecnica_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil)
+    t_inicio = Time.now
+    Rails.logger.info "=== [PDF INFORME TÉCNICO ACTIVIDADES] INICIANDO GENERACIÓN ==="
+
+    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [85, 30, 40, 30])
+
+    font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
+    font_path_bold    = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
+
+    pdf.font_families.update("DejaVuSans" => {
+      normal: font_path_regular,
+      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+    })
+    pdf.font "DejaVuSans"
+
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top + 65], width: pdf.bounds.width, height: 50 do
+        logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
+        pdf.image logo_path, width: 119 if File.exist?(logo_path)
+
+        pdf.bounding_box [pdf.bounds.width - 300, 48], width: 300, height: 20 do
+          pdf.font "DejaVuSans", style: :bold do
+            pdf.text "INFORME DE EVALUACIÓN DE ACTIVIDADES", size: 9, color: "003DA6", align: :right
+          end
+        end
+
+        pdf.move_cursor_to 8
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 2.5
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    fpl = fondo_produccion_limpia || self
+    contribuyente = obtiene_contribuyente(fpl&.institucion_entregables_id) rescue nil
+    razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
+    rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
+    programa_texto = fpl.try(:programa).presence || "--"
+    
+    flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id) rescue []
+    mdi_id = Flujo.where(id: flujo_mdi).pluck(:manifestacion_de_interes_id) rescue []
+    nombre_acuerdo = ManifestacionDeInteres.where(id: mdi_id).pluck(:nombre_acuerdo).first rescue nil
+    
+    cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
+    titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
+
+    revisor = User.find_by(id: (rendicion.try(:revisor_tecnico_id)))
+    nombre_revisor = revisor.try(:nombre_completo)
+    rut_revisor = revisor.try(:rut)
+
+    mes_actual_num = rendicion&.mes_a_rendir.to_i
+    fecha_res = fpl.try(:fecha_resolucion)
+    mes_nombre = nil
+
+    if fecha_res.present? && mes_actual_num > 0
+      fecha_target = fecha_res.to_date + (mes_actual_num - 1).months
+      mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+    end
+
+    texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
+
+    es_tecnica_tab = lambda do |d|
+      return true if d.respond_to?(:tecnica?) && d.tecnica?
+      tipo = d.try(:tipo_tab).to_s.downcase
+      tipo == 'tecnica' || tipo == '0'
+    end
+
+    detalles_fpl_array = (rendicion.present? && rendicion.respond_to?(:rendicion_detalles_fpl)) ? rendicion.rendicion_detalles_fpl.to_a : []
+    flujo_id_ref = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
+    
+    map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_ref).index_by(&:id)
+    get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+    detalles_hash = PlanActividad.where(flujo_id: flujo_id_ref).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+
+    # IDENTIFICACIÓN ROBUSTA DE ACTIVIDADES REITIMIZADAS
+    arr_planes = map_planes_by_id.values
+    reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
+    tarea_fondo_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)
+    tarea_fondo_fpl_15 = Tarea.find_by_codigo(Tarea::COD_FPL_15)
+
+    extraer_mes_data = lambda do |tp|
+      return nil if tp&.data.blank?
+      d = tp.data
+      if d.is_a?(Hash) || d.respond_to?(:[])
+        d[:mes_a_rendir] || d['mes_a_rendir'] || d.dig(:params, :mes_a_rendir) || d.dig('params', 'mes_a_rendir')
+      else
+        match = d.to_s.match(/mes_a_rendir[^\d]*(\d+)/)
+        match ? match[1] : nil
+      end
+    end
+
+    tps_13 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_13&.id, flujo_id: flujo_id_ref)
+    tp_13  = tps_13.find { |tp| extraer_mes_data.call(tp).to_i == mes_actual_num } || tps_13.last
+
+    tps_15 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_15&.id, flujo_id: flujo_id_ref)
+    tp_15  = tps_15.find { |tp| extraer_mes_data.call(tp).to_i == mes_actual_num } || tps_15.last
+
+    f_recepcion_raw  = tp_13&.created_at
+    f_evaluacion_raw = tp_15&.updated_at || tp_15&.created_at
+
+    fecha_recepcion  = f_recepcion_raw.respond_to?(:strftime)  ? f_recepcion_raw.strftime('%d/%m/%Y')  : "--"
+    fecha_evaluacion = f_evaluacion_raw.respond_to?(:strftime) ? f_evaluacion_raw.strftime('%d/%m/%Y') : "--"
+    
+    # -------------------------------------------------------------
+    # COMIENZO DEL CONTENIDO
+    # -------------------------------------------------------------
+
+    pdf.font "DejaVuSans", style: :bold do
+      pdf.text "INFORME DE EVALUACIÓN DE ACTIVIDADES", size: 11, color: "000000"
+    end
+    pdf.move_down 8
+
+    # Sección I
+    self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
+
+    tabla_i = [
+      [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
+      [ { content: "<b>Origen recursos:</b>", inline_format: true }, "FPL", { content: "<b>Mes / Año:</b>", inline_format: true }, texto_mes_display ]
+    ]
+
+    pdf.table(tabla_i, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+      column(0).background_color = 'E0EFF6'
+      column(2).background_color = 'E0EFF6'
+    end
+
+    pdf.move_down 8
+
+    # Sección II
+    self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
+
+    tabla_ii = [
+      [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
+      [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
+      [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto } ],
+      [ { content: "<b>Fecha Recepción Informe:</b>", inline_format: true }, fecha_recepcion, { content: "<b>Fecha Evaluación de Actividades:</b>", inline_format: true }, fecha_evaluacion ]
+    ]
+
+    pdf.table(tabla_ii, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+      column(0).background_color = 'E0EFF6'
+      column(2).background_color = 'E0EFF6'
+    end
+
+    pdf.move_down 10
+
+    # Sección III
+    self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
+    pdf.move_down 6
+
+    # =========================================================================
+    # DETERMINACIÓN EXCLUSIVA DE EVALUACIÓN TÉCNICA
+    # =========================================================================
+    est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
+    detalles_tecnicos_todos = detalles_fpl_array.select { |d| es_tecnica_tab.call(d) }
+
+    # Verifica si existe algún ítem técnico con 'cumple' en rechazo/no
+    tiene_obs_tecnica_directa = detalles_tecnicos_todos.any? do |d|
+      c = (d.read_attribute_before_type_cast(:cumple) rescue d.cumple).to_s.downcase
+      ['2', 'no', 'false'].include?(c)
+    end
+
+    es_observado_tecnico = tiene_obs_tecnica_directa || est_global == 3
+    es_aprobado_tecnico  = !es_observado_tecnico && (
+      [5, 6].include?(est_global) ||
+      (detalles_tecnicos_todos.present? && detalles_tecnicos_todos.all? { |d| ['1', 'si', 'true'].include?((d.read_attribute_before_type_cast(:cumple) rescue d.cumple).to_s.downcase) })
+    )
+
+    # Leyenda dinámica de dictamen técnico de la Subdirección
+    if es_aprobado_tecnico
+      texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático <b>APRUEBA</b> el informe de actividades asociado a la rendición del mes de <b>#{texto_mes_display}</b>."
+      pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'D4EDDA', border_color: 'C3E6CB', text_color: '155724' })
+      pdf.move_down 8
+    elsif es_observado_tecnico
+      texto_dictamen = "La Subdirección de Producción Sustentable de la Agencia de Sustentabilidad y Cambio Climático informa que existen <b>OBSERVACIONES</b> en el informe de actividades asociado a la rendición de <b>#{texto_mes_display}</b>. Le solicitamos revisarlas y subsanarlas."
+      pdf.table([[ { content: texto_dictamen, inline_format: true } ]], width: pdf.bounds.width, cell_style: { size: 8.5, padding: 6, background_color: 'F8D7DA', border_color: 'F5C6CB', text_color: '721C24' })
+      pdf.move_down 8
+    end
+
+    # Comprobar si la rendición fue marcada sin movimientos
+    es_sin_movimientos = rendicion.present? && (
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimiento)) ||
+      [true, 1, '1', 'true', 't'].include?(rendicion.try(:sin_movimientos)) ||
+      (rendicion.respond_to?(:sin_movimiento?) && rendicion.sin_movimiento?) ||
+      (rendicion.respond_to?(:sin_movimientos?) && rendicion.sin_movimientos?)
+    )
+
+    if es_sin_movimientos
+      tabla_sin_mov = [
+        [ { content: "<b>Rendición Sin Movimientos</b>", align: :center, inline_format: true } ]
+      ]
+      pdf.table(tabla_sin_mov, width: pdf.bounds.width, cell_style: { size: 9, padding: 8, background_color: 'F8F9FA', border_color: 'CCCCCC', text_color: '555555' })
+    elsif actividades.present?
+
+      actividades.each do |act|
+        if pdf.cursor < 140
+          pdf.start_new_page
+        end
+
+        act_id_num = act.id.to_i
+
+        plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || act
+        pk_id_num = plan_act.try(:id).to_i
+        mis_ids = [act_id_num, pk_id_num].reject(&:zero?).uniq
+        es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+        obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
+        obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: flujo_id_ref).pluck(:objetivos_especifico_id).first if plan_act.present?
+        obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
+        indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
+
+        # BÚSQUEDA DEL DETALLE TÉCNICO CON TRADUCCIÓN INVERSA DE IDs
+        detalle_tecnico = detalles_fpl_array.find do |d|
+          act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+          act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
+          es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
+        end
+
+        val_cumple = if detalle_tecnico.present?
+                       (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
+                     else
+                       0
+                     end
+
+        es_observado = false
+        estado_html = if val_cumple == 1
+                        "<color rgb='28A745'><b>APROBADO</b></color>"
+                      elsif val_cumple == 2
+                        es_observado = true
+                        "<color rgb='DC3545'><b>OBSERVADO</b></color>"
+                      else
+                        if es_aprobado_tecnico
+                          "<color rgb='28A745'><b>APROBADO</b></color>"
+                        elsif es_observado_tecnico
+                          es_observado = true
+                          "<color rgb='DC3545'><b>OBSERVADO</b></color>"
+                        elsif [1, 2].include?(est_global)
+                          "<color rgb='FD7E14'><b>EN REVISIÓN</b></color>"
+                        else
+                          "<color rgb='6C757D'><b>EN BORRADOR</b></color>"
+                        end
+                      end
+
+        f_inicio = detalle_tecnico&.fecha_inicio
+        f_inicio_str = f_inicio.respond_to?(:strftime) ? f_inicio.strftime('%d/%m/%Y') : f_inicio.to_s.presence || "dd-mm-aaaa"
+
+        f_termino = detalle_tecnico&.fecha_termino
+        f_termino_str = f_termino.respond_to?(:strftime) ? f_termino.strftime('%d/%m/%Y') : f_termino.to_s.presence || "dd-mm-aaaa"
+
+        porcentaje_str = "#{detalle_tecnico&.nivel_avance.to_i}%"
+        obs_texto = detalle_tecnico&.observacion.presence || "--"
+
+        # DETERMINACIÓN DE ADJUNTO O ENLACE URL
+        nom_archivo = if detalle_tecnico.present?
+                        respaldos = []
+
+                        if detalle_tecnico.archivo.present?
+                          nom_f = detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+                          respaldos << "Archivo: #{nom_f}" if nom_f.present?
+                        end
+
+                        url_val = detalle_tecnico.try(:url_respaldo).presence || detalle_tecnico.try(:url).presence
+                        if url_val.present?
+                          desc_val = detalle_tecnico.try(:descripcion_url).presence || url_val
+                          respaldos << "Enlace: #{desc_val} - #{url_val}"
+                        end
+
+                        respaldos.join(" / ").presence
+                      end
+        nom_archivo = nom_archivo.presence || "Sin adjuntos"
+
+        nombre_actividad_display = act.try(:nombre).to_s
+        if es_reitimizada
+          nombre_actividad_display += " <color rgb='6F42C1'><b>(Reitemización autorizada)</b></color>"
+        end
+
+        header_card = [
+          [
+            { content: "<color rgb='003DA6'><b>#{act.try(:correlativo)}</b></color> <b>#{nombre_actividad_display}</b>", inline_format: true },
+            { content: estado_html, align: :right, inline_format: true }
+          ]
+        ]
+
+        indicador_card = [
+          [ { content: "<color rgb='004085'><b>Indicador asociado al objetivo:</b> #{indicador_texto}</color>", inline_format: true } ]
+        ]
+
+        tabla_campos = [
+          [ "Fecha de Inicio", "Fecha de Término", "Nivel de avance", "Descripción del Avance" ],
+          [ f_inicio_str, f_termino_str, porcentaje_str, obs_texto ]
+        ]
+
+        pdf.table(header_card, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
+        pdf.table(indicador_card, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'B8DAFF', background_color: 'D0E7FF' })
+        pdf.table(tabla_campos, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', align: :center }) do
+          row(0).background_color = 'F8F9FA'
+          row(0).font_style = :bold
+          column(0).width = 80
+          column(1).width = 80
+          column(2).width = 75
+          column(3).align = :left
+        end
+
+        pdf.indent(2) do
+          pdf.move_down 2
+          pdf.font_size(6.5) do
+            pdf.text "<b>Documento de Respaldo técnico:</b> #{nom_archivo}", color: '555555', inline_format: true
+          end
+        end
+
+        if es_observado
+          comentario_revisor = detalle_tecnico.try(:comentario_revisor).presence ||
+                               detalle_tecnico.try(:comentario_evaluacion).presence ||
+                               detalle_tecnico.try(:comentario_tecnico).presence ||
+                               detalle_tecnico.try(:comentario).presence ||
+                               detalle_tecnico.try(:observacion_revisor).presence ||
+                               "Actividad observada durante la revisión técnica."
+
+          tabla_comentario = [
+            [ { content: "<color rgb='721C24'><b>Comentario del Revisor:</b> #{comentario_revisor}</color>", inline_format: true } ]
+          ]
+          pdf.move_down 3
+          pdf.table(tabla_comentario, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'F5C6CB', background_color: 'F8D7DA' })
+        end
+
+        pdf.move_down 8
+      end
+    else
+      pdf.text "Rendición Sin Movimientos", size: 8, style: :italic
+    end
+
+    # VERIFICACIÓN DE ESPACIO PARA FIRMA
+    if pdf.cursor < 110
+      pdf.start_new_page
+    end
+
+    pdf.move_down 15
+
+    ancho_firma = 220
+    posicion_x = pdf.bounds.width - ancho_firma
+
+    pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
+      logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
+      
+      if File.exist?(logo_firma_path)
+        y_inicio = pdf.cursor
+        pdf.transparent(0.25) do
+          pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
+        end
+      end
+
+      pdf.move_down 35
+
+      pdf.stroke_color '333333'
+      pdf.line_width 0.8
+      #pdf.stroke_horizontal_rule
+      
+      pdf.move_down 4
+
+      pdf.font "DejaVuSans", style: :bold do
+        pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
+      end
+
+      pdf.font "DejaVuSans", style: :bold do
+        pdf.text rut_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
+      end
+
+      pdf.font "DejaVuSans", style: :normal do
+        pdf.text "Revisor Técnico", size: 7.5, align: :center, color: '555555'
+      end
+    end
+
+    pdf_string = pdf.render
+    pdf_file_name = "informe_evaluacion_tecnica_#{self.try(:id) || 'temp'}.pdf"
+
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+    File.binwrite(ruta_temporal, pdf_string)
+
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/fondo_produccion_limpia/informe_actividades"
+        end
+      end
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+    end
+
+    File.delete(ruta_temporal) if File.exist?(ruta_temporal)
+
+    pdf_string
+  rescue StandardError => e
+    Rails.logger.error "=== [ERROR GENERANDO PDF EVALUACIÓN TÉCNICA] #{e.class} - #{e.message} ==="
+    Rails.logger.error e.backtrace.join("\n")
+    nil
+  end
+
+  def codigo_proyecto_fpl
+    case self.flujo.tipo_instrumento_id
+    when TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_LINEA_5_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
+      "DyAPL"        
+    when TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_LINEA_1_2_2, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+      "SyC"           
+    else
+      nil
+    end
+  end
+
 end
