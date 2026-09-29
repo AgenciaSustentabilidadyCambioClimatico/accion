@@ -884,7 +884,12 @@
 
                   - es_en_proceso = act_ids_en_proceso.include?(pk_real_plan)
                   - es_observada  = act_ids_observadas.include?(pk_real_plan) && !es_en_proceso
-                  - es_borrador   = act_ids_borrador.include?(pk_real_plan) && !es_en_proceso && !es_observada
+                  
+                  -# NUEVO FILTRO: Verifica si el pk_real_plan existe en la tabla rendicion_detalle_actividades_fpl
+                  - esta_en_rendicion_fpl = RendicionDetalleActividadFpl.exists?(plan_actividad_id: pk_real_plan)
+                  
+                  -# SE AGREGA AL BORRADOR: Solo será borrador si cumple lo anterior Y además existe en la tabla fpl
+                  - es_borrador   = act_ids_borrador.include?(pk_real_plan) && !es_en_proceso && !es_observada && esta_en_rendicion_fpl
 
                   - max_avance_aprobado  = avances_aprobados_por_actividad[pk_real_plan] || 0
                   - max_avance_proceso   = avances_proceso_por_actividad[pk_real_plan] || 0
@@ -910,7 +915,7 @@
 
                   - tipo_act_val = actividad.try(:tipo_actividad)
                   - tipo_act_txt = (tipo_act_val.to_s == '0') ? 'Tipo A' : ((tipo_act_val.to_s == '1') ? 'Tipo B' : nil)
-
+                  
                   %tr
                     %td.contenido-form.text-center= actividad.correlativo
                     %td.contenido-form
