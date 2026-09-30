@@ -375,7 +375,7 @@
 
                     %tr{data: { es_reitimizada: es_reitimizada.to_s }, class: (tiene_exceso_fila ? 'has-row-exceso' : '')}
                       %td.contenido-form= cat_label
-                      %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                      %td.contenido-form= item.try(:user_name) || item.try(:nombre_proveedor) || item.try(:item) || item.try(:nombre) || '--'
                       %td.contenido-form.text-center= item.try(:tipo_aporte)
                       
                       %td.contenido-form.text-center= "#{formatear_miles_ruby.call(hh_postulada)} #{item.try(:unidad) || 'HH'}"
