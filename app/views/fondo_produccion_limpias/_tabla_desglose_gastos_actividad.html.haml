@@ -99,7 +99,8 @@
       let montoIngresado = valorUnitario; // El usuario tipeó el monto total aquí
       
       cantidad = valorUnitarioSoli > 0 ? (montoIngresado / valorUnitarioSoli) : 0;
-      $inputVisCantidad.val(cantidad.toLocaleString('es-CL', { maximumFractionDigits: 10 }));
+      // Solo muestra 3 decimales al usuario, el valor real (completo) se guarda en el hidden
+      $inputVisCantidad.val(cantidad.toLocaleString('es-CL', { maximumFractionDigits: 3 }));
       
       valorUnitario = valorUnitarioSoli; // Mantiene el valor base original para la BD
     }
@@ -403,7 +404,7 @@
                     - if es_gasto_oper_adm
                       - v_unitario_rendido = v_unitario_solicitado
                       - cantidad_rendida = (v_unitario_solicitado > 0) ? (monto_rendido / v_unitario_solicitado).round(10) : 0
-                      - cantidad_rendida_str = formatear_miles_ruby.call(cantidad_rendida)
+                      - cantidad_rendida_str = formatear_miles_ruby.call(cantidad_rendida.round(3))
                       - v_unitario_rendido_str = formatear_miles_ruby.call(monto_rendido)
 
                     %tr{data: { es_reitimizada: es_reitimizada.to_s }, class: (tiene_exceso_fila ? 'has-row-exceso' : '')}
@@ -445,7 +446,7 @@
                             %span.font-weight-bold= number_to_currency(v_unitario_rendido)
                       - else
                         %td.contenido-form.text-center
-                          %span.font-weight-bold= es_gasto_oper_adm ? "N/A" : cantidad_rendida_str
+                          %span.font-weight-bold= cantidad_rendida_str
                         %td.contenido-form.text-center
                           %span.font-weight-bold= number_to_currency(v_unitario_rendido)
 

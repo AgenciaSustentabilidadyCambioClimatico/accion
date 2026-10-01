@@ -30,11 +30,13 @@ class FlujoTarea < ApplicationRecord
                 if ultima_rendicion.present?
                     mes_num = ultima_rendicion.mes_a_rendir.to_i
                     
-                    # Si tenemos la fecha de resolución, calculamos el nombre del mes
+                    # Si tenemos la fecha de resolución, calculamos el nombre del mes y el año
                     if fpl.fecha_resolucion.present? && mes_num > 0
                         fecha_target = fpl.fecha_resolucion.to_date + (mes_num - 1).months
                         mes_nombre = (I18n.l(fecha_target, format: '%B') rescue fecha_target.strftime('%B')).capitalize
-                        mes_rendir = mes_nombre
+                        
+                        # Concatenamos el mes capitalizado con el año
+                        mes_rendir = "#{mes_nombre} #{fecha_target.year}"
                     else
                         # Fallback si por algún motivo no hay fecha de resolución
                         mes_rendir = mes_num.to_s
@@ -44,7 +46,7 @@ class FlujoTarea < ApplicationRecord
                 mes_rendir = '[mes_a_rendir]'
             end
         end
-		
+        
         {
             "[asunto]": "Mensaje de salida",
             "[nombre]": user.nombre_completo,
