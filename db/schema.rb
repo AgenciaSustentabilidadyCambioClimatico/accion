@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_11_130238) do
+ActiveRecord::Schema.define(version: 2026_09_30_203757) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1906,9 +1906,9 @@ ActiveRecord::Schema.define(version: 2026_09_11_130238) do
     t.integer "item_origen_id", null: false
     t.string "tipo_aporte"
     t.decimal "valor_unitario", precision: 12, scale: 2, default: "0.0"
-    t.decimal "cantidad_postulada", precision: 8, scale: 2, default: "0.0"
+    t.decimal "cantidad_postulada", precision: 20, scale: 10, default: "0.0"
     t.decimal "costo_postulado", precision: 14, scale: 2, default: "0.0"
-    t.decimal "cantidad_rendida", precision: 8, scale: 2, default: "0.0"
+    t.decimal "cantidad_rendida", precision: 20, scale: 10, default: "0.0"
     t.decimal "costo_rendido", precision: 14, scale: 2, default: "0.0"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false

@@ -21,19 +21,46 @@ class FlujoTarea < ApplicationRecord
   end
 
 	def self.metodos(user, reunion=nil, mdi=nil, fpl=nil)
-		{
-			"[asunto]": "Mensaje de salida",
-			"[nombre]": user.nombre_completo,
-			"[telefono]": user.telefono,
-			"[email]": user.email,
-			"[rut]": user.rut,
-			"[fecha_reunion]": reunion.nil? ? "[fecha_reunion]" : reunion.fecha,
-			"[lugar_reunion]": reunion.nil? ? "[lugar_reunion]" : reunion.direccion,
-			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo,
-			"[tipo_proyecto]": fpl.nil? ? '[tipo_proyecto]' : fpl.flujo.tipo_instrumento.nombre,
-			"[codigo_proyecto]": fpl.nil? ? '[codigo_proyecto]' : fpl.codigo_proyecto
-		}
-	end
+        # Rescatamos el mes de la rendición más reciente si existe un FPL
+        mes_rendir = '[mes_a_rendir]'
+        if fpl.present?
+            begin
+                ultima_rendicion = RendicionFpl.where(flujo_id: fpl.flujo_id).order(updated_at: :desc).first
+                
+                if ultima_rendicion.present?
+                    mes_num = ultima_rendicion.mes_a_rendir.to_i
+                    
+                    # Si tenemos la fecha de resolución, calculamos el nombre del mes y el año
+                    if fpl.fecha_resolucion.present? && mes_num > 0
+                        fecha_target = fpl.fecha_resolucion.to_date + (mes_num - 1).months
+                        mes_nombre = (I18n.l(fecha_target, format: '%B') rescue fecha_target.strftime('%B')).capitalize
+                        
+                        # Concatenamos el mes capitalizado con el año
+                        mes_rendir = "#{mes_nombre} #{fecha_target.year}"
+                    else
+                        # Fallback si por algún motivo no hay fecha de resolución
+                        mes_rendir = mes_num.to_s
+                    end
+                end
+            rescue
+                mes_rendir = '[mes_a_rendir]'
+            end
+        end
+        
+        {
+            "[asunto]": "Mensaje de salida",
+            "[nombre]": user.nombre_completo,
+            "[telefono]": user.telefono,
+            "[email]": user.email,
+            "[rut]": user.rut,
+            "[fecha_reunion]": reunion.nil? ? "[fecha_reunion]" : reunion.fecha,
+            "[lugar_reunion]": reunion.nil? ? "[lugar_reunion]" : reunion.direccion,
+            "[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo,
+            "[tipo_proyecto]": fpl.nil? ? '[tipo_proyecto]' : fpl.flujo.tipo_instrumento.nombre,
+            "[codigo_proyecto]": fpl.nil? ? '[codigo_proyecto]' : fpl.codigo_proyecto,
+            "[mes_a_rendir]": mes_rendir
+        }
+    end
 
 	def responsables tipo_instrumento
 		Responsable.__personas_responsables(self.rol_destinatarios.reject{|m| m.empty?}, tipo_instrumento_id)

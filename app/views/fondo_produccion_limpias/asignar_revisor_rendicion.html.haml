@@ -85,19 +85,13 @@
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 
 -# ==========================================================
--# DICCIONARIO ESTRICTO PARA RESOLVER PK DE PLAN_ACTIVIDAD
--# (Doble pasada para EVITAR colisiones de ID)
+-# OBTENCIÓN DE PLANES Y TRADUCTOR PK DIRECTO (SIN DICCIONARIO CRUZADO)
 -# ==========================================================
 - arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
-- map_act_ids = {}
-- map_pk_ids  = {}
-- arr_planes.each do |p|
-  - map_act_ids[p.actividad_id.to_i] = p.id if p.actividad_id.present?
-  - map_pk_ids[p.id.to_i]            = p.id
-- obtener_pk_real = lambda { |id_param| val = id_param.to_i; map_act_ids[val] || map_pk_ids[val] }
+- get_pk_real = lambda { |a_id| (arr_planes.find { |p| p.actividad_id.to_i == a_id.to_i } || arr_planes.find { |p| p.id.to_i == a_id.to_i }).try(:id).to_i }
 
--# Identificar ÚNICAMENTE las actividades que fueron seleccionadas y guardadas en esta rendición
-- pks_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+-# Identificar las PKs de las actividades guardadas
+- pks_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.compact.map(&:to_i).uniq || []
 - act_ids_en_rendicion = pks_en_rendicion.map { |pk| arr_planes.find { |p| p.id == pk }&.actividad_id }.compact.map(&:to_i) + pks_en_rendicion.map(&:to_i)
 
 -# ==========================================================
@@ -188,12 +182,12 @@
             / -------------------------------------------------------------
             .tab-pane.fade#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
               - if @actividad_x_linea.present?
-                - actividades_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
+                - actividades_filtradas = @actividad_x_linea.select { |a| pks_en_rendicion.include?(get_pk_real.call(a.id)) }
 
                 - if actividades_filtradas.present?
                   - actividades_filtradas.each do |actividad|
-                    - pk_real_plan = obtener_pk_real.call(actividad.id)
-                    - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+                    - pk_real_plan = get_pk_real.call(actividad.id)
+                    - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
                     - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -294,12 +288,12 @@
             / Pestaña 2: Financiera FPL (Modo Lectura ESTRICTO)
             .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
               - if @actividad_x_linea.present?
-                - actividades_fpl_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
+                - actividades_fpl_filtradas = @actividad_x_linea.select { |a| pks_en_rendicion.include?(get_pk_real.call(a.id)) }
 
                 - if actividades_fpl_filtradas.present?
                   - actividades_fpl_filtradas.each do |actividad|
-                    - pk_real_plan = obtener_pk_real.call(actividad.id)
-                    - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+                    - pk_real_plan = get_pk_real.call(actividad.id)
+                    - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
                     - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -352,12 +346,12 @@
             / Pestaña 3: Financiera Aporte Propio (Modo Lectura ESTRICTO)
             .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
               - if @actividad_x_linea.present?
-                - actividades_aporte_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
+                - actividades_aporte_filtradas = @actividad_x_linea.select { |a| pks_en_rendicion.include?(get_pk_real.call(a.id)) }
 
                 - if actividades_aporte_filtradas.present?
                   - actividades_aporte_filtradas.each do |actividad|
-                    - pk_real_plan = obtener_pk_real.call(actividad.id)
-                    - plan_act = arr_planes.find { |p| p.id == pk_real_plan }
+                    - pk_real_plan = get_pk_real.call(actividad.id)
+                    - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
                     - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
                     - es_reitimizada = (mis_ids & reitimizadas_ids).any?

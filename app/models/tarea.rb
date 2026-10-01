@@ -84,17 +84,42 @@ class Tarea < ApplicationRecord
 		( ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_cuerpo.blank? )
 	end
 
-	def metodos(o,mdi=nil,fpl=nil)
-		metodos = {
-			"[nombre]": o.nombre_completo,
-			"[telefono]": o.telefono, 
-			"[email]": o.email, 
-			"[rut]": o.rut,
-			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo,
-			"[tipo_proyecto]": fpl.nil? ? '[tipo_proyecto]' : fpl.flujo.tipo_instrumento.nombre,
-			"[codigo_proyecto]": fpl.nil? ? '[codigo_proyecto]' : fpl.codigo_proyecto
-		}
-	end
+	def metodos(o, mdi=nil, fpl=nil)
+        # Rescatamos el mes de la rendición más reciente si existe un FPL
+        mes_rendir = '[mes_a_rendir]'
+        if fpl.present?
+            begin
+                ultima_rendicion = RendicionFpl.where(flujo_id: fpl.flujo_id).order(updated_at: :desc).first
+                
+                if ultima_rendicion.present?
+                    mes_num = ultima_rendicion.mes_a_rendir.to_i
+                    
+                    # Si tenemos la fecha de resolución, calculamos el nombre del mes
+                    if fpl.fecha_resolucion.present? && mes_num > 0
+                        fecha_target = fpl.fecha_resolucion.to_date + (mes_num - 1).months
+                        mes_nombre = (I18n.l(fecha_target, format: '%B') rescue fecha_target.strftime('%B')).capitalize
+                        mes_rendir = mes_nombre
+                    else
+                        # Fallback si por algún motivo no hay fecha de resolución
+                        mes_rendir = mes_num.to_s
+                    end
+                end
+            rescue
+                mes_rendir = '[mes_a_rendir]'
+            end
+        end
+
+        {
+            "[nombre]": o.nombre_completo,
+            "[telefono]": o.telefono, 
+            "[email]": o.email, 
+            "[rut]": o.rut,
+            "[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo,
+            "[tipo_proyecto]": fpl.nil? ? '[tipo_proyecto]' : fpl.flujo.tipo_instrumento.nombre,
+            "[codigo_proyecto]": fpl.nil? ? '[codigo_proyecto]' : fpl.codigo_proyecto,
+            "[mes_a_rendir]": mes_rendir
+        }
+    end
 
   def update_crontab
   	##

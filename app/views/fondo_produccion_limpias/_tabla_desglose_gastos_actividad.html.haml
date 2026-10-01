@@ -26,7 +26,8 @@
     // Separar parte entera y decimales (usando coma para decimales)
     let partes = str.replace(/\./g, '').replace(/[^0-9,]/g, '').split(',');
     let entera = partes[0] || '0';
-    let decimal = partes[1] !== undefined ? partes[1].substring(0, 2) : null;
+    // Permitimos hasta 10 decimales
+    let decimal = partes[1] !== undefined ? partes[1].substring(0, 10) : null;
 
     // Formatear separador de miles con puntos
     entera = entera.replace(/^0+(?=\d)/, '');
@@ -38,6 +39,12 @@
 
   function sanitizarDecimalesYCalcular(input) {
     if (!input || input.value === undefined) return;
+
+    // Evita que el JS se estrelle buscando el cursor en inputs ocultos
+    if (input.type === 'hidden') {
+      calcularCostoRendidoFila(input);
+      return;
+    }
 
     let cursorPosition = input.selectionStart || 0;
     let valorOriginal = input.value;
@@ -85,6 +92,20 @@
     let valUniStr = $inputVisValorUnitario.val() ? $inputVisValorUnitario.val().replace(/\./g, '').replace(',', '.') : '0';
     let valorUnitario = parseFloat(valUniStr);
     if (isNaN(valorUnitario) || valorUnitario < 0) { valorUnitario = 0; }
+
+    // NUEVO: Si la cantidad es readonly (Operaciones/Admin), aplica tu lógica de división
+    if ($inputVisCantidad.prop('readonly')) {
+      let valorUnitarioSoli = parseFloat($tr.find('input[name*="[valor_unitario_postulado]"]').val()) || 1;
+      let montoIngresado = valorUnitario; // El usuario tipeó el monto total aquí
+      
+      cantidad = valorUnitarioSoli > 0 ? (montoIngresado / valorUnitarioSoli) : 0;
+      // Solo muestra 3 decimales al usuario, el valor real (completo) se guarda en el hidden
+      $inputVisCantidad.val(cantidad.toLocaleString('es-CL', { maximumFractionDigits: 3 }));
+      
+      valorUnitario = valorUnitarioSoli; // Mantiene el valor base original para la BD
+    }
+
+    // Almacena el valor numérico float limpio en el campo oculto
 
     // Almacena el valor numérico float limpio en el campo oculto
     $hiddenCantidad.val(cantidad);
@@ -221,13 +242,13 @@
 -# HELPER RUBY ROBUSTO PARA FORMATEAR MILES DIRECTO AL CONSTRUIR EL HTML
 - formatear_miles_ruby = lambda do |num|
   - return '' if num.blank?
-  - val_f = num.to_f.round(2)
+  - val_f = num.to_f.round(10)
   - if val_f % 1 == 0
     - val_f.to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
   - else
     - partes = val_f.to_s.split('.')
     - entera = partes[0].to_i.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
-    - decimal = partes[1].to_s[0..1].gsub(/0+$/, '')
+    - decimal = partes[1].to_s[0..9].gsub(/0+$/, '')
     - decimal = '0' if decimal.empty?
     - "#{entera},#{decimal}"
 
@@ -321,6 +342,13 @@
                   - items_cat.each do |item|
                     - item_id_num = item.id.to_i
 
+                    -# LÓGICA PARA NOMBRE: Concatena (Auditor) solo si viene de proveedor
+                    - nombre_display = item.try(:user_name)
+                    - nombre_display ||= item.try(:nombre_proveedor).present? ? "#{item.nombre_proveedor} (Auditor)" : nil
+                    - nombre_display ||= item.try(:item)
+                    - nombre_display ||= item.try(:nombre)
+                    - nombre_display ||= '--'
+
                     -# RECUPERAR REGISTRO GUARDADO EN MAPA
                     - g_guardado = rendicion_gastos_map["#{real_plan_act_id}_#{cat_key_str}_#{item_id_num}"]
                     - g_guardado ||= rendicion_gastos_map["#{actividad_id_param}_#{cat_key_str}_#{item_id_num}"]
@@ -329,7 +357,7 @@
                     -# HISTÓRICOS RENDIDOS
                     - cant_hist = cant_hist_hash[[cat_key_str, item_id_num]]
                     - cant_hist ||= cant_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
-                    - cant_hist = cant_hist.to_f.round(2)
+                    - cant_hist = cant_hist.to_f.round(10)
 
                     - costo_hist = costo_hist_hash[[cat_key_str, item_id_num]]
                     - costo_hist ||= costo_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
@@ -337,14 +365,14 @@
 
                     -# POSTULADO
                     - v_unitario_solicitado = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
-                    - hh_postulada_orig = (item.try(:hh) || item.try(:cantidad)).to_f.round(2)
+                    - hh_postulada_orig = (item.try(:hh) || item.try(:cantidad)).to_f.round(10)
                     - monto_postulado_orig = item.try(:costo).presence || item.try(:total).presence || (hh_postulada_orig * v_unitario_solicitado)
 
-                    - hh_postulada = [(hh_postulada_orig - cant_hist).round(2), 0.0].max
+                    - hh_postulada = [(hh_postulada_orig - cant_hist).round(10), 0.0].max
                     - monto_postulado = [(monto_postulado_orig - costo_hist).round(2), 0.0].max
 
                     - if g_guardado.present?
-                      - cantidad_rendida = g_guardado.cantidad_rendida.to_f.round(2)
+                      - cantidad_rendida = g_guardado.cantidad_rendida.to_f.round(10)
                       - if g_guardado.respond_to?(:valor_unitario_rendido) && g_guardado.valor_unitario_rendido.present? && g_guardado.valor_unitario_rendido.to_f > 0
                         - v_unitario_rendido = g_guardado.valor_unitario_rendido.to_f
                       - else
@@ -373,12 +401,18 @@
                     - tiene_exceso_fila = !es_reitimizada && (monto_rendido > monto_postulado)
                     - tiene_exceso_tabla = true if tiene_exceso_fila
 
+                    - if es_gasto_oper_adm
+                      - v_unitario_rendido = v_unitario_solicitado
+                      - cantidad_rendida = (v_unitario_solicitado > 0) ? (monto_rendido / v_unitario_solicitado).round(10) : 0
+                      - cantidad_rendida_str = formatear_miles_ruby.call(cantidad_rendida.round(3))
+                      - v_unitario_rendido_str = formatear_miles_ruby.call(monto_rendido)
+
                     %tr{data: { es_reitimizada: es_reitimizada.to_s }, class: (tiene_exceso_fila ? 'has-row-exceso' : '')}
                       %td.contenido-form= cat_label
-                      %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                      %td.contenido-form= nombre_display                      
                       %td.contenido-form.text-center= item.try(:tipo_aporte)
                       
-                      %td.contenido-form.text-center= "#{formatear_miles_ruby.call(hh_postulada)} #{item.try(:unidad) || 'HH'}"
+                      %td.contenido-form.text-center= "#{number_with_precision(hh_postulada, precision: 3, separator: ',', delimiter: '.')} #{item.try(:unidad).presence || (es_gasto_oper_adm ? 'u.' : 'HH')}"
                       %td.contenido-form.text-right= number_to_currency(v_unitario_solicitado)
                       
                       %td.contenido-form.text-right.font-weight-bold.cell-costo-solicitado{data: { val_solicitado: monto_postulado }}= number_to_currency(monto_postulado)
@@ -394,7 +428,11 @@
                           = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario_postulado]", v_unitario_solicitado
 
                           = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "real-cantidad-rendida"
-                          = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida #{'is-invalid' if tiene_exceso_fila}", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
+                          
+                          - if es_gasto_oper_adm
+                            = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida", readonly: true, style: "width: 70px; margin: 0 auto; background-color: #e9ecef;"
+                          - else
+                            = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida #{'is-invalid' if tiene_exceso_fila}", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
                         
                         %td.contenido-form.text-center
                           = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario_rendido, class: "real-valor-unitario-rendido"
@@ -402,7 +440,7 @@
                             .input-group{style: "width: 105px; margin: 0 auto;"}
                               .input-group-prepend
                                 %span.input-group-text.border-text{style: "padding: 2px 6px; font-size: 11px; background-color: #e9ecef;"} $
-                              = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-right input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", readonly: !es_reitimizada, style: "padding-right: 5px; #{'background-color: #e9ecef; cursor: not-allowed;' unless es_reitimizada}", autocomplete: "off"
+                              = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-right input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", style: "padding-right: 5px;", autocomplete: "off"
                           - else
                             = hidden_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "input-valor-unitario-rendido"
                             %span.font-weight-bold= number_to_currency(v_unitario_rendido)
@@ -439,7 +477,7 @@
                               .modal-body.p-3
                                 .form-group.mb-2
                                   %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Ítem / Nombre:
-                                  .text-dark.font-weight-bold{style: "font-size: 13px;"}= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                                  .text-dark.font-weight-bold{style: "font-size: 13px;"}= nombre_display
                                 .form-group.mb-0
                                   %label.font-weight-bold.text-secondary{style: "font-size: 12px;"} Detalle de N° Factura / Boleta / Comprobante de Respaldo:
                                   = text_area_tag "modal_input_comprobante_#{row_key}", comprobante_ref_val, id: "modal_input_comprobante_#{row_key}", class: "form-control border-text", rows: 4, oninput: "sanitizarComprobante(this); guardarComprobanteModal('#{row_key}')", style: "font-size: 13px;", placeholder: "Ingrese N° de documento, detalles, observaciones de respaldo, etc...", disabled: !es_editable

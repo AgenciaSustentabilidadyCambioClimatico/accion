@@ -5087,96 +5087,36 @@ class FondoProduccionLimpiasController < ApplicationController
       render 'corregir_rendicion'
     end
 
-    # PATCH /guardar_correccion_financiera_rendicion
-    def guardar_correccion_financiera_rendicion # FPL-17
-      # 1. Buscar prioritariamente la rendición vinculada a la tarea activa
+    def guardar_correccion_financiera_rendicion
       if @tarea_pendiente.respond_to?(:determina_rendicion) && @tarea_pendiente.determina_rendicion.present?
         @rendicion = @tarea_pendiente.determina_rendicion
       elsif params[:mes_a_rendir].present?
         @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
       end
 
-      # 2. Fallbacks de búsqueda por estado (estado 4 = observada_financiera)
       unless @rendicion.present?
-        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id, estado: [:observada_financiera, 4])
-                                .order(mes_a_rendir: :asc)
-                                .first
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id, estado: [:observada_financiera, 4]).order(mes_a_rendir: :asc).first
       end
 
-      # 3. Fallback final
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc).first
 
       if @rendicion.nil?
-        redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición para realizar la corrección financiera.")
+        redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición.")
         return
       end
 
-      # Asegurar metadata en la tarea activa si venía vacía
       if @tarea_pendiente.data.blank?
         @tarea_pendiente.update_column(:data, { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir })
         @tarea_pendiente.reload
       end
 
       # =========================================================================
-      # TRADUCTOR DE IDs PARA ACTUALIZACIÓN (DOBLE PASADA ESTRICTA)
-      # Intercepta los parámetros que vienen de la vista y los traduce
-      # a la Primary Key real antes de que los procesadores los guarden.
+      # PROCESAR DESGLOSE SIN TRADUCTORES (GUARDA LA PK REAL ENVIADA POR LA VISTA)
       # =========================================================================
-      map_act_ids = {}
-      map_pk_ids  = {}
-
-      PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).each do |p|
-        map_act_ids[p.actividad_id.to_s] = p.id.to_s if p.actividad_id.present?
-        map_pk_ids[p.id.to_s]            = p.id.to_s
-      end
-
-      traductor_pk = lambda do |id_param|
-        val = id_param.to_s
-        map_act_ids[val] || map_pk_ids[val] || val
-      end
-
-      # INTERCEPTAR Y TRADUCIR IDs EN DOCUMENTOS FPL
-      if params[:documentos_fpl].respond_to?(:each)
-        iterable_fpl = params[:documentos_fpl].respond_to?(:values) ? params[:documentos_fpl].values : params[:documentos_fpl]
-        iterable_fpl.each do |doc_param|
-          if doc_param[:actividad_ids].present?
-            ids = doc_param[:actividad_ids].is_a?(Array) ? doc_param[:actividad_ids] : doc_param[:actividad_ids].values
-            doc_param[:actividad_ids] = ids.map { |id| traductor_pk.call(id) }.compact
-          end
-        end
-      end
-
-      # INTERCEPTAR Y TRADUCIR IDs EN DOCUMENTOS APORTE
-      if params[:documentos_aporte].respond_to?(:each)
-        iterable_aporte = params[:documentos_aporte].respond_to?(:values) ? params[:documentos_aporte].values : params[:documentos_aporte]
-        iterable_aporte.each do |doc_param|
-          if doc_param[:actividad_ids].present?
-            ids = doc_param[:actividad_ids].is_a?(Array) ? doc_param[:actividad_ids] : doc_param[:actividad_ids].values
-            doc_param[:actividad_ids] = ids.map { |id| traductor_pk.call(id) }.compact
-          end
-        end
-      end
-
-      # INTERCEPTAR Y TRADUCIR IDs EN LA TABLA DE GASTOS
-      if params[:gastos_rendidos].present?
-        gastos_hash = params[:gastos_rendidos].respond_to?(:to_unsafe_h) ? params[:gastos_rendidos].to_unsafe_h : params[:gastos_rendidos]
-        gastos_corregidos = {}
-        
-        gastos_hash.each do |act_id, datos|
-          real_pk = traductor_pk.call(act_id)
-          gastos_corregidos[real_pk.to_s] = datos
-        end
-        
-        params[:gastos_rendidos] = params.respond_to?(:permit!) ? ActionController::Parameters.new(gastos_corregidos) : gastos_corregidos
-      end
-      # =========================================================================
-
-      # 4. PROCESAR DESGLOSE DE GASTOS (HH, VALORES Y COMPROBANTES) Y DOCUMENTOS
       procesar_gastos_rendidos(params[:gastos_rendidos]) if params[:gastos_rendidos].present?
       procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
       procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
 
-      # Asegurar que se guarden los comentarios del postulante si vienen anidados en los documentos
       [params[:documentos_fpl], params[:documentos_aporte]].compact.each do |docs_param|
         iterable = docs_param.respond_to?(:values) ? docs_param.values : docs_param
         iterable.each do |doc_param|
@@ -5187,15 +5127,10 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       end
 
-      # 5. Flujo de envío o grabado de avance
       if params[:commit_type] == 'enviar'
         @rendicion.update!(estado: :en_evaluacion)
-
         extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir }
-
-        if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-          @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data)
-        end
+        @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data) if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
         
         estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
         @tarea_pendiente.update(estado_tarea_pendiente_id: estado_enviada)
@@ -5372,20 +5307,19 @@ class FondoProduccionLimpiasController < ApplicationController
       end
       @rendicion ||= RendicionFpl.where(flujo_id: flujo_id_ref).order(mes_a_rendir: :desc).first
 
-      mapa_plan_ids = {}
-      if flujo_id_ref.present?
-        PlanActividad.where(flujo_id: flujo_id_ref).each do |p|
-          mapa_plan_ids[p.actividad_id.to_i] = p.id
-          mapa_plan_ids[p.id.to_i]           = p.id
-        end
-      end
-
+      # Obtenemos solo las PKs válidas del flujo actual para seguridad
+      pks_validas = PlanActividad.where(flujo_id: flujo_id_ref).pluck(:id)
+      
       hubo_errores_archivos = false
 
-      # Guardado directo en el modelo PlanActividad
+      # Guardado directo en el modelo PlanActividad usando la PK real
       if params[:reitimizacion].present? && params[:reitimizacion][:actividades].present?
         params[:reitimizacion][:actividades].each do |act_id, datos_act|
-          real_pk = mapa_plan_ids[act_id.to_i] || act_id.to_i
+          real_pk = act_id.to_i
+          
+          # Evita cruces o inyecciones: solo guarda si el ID pertenece a este flujo
+          next unless pks_validas.include?(real_pk)
+
           plan_actividad = PlanActividad.find_by(id: real_pk)
 
           if plan_actividad.present?
