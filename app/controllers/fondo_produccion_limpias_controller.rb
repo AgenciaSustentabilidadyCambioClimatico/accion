@@ -5307,20 +5307,19 @@ class FondoProduccionLimpiasController < ApplicationController
       end
       @rendicion ||= RendicionFpl.where(flujo_id: flujo_id_ref).order(mes_a_rendir: :desc).first
 
-      mapa_plan_ids = {}
-      if flujo_id_ref.present?
-        PlanActividad.where(flujo_id: flujo_id_ref).each do |p|
-          mapa_plan_ids[p.actividad_id.to_i] = p.id
-          mapa_plan_ids[p.id.to_i]           = p.id
-        end
-      end
-
+      # Obtenemos solo las PKs válidas del flujo actual para seguridad
+      pks_validas = PlanActividad.where(flujo_id: flujo_id_ref).pluck(:id)
+      
       hubo_errores_archivos = false
 
-      # Guardado directo en el modelo PlanActividad
+      # Guardado directo en el modelo PlanActividad usando la PK real
       if params[:reitimizacion].present? && params[:reitimizacion][:actividades].present?
         params[:reitimizacion][:actividades].each do |act_id, datos_act|
-          real_pk = mapa_plan_ids[act_id.to_i] || act_id.to_i
+          real_pk = act_id.to_i
+          
+          # Evita cruces o inyecciones: solo guarda si el ID pertenece a este flujo
+          next unless pks_validas.include?(real_pk)
+
           plan_actividad = PlanActividad.find_by(id: real_pk)
 
           if plan_actividad.present?
