@@ -268,14 +268,17 @@
 - mes_guardado = @rendicion.try(:mes_a_rendir)
 
 -# ==========================================================
--# OBTENCIÓN DE PLANES Y ASIGNACIÓN ESTRICTA
+-# MAPEO ESTRICTO 1 A 1 (SIN ADIVINANZAS NI FALLBACKS)
 -# ==========================================================
 - arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- map_act_ids = {}
+- arr_planes.each do |p|
+  - map_act_ids[p.actividad_id.to_i] = p.id.to_i if p.actividad_id.present?
 
--# Identificar ÚNICAMENTE las actividades que fueron seleccionadas y guardadas en esta rendición
-- pks_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
-- act_ids_en_rendicion = pks_en_rendicion.map { |pk| arr_planes.find { |p| p.id == pk }&.actividad_id }.compact.map(&:to_i) + pks_en_rendicion.map(&:to_i)
+- obtener_pk_real = lambda { |id_param| map_act_ids[id_param.to_i].to_i }
 
+-# Identificar ÚNICAMENTE las PKs guardadas en esta rendición
+- pks_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.map(&:to_i)&.uniq || []
 -# ==========================================================
 -# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
 -# ==========================================================
@@ -376,14 +379,14 @@
     / ----------------------------------------------------
     .tab-pane.fade#tecnica{class: ('show active' if @es_correccion_tecnica), :role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
       - if @actividad_x_linea.present?
-        - actividades_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
+        - actividades_filtradas = @actividad_x_linea.select { |a| pk_real = obtener_pk_real.call(a.id); pks_en_rendicion.include?(pk_real) && RendicionDetalleActividadFpl.exists?(plan_actividad_id: pk_real) }
 
         - if actividades_filtradas.present?
           - actividades_filtradas.each do |actividad|
             
-            -# BÚSQUEDA DEL PLAN REAL SIN DICCIONARIO
-            - plan_act = arr_planes.find { |p| p.actividad_id.to_i == actividad.id.to_i } || arr_planes.find { |p| p.id.to_i == actividad.id.to_i }
-            - pk_real_plan = plan_act.try(:id).to_i
+            -# BÚSQUEDA ESTRICTA DE PK
+            - pk_real_plan = obtener_pk_real.call(actividad.id)
+            - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
             - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -578,15 +581,15 @@
     / ----------------------------------------------------
     .tab-pane.fade#financiera-fpl{class: ('show active' if !@es_correccion_tecnica), :role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
       - if @actividad_x_linea.present?
-        - actividades_fpl_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
+        - actividades_fpl_filtradas = @actividad_x_linea.select { |a| pk_real = obtener_pk_real.call(a.id); pks_en_rendicion.include?(pk_real) && RendicionDetalleActividadFpl.exists?(plan_actividad_id: pk_real) }
         - docs_fpl_base = @documentos_fpl.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_fpl?) && d.financiera_fpl?) || d.tipo_tab.to_s.include?('fpl') || d.tipo_tab.to_s == '1' }) || []
 
         - if actividades_fpl_filtradas.present?
           - actividades_fpl_filtradas.each do |actividad|
             
-            -# BÚSQUEDA DEL PLAN REAL SIN DICCIONARIO
-            - plan_act = arr_planes.find { |p| p.actividad_id.to_i == actividad.id.to_i } || arr_planes.find { |p| p.id.to_i == actividad.id.to_i }
-            - pk_real_plan = plan_act.try(:id).to_i
+            -# BÚSQUEDA ESTRICTA DE PK
+            - pk_real_plan = obtener_pk_real.call(actividad.id)
+            - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
             - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
@@ -699,15 +702,15 @@
     / ----------------------------------------------------
     .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
       - if @actividad_x_linea.present?
-        - actividades_aporte_filtradas = @actividad_x_linea.select { |a| act_ids_en_rendicion.include?(a.id.to_i) }
+        - actividades_aporte_filtradas = @actividad_x_linea.select { |a| pk_real = obtener_pk_real.call(a.id); pks_en_rendicion.include?(pk_real) && RendicionDetalleActividadFpl.exists?(plan_actividad_id: pk_real) }
         - docs_aporte_base = @documentos_aporte.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_aporte?) && d.financiera_aporte?) || d.tipo_tab.to_s.include?('aporte') || d.tipo_tab.to_s == '2' }) || []
 
         - if actividades_aporte_filtradas.present?
           - actividades_aporte_filtradas.each do |actividad|
             
-            -# BÚSQUEDA DEL PLAN REAL SIN DICCIONARIO
-            - plan_act = arr_planes.find { |p| p.actividad_id.to_i == actividad.id.to_i } || arr_planes.find { |p| p.id.to_i == actividad.id.to_i }
-            - pk_real_plan = plan_act.try(:id).to_i
+            -# BÚSQUEDA ESTRICTA DE PK
+            - pk_real_plan = obtener_pk_real.call(actividad.id)
+            - plan_act = arr_planes.find { |p| p.id.to_i == pk_real_plan }
             - mis_ids = [actividad.id.to_i, pk_real_plan].reject(&:zero?).uniq
 
             - es_reitimizada = (mis_ids & reitimizadas_ids).any?
