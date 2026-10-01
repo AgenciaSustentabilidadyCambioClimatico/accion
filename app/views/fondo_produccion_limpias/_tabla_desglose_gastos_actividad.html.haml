@@ -412,7 +412,7 @@
                       %td.contenido-form= nombre_display                      
                       %td.contenido-form.text-center= item.try(:tipo_aporte)
                       
-                      %td.contenido-form.text-center= "#{formatear_miles_ruby.call(hh_postulada)} #{item.try(:unidad).presence || (es_gasto_oper_adm ? 'u.' : 'HH')}"
+                      %td.contenido-form.text-center= "#{number_with_precision(hh_postulada, precision: 3, separator: ',', delimiter: '.')} #{item.try(:unidad).presence || (es_gasto_oper_adm ? 'u.' : 'HH')}"
                       %td.contenido-form.text-right= number_to_currency(v_unitario_solicitado)
                       
                       %td.contenido-form.text-right.font-weight-bold.cell-costo-solicitado{data: { val_solicitado: monto_postulado }}= number_to_currency(monto_postulado)
