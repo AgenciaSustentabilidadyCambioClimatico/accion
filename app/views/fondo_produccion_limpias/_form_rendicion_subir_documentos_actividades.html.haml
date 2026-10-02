@@ -384,7 +384,20 @@
     $('form').on('submit', function() {
       const seleccionadas = obtenerActividadesSeleccionadas();
       $('#hdn_actividades_seleccionadas').val(seleccionadas.join(','));
+      
+      // Guarda una bandera temporal si el botón presionado fue "Grabar"
+      if (document.activeElement && document.activeElement.id === 'grabar-button') {
+        sessionStorage.setItem('volver_paso_2', 'true');
+      }
     });
+
+    // Detecta la bandera al recargar la página y avanza al Paso 2 automáticamente
+    if (sessionStorage.getItem('volver_paso_2') === 'true') {
+      sessionStorage.removeItem('volver_paso_2');
+      setTimeout(function() {
+        $('#btn-continuar-paso2').trigger('click');
+      }, 100);
+    }
 
     if (!ES_EDITABLE) {
       bloquearFormularioSoloLectura();
@@ -507,6 +520,10 @@
             tabTecnicaValido = false;
             $(selectRealizada).addClass('is-invalid');
             pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> Seleccionar Nivel de Avance.');
+          } else if (parseInt(realizada, 10) === 0) {
+            tabTecnicaValido = false;
+            $(selectRealizada).addClass('is-invalid'); // Mantiene el borde rojo visualmente
+            pendientes.push('<b>Pestaña Técnica [' + actNombre + ']:</b> El Nivel de Avance debe ser mayor a 0% para enviar la rendición.');
           } else {
             $(selectRealizada).removeClass('is-invalid');
           }
@@ -782,6 +799,8 @@
     color: #dc2626;
   }
 
+= render 'modal_recuerde_guardar'
+
 %input#paso_actual_val{type: "hidden", value: paso_actual}
 
 .row
@@ -903,7 +922,11 @@
                   - tiene_avance_parcial = (max_avance_aprobado > 0 || max_avance_proceso > 0) && !completada_100
 
                   - esta_deshabilitada = !es_editable || completada_100 || es_en_proceso
-                  - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador || es_observada
+                  - if act_ids_editables_actuales.any?
+                    - es_sugerida_defecto = es_borrador || es_observada
+                  - else
+                    - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial
+                  
                   - debe_marcarse = !esta_deshabilitada && !es_sin_movimientos && es_sugerida_defecto
 
                   - valor_hh_tipo_3 = plan_act_totales.try(:valor_hh_tipo_3).to_f
@@ -1041,10 +1064,10 @@
             - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
             
             - max_avance_aprobado = avances_aprobados_por_actividad[pk_real_plan] || 0
-            - min_avance = max_avance_aprobado > 0 ? [max_avance_aprobado + 1, 100].min : 1
+            - min_avance = max_avance_aprobado > 0 ? [max_avance_aprobado + 1, 100].min : 0
             
-            - nivel_avance_valor = detalle_tecnico&.nivel_avance.to_s
-            - min_avance = [min_avance, nivel_avance_valor.to_i].min if nivel_avance_valor.present? && nivel_avance_valor.to_i > 0
+            - nivel_avance_valor = (detalle_tecnico.present? && detalle_tecnico.nivel_avance.present?) ? detalle_tecnico.nivel_avance.to_s : min_avance.to_s
+            - min_avance = [min_avance, nivel_avance_valor.to_i].min
             - opciones_avance = [['Seleccione...', '']] + (min_avance..100).map { |n| ["#{n}%", n.to_s] }
             
             - observacion_valor = detalle_tecnico&.observacion
