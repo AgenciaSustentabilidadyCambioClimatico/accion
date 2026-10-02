@@ -4158,6 +4158,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def rendicion_subir_documentos_actividades # FPL-12 (GET)
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
+      @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
 
       estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
       val_minimo_enviado = RendicionFpl.estados['enviada_a_revision'] || 1
@@ -4312,6 +4313,7 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def adjuntar_rendicion_subir_documentos_actividades # FPL-12 (POST / PATCH)
+      @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       commit_accion = params[:commit_type]
       mes_seleccionado = params[:mes_a_rendir].presence || 1
 
