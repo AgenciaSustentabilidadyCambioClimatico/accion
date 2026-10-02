@@ -136,6 +136,16 @@
   const PASO_ACTUAL = #{paso_actual.to_i};
   const ACTIVIDADES_GUARDADAS = #{raw actividades_ui_editables.map(&:to_s).to_json};
 
+  $(document).ready(function(){
+    var minutos = "#{@recuerde_guardar_minutos}";
+    setTimeout(function showModal() {
+      $('#mensaje_recuerde_guardar').modal('show');
+        var minutos = "#{@recuerde_guardar_minutos}";
+        setTimeout(showModal, ((+minutos)*60*1000));
+      }, ((+minutos)*60*1000)
+    );
+  });
+
   // FUNCIONES PARA MANEJO DE MODAL DE URL / ENLACE
   function abrirModalUrl(actividadId) {
     $('#modal_url_actividad_id').val(actividadId);
@@ -1400,7 +1410,7 @@
             %i.fa.fa-file-pdf-o.mr-1
             Descargar Informe PDF
         - if es_editable
-          = button_tag "Grabar", 
+          = button_tag "Guardar cambios temporales", 
             type: 'submit', 
             name: 'commit_type', 
             value: 'grabar', 
