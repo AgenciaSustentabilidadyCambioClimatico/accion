@@ -1554,7 +1554,7 @@ class FondoProduccionLimpiasController < ApplicationController
       solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
 
       # Crear un Set con los códigos FPL
-      fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08'])
+      fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08', 'FPL-11.2'])
       # Verificar si la tarea es FPL
       is_fpl_task = fpl_codes.include?(@tarea_pendiente.tarea.codigo)
     
@@ -5314,6 +5314,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       # Guardado directo en el modelo PlanActividad usando la PK real
       if params[:reitimizacion].present? && params[:reitimizacion][:actividades].present?
+        # Para evitar problemas con Strong Parameters en hashes dinámicos, pasamos los valores manualmente
         params[:reitimizacion][:actividades].each do |act_id, datos_act|
           real_pk = act_id.to_i
           
@@ -5332,8 +5333,16 @@ class FondoProduccionLimpiasController < ApplicationController
             if quiere_autorizar && !tiene_archivo_previo && !subio_archivo_nuevo
               hubo_errores_archivos = true
               atributos[:autorizado] = false # Forzamos a que no se autorice si falta el documento
+              # Por seguridad, si falla la validación, dejamos las 3 opciones en false
+              atributos[:actualizar_equipo] = false
+              atributos[:actualizar_plan] = false
+              atributos[:actualizar_actividad] = false
             else
               atributos[:autorizado] = quiere_autorizar
+              # NUEVO: Guardamos las 3 opciones seleccionadas en el popup (vienen como '1' si se marcaron)
+              atributos[:actualizar_equipo] = (datos_act[:actualizar_equipo] == '1')
+              atributos[:actualizar_plan] = (datos_act[:actualizar_plan] == '1')
+              atributos[:actualizar_actividad] = (datos_act[:actualizar_actividad] == '1')
             end
 
             if subio_archivo_nuevo
@@ -5359,6 +5368,7 @@ class FondoProduccionLimpiasController < ApplicationController
         # NOTA: Aquí iría @tarea_pendiente.pasar_a_siguiente_tarea si decides avanzar el flujo.
         flash[:notice] = "Reitemización autorizada y guardada exitosamente."
       else
+        @tarea_pendiente.pasar_a_siguiente_tarea('A',{},false)
         flash[:notice] = "Avance de autorización de reitimización guardado."
       end
 

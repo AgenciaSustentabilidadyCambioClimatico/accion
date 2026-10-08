@@ -73,7 +73,56 @@
 
     $('.chk-autorizar').on('change', function() {
       actualizarRequeridosFile($(this));
+      
+      const actId = $(this).data('act-id');
+      if ($(this).is(':checked')) {
+        // Al marcar "Autorizar", abre el modal de opciones
+        $('#modal_actividad_id').val(actId);
+        $('#chk_modal_equipo').prop('checked', $('#hidden_equipo_' + actId).val() === "1");
+        $('#chk_modal_plan').prop('checked', $('#hidden_plan_' + actId).val() === "1");
+        $('#chk_modal_actividad').prop('checked', $('#hidden_actividad_' + actId).val() === "1");
+        $('#modalOpcionesReitimizacion').modal('show');
+      } else {
+        // Al desmarcar, limpia los valores ocultos y las etiquetas
+        $('#hidden_equipo_' + actId).val("0");
+        $('#hidden_plan_' + actId).val("0");
+        $('#hidden_actividad_' + actId).val("0");
+        $('#badge_opciones_' + actId).empty();
+      }
     });
+
+    window.confirmarOpcionesReitimizacion = function() {
+      const actId = $('#modal_actividad_id').val();
+      const eq = $('#chk_modal_equipo').is(':checked') ? "1" : "0";
+      const pl = $('#chk_modal_plan').is(':checked') ? "1" : "0";
+      const ac = $('#chk_modal_actividad').is(':checked') ? "1" : "0";
+      
+      // VALIDACIÓN: Evita que confirmen sin seleccionar nada
+      if (eq === "0" && pl === "0" && ac === "0") {
+        alert("Debe seleccionar al menos una opción (Equipo, Plan o Actividad) para autorizar.");
+        return; // Detiene el proceso y mantiene el modal abierto
+      }
+      
+      $('#hidden_equipo_' + actId).val(eq);
+      $('#hidden_plan_' + actId).val(pl);
+      $('#hidden_actividad_' + actId).val(ac);
+      
+      // Feedback visual debajo del checkbox
+      let badges = '';
+      if (eq === "1") badges += '<span class="badge badge-info mt-1 d-block text-white" style="font-size: 9px; background-color: #17a2b8;"><i class="fa fa-users mr-1"></i>Act. Equipo</span>';
+      if (pl === "1") badges += '<span class="badge badge-info mt-1 d-block text-white" style="font-size: 9px; background-color: #17a2b8;"><i class="fa fa-list-alt mr-1"></i>Act. Plan</span>';
+      if (ac === "1") badges += '<span class="badge badge-info mt-1 d-block text-white" style="font-size: 9px; background-color: #17a2b8;"><i class="fa fa-tasks mr-1"></i>Act. Actividad</span>';
+      
+      $('#badge_opciones_' + actId).html(badges);
+      $('#modalOpcionesReitimizacion').modal('hide');
+    };
+
+    // NUEVA FUNCIÓN: Si el usuario cancela, se desmarca el check principal
+    window.cancelarOpcionesReitimizacion = function() {
+      const actId = $('#modal_actividad_id').val();
+      $('#chk_autorizar_' + actId).prop('checked', false).trigger('change');
+      $('#modalOpcionesReitimizacion').modal('hide');
+    };
 
     $('.chk-autorizar').each(function() {
       actualizarRequeridosFile($(this));
@@ -244,8 +293,33 @@
                             %i.fa.fa-lock.mr-1
                             No disponible
                         - else
+                          -# EXTRAEMOS LOS VALORES GUARDADOS EN LA BD PARA ESTA ACTIVIDAD
+                          - val_equipo = plan_act_obj.try(:actualizar_equipo) ? "1" : "0"
+                          - val_plan = plan_act_obj.try(:actualizar_plan) ? "1" : "0"
+                          - val_actividad = plan_act_obj.try(:actualizar_actividad) ? "1" : "0"
+
                           = hidden_field_tag "reitimizacion[actividades][#{id_pk}][autorizado]", (is_autorizado ? "1" : "0")
                           = check_box_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "1", is_autorizado, id: "chk_autorizar_#{id_pk}", class: "chk-autorizar", disabled: is_autorizado, data: { act_id: id_pk, tiene_archivo: tiene_archivo ? 'true' : 'false' }
+                          
+                          -# ASIGNAMOS LOS VALORES A LOS CAMPOS OCULTOS
+                          = hidden_field_tag "reitimizacion[actividades][#{id_pk}][actualizar_equipo]", val_equipo, id: "hidden_equipo_#{id_pk}"
+                          = hidden_field_tag "reitimizacion[actividades][#{id_pk}][actualizar_plan]", val_plan, id: "hidden_plan_#{id_pk}"
+                          = hidden_field_tag "reitimizacion[actividades][#{id_pk}][actualizar_actividad]", val_actividad, id: "hidden_actividad_#{id_pk}"
+                          
+                          -# RENDERIZAMOS LOS ICONOS SI ESTÁN GUARDADOS COMO TRUE
+                          .opciones-seleccionadas.mt-1{id: "badge_opciones_#{id_pk}"}
+                            - if val_equipo == "1"
+                              %span.badge.badge-info.mt-1.d-block.text-white{style: "font-size: 9px; background-color: #17a2b8;"}
+                                %i.fa.fa-users.mr-1
+                                Act. Equipo
+                            - if val_plan == "1"
+                              %span.badge.badge-info.mt-1.d-block.text-white{style: "font-size: 9px; background-color: #17a2b8;"}
+                                %i.fa.fa-list-alt.mr-1
+                                Act. Plan
+                            - if val_actividad == "1"
+                              %span.badge.badge-info.mt-1.d-block.text-white{style: "font-size: 9px; background-color: #17a2b8;"}
+                                %i.fa.fa-tasks.mr-1
+                                Act. Actividad
 
                       -# COLUMNA 2: CARGAR DOCUMENTO
                       %td.contenido-form.text-center
@@ -331,3 +405,36 @@
         id: 'enviar-button', 
         class: "btn btn-sm btn-success ml-2", 
         data: { confirm: "¿Está seguro que desea completar la autorización?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Autorizando..." }
+
+-# ==========================================================
+-# MODAL EMERGENTE PARA SELECCIONAR QUÉ PESTAÑAS ACTUALIZAR
+-# ==========================================================
+.modal.fade#modalOpcionesReitimizacion{tabindex: "-1", role: "dialog", aria: {hidden: "true"}, data: {backdrop: "static", keyboard: "false"}}
+  .modal-dialog.modal-dialog-centered.modal-sm{role: "document"}
+    .modal-content.text-left
+      .modal-header.py-2.bg-light
+        %h6.modal-title.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+          %i.fa.fa-sliders.mr-1.text-primary
+          Opciones de Reitemización
+      .modal-body.p-3
+        %input#modal_actividad_id{type: "hidden", value: ""}
+        %p.text-muted.mb-3{style: "font-size: 12px;"}
+          Seleccione qué secciones el beneficiario podrá modificar:
+        .form-check.mb-2
+          %input.form-check-input#chk_modal_equipo{type: "checkbox", value: "1"}
+          %label.form-check-label.font-weight-bold.text-secondary{for: "chk_modal_equipo", style: "font-size: 12px; cursor: pointer;"}
+            Actualizar Equipo de Trabajo
+        .form-check.mb-2
+          %input.form-check-input#chk_modal_plan{type: "checkbox", value: "1"}
+          %label.form-check-label.font-weight-bold.text-secondary{for: "chk_modal_plan", style: "font-size: 12px; cursor: pointer;"}
+            Actualizar Plan de Actividades
+        .form-check.mb-2
+          %input.form-check-input#chk_modal_actividad{type: "checkbox", value: "1"}
+          %label.form-check-label.font-weight-bold.text-secondary{for: "chk_modal_actividad", style: "font-size: 12px; cursor: pointer;"}
+            Actualizar Actividad
+      .modal-footer.py-2.px-3.bg-light.d-flex.justify-content-between
+        %button.btn.btn-sm.btn-outline-secondary{type: "button", onclick: "cancelarOpcionesReitimizacion()"}
+          Cancelar
+        %button.btn.btn-sm.btn-primary{type: "button", onclick: "confirmarOpcionesReitimizacion()"}
+          %i.fa.fa-check.mr-1
+          Confirmar

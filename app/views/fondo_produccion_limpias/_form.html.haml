@@ -303,7 +303,40 @@
 
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura
 - titulo t(:postulacion_fondo_produccion_limpia)
-- tabs = { "propuesta-tecnica": true, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
+
+-# =======================================================
+-# EVALUAR PERMISOS DE VISIBILIDAD DE TABS (REITEMIZACIÓN)
+-# =======================================================
+- arr_planes_reitem = PlanActividad.where(flujo_id: @fondo_produccion_limpia.try(:flujo_id)).to_a rescue []
+
+-# 1. Validación previa: ¿Hay alguna actividad autorizada para reitemizar?
+- alguna_autorizada = arr_planes_reitem.any? { |p| [true, 1, '1', 't'].include?(p.try(:autorizado)) }
+
+- if @tarea_pendiente.tarea.codigo == 'FPL-11.2'
+  - if alguna_autorizada
+    -# 2. Si está autorizada, verificamos qué checks específicos se marcaron en el popup
+    - requiere_equipo = arr_planes_reitem.any? { |p| [true, 1, '1', 't'].include?(p.try(:actualizar_equipo)) }
+    - requiere_plan   = arr_planes_reitem.any? { |p| [true, 1, '1', 't'].include?(p.try(:actualizar_plan)) }
+    - requiere_act    = arr_planes_reitem.any? { |p| [true, 1, '1', 't'].include?(p.try(:actualizar_actividad)) }
+    
+    -# DEFINIMOS LA VARIABLE CON @ PARA QUE SEA GLOBAL EN TODO EL ARCHIVO
+    - @es_reitemizacion_activa = true
+
+    -# Inicializamos el hash vacío y usamos SÍMBOLOS ( : ) para que renderice el contenido correctamente
+    - tabs = {}
+    - tabs[:"equipo-trabajo"] = false if requiere_equipo
+    - tabs[:"plan-de-actividades"] = false if (requiere_plan || requiere_act)
+    - tabs[:"costos"] = false if (requiere_plan || requiere_act)
+    
+    -# Forzamos a que la primera pestaña disponible quede como "activa" (abierta por defecto)
+    - tabs[tabs.keys.first] = true if tabs.keys.any?
+  - else
+    - tabs = { "costos": true }
+- else
+  - @es_reitemizacion_activa = false
+  -# 3. Postulación inicial normal (ninguna autorizada): Se muestran todas las pestañas por defecto
+  - tabs = { "propuesta-tecnica": true, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
+
 - formulario_remote = true #flag para mostrar/ocultar el botón de guardado
 - mantener_temporal = @mantener_temporal.present? ? @mantener_temporal : false #permite mantener el archivo temporal, a pesar de no tener errors.-
 = simple_form_for [@fondo_produccion_limpia], :url => guardar_fondo_temporal_fondo_produccion_limpia_path, method: :patch, remote: formulario_remote, html: { autocomplete: :off, multipart: true, id: 'fondo-produccion-limpias-form', class: 'ajax-form'} do |f|
@@ -338,7 +371,8 @@
     = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
     -if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1
       = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-fondo-temporal-button', class: "btn btn-sm btn-primary"
-      = button_tag t(:enviar_postulación), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1"
+      - if @tarea_pendiente.tarea.codigo == 'FPL-01'
+        = button_tag t(:enviar_postulación), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1"
 
 = render 'fondo_produccion_limpias/buscador'
 -#= render 'fondo_produccion_limpias/contribuyentes/buscador', es_para_seleccion: true

@@ -3757,7 +3757,9 @@
           %small  
             %i.fa.fa-question-circle.fa-1-5x
             El plan ofrece un enfoque estructurado y detallado para planificar y gestionar las diversas etapas y actividades de un proyecto, incluyendo la asignación de costos. Además, la capacidad de editar, eliminar y agregar actividades proporciona flexibilidad en la adaptación del plan a las necesidades cambiantes del proyecto.
-        - if !solo_lectura
+        
+        -# En reitemización, ocultamos el botón global de "Agregar Actividad"
+        - if !solo_lectura && !@es_reitemizacion_activa
           = button_tag 'Agregar Actividad', onclick: "agregarPlanActividades()", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button', id: 'agregar_plan_actividades'
         %div#div_plan_actividades.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -3795,6 +3797,20 @@
                     %td.contenido-form{id: "id_correlativo_plan_actividad_#{actividad.id}"}=actividad.correlativo
                     %td.contenido-form{id: "nombre_actividad_#{actividad.id}"}=actividad.nombre
                     - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
+                    
+                    -# =========================================================================
+                    -# LÓGICA DE EDICIÓN DINÁMICA DE REITEMIZACIÓN (Por fila)
+                    -# =========================================================================
+                    - si_puede_editar = !solo_lectura
+
+                    - if @es_reitemizacion_activa
+                      - si_puede_editar = false
+                      - plan_bd = PlanActividad.find_by(flujo_id: @fondo_produccion_limpia.try(:flujo_id), actividad_id: actividad.id) || PlanActividad.find_by(flujo_id: @fondo_produccion_limpia.try(:flujo_id), id: actividad.id)
+                      - autorizada_reitem = plan_bd.present? && [true, 1, '1', 't'].include?(plan_bd.autorizado)
+                      - puede_actualizar_plan = plan_bd.present? && [true, 1, '1', 't'].include?(plan_bd.actualizar_plan)
+                      - puede_actualizar_act = plan_bd.present? && [true, 1, '1', 't'].include?(plan_bd.actualizar_actividad)
+                      - si_puede_editar = autorizada_reitem && (puede_actualizar_plan || puede_actualizar_act)
+
                     - if detalle_existente.present?
                       - duraciones = detalle_existente.duracion.split(',')
                       - (1..@duracion).each do |d|
@@ -3811,7 +3827,6 @@
                       - valor_hh_tipos_1_2 = detalle_existente.valor_hh_tipos_1_2.to_f
                       - total_gastos_tipo_1 = detalle_existente.total_gastos_tipo_1.to_f
                       - total_gastos_tipo_2 = detalle_existente.total_gastos_tipo_2.to_f
-
                       - suma = valor_hh_tipo_3 + valor_hh_tipos_1_2 + total_gastos_tipo_1 + total_gastos_tipo_2
 
                       - total_valor_hh_tipo_3 += valor_hh_tipo_3
@@ -3822,11 +3837,16 @@
 
                       %td.contenido-form{id: "total_suma_#{actividad.id}"}= number_to_currency(suma)
                       %td.contenido-form.dos.iconos-acciones
-                        = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                          %i.fa.fa-edit 
-                        - if actividad.tipo_permiso == 3
-                          = link_to eliminar_plan_actividades_fondo_produccion_limpia_path(actividad_id: actividad.id), remote: true, method: :delete, data: { actividad_id: actividad.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar Actividad", class: 'eliminar-actividad', id: "eliminar-actividad-#{actividad.id}" do
-                            %i.fa.fa-trash   
+                        - if si_puede_editar
+                          = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                            %i.fa.fa-edit 
+                          - if actividad.tipo_permiso == 3 && !@es_reitemizacion_activa
+                            = link_to eliminar_plan_actividades_fondo_produccion_limpia_path(actividad_id: actividad.id), remote: true, method: :delete, data: { actividad_id: actividad.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar Actividad", class: 'eliminar-actividad', id: "eliminar-actividad-#{actividad.id}" do
+                              %i.fa.fa-trash   
+                        - else
+                          %span.text-muted
+                            %i.fa.fa-lock{title: "Edición no autorizada"}
+
                     - else
                       - (1..@duracion).each do |d|
                         %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
@@ -3836,13 +3856,13 @@
                       %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
                       %td.contenido-form{id: "total_suma_#{actividad.id}"}
                       %td.contenido-form.dos.iconos-acciones
-                        - if @total_de_errores_por_tab.present?
+                        - if si_puede_editar
                           = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                            %i.fa.fa-edit.icon-red
+                            %i.fa.fa-edit{class: ("icon-red" if @total_de_errores_por_tab.present?)}
                         - else
-                          = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                            %i.fa.fa-edit
-                    
+                          %span.text-muted
+                            %i.fa.fa-lock{title: "Edición no autorizada"}                  
+
               %tr
                 %td.contenido-form{style: 'font-weight: bold;', colspan: 2 + @duracion} Total
                 %td.contenido-form{id: "total_valor_hh_tipo_3", colspan: 1}= number_to_currency(total_valor_hh_tipo_3)
@@ -3851,11 +3871,12 @@
                 %td.contenido-form{id: "total_total_gastos_tipo_2", colspan: 1}= number_to_currency(total_total_gastos_tipo_2)
                 %td.contenido-form{id: "total_total_suma", colspan: 1}= number_to_currency(total_total_suma)
                 %td.contenido-form{colspan: 1}
-          -if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1
-            %br
-            .float-right
-              = link_to t(:ordenar_actividades), "#{request.path}?tabs=plan-de-actividades", class: "btn btn-sm btn-primary"
 
+        -if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1 && !@es_reitemizacion_activa
+          %br
+          .float-right
+            = link_to t(:ordenar_actividades), "#{request.path}?tabs=plan-de-actividades", class: "btn btn-sm btn-primary"
+            
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
       .card-body
