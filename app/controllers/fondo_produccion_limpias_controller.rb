@@ -4,14 +4,14 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo, :datos_rendicion_fpl, :cargar_fpl, :actualizar_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo, :update_equipo_reitemizar, :datos_rendicion_fpl, :cargar_fpl, :actualizar_fpl]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo, :datos_rendicion_fpl, :cargar_fpl, :actualizar_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo, :update_equipo_reitemizar, :datos_rendicion_fpl, :cargar_fpl, :actualizar_fpl]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
-    :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
+    :evaluacion_general, :guardar_duracion, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
     :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
@@ -768,6 +768,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
       @modal_id = buscador_params[:modal_id]
       @tipo_equipo = buscador_params[:tipo_equipo]
+      @equipo_id = buscador_params[:equipo_id]
+      @codigo_tarea = buscador_params[:codigo_tarea]
     end
 
     def edit_modal
@@ -793,6 +795,36 @@ class FondoProduccionLimpiasController < ApplicationController
         @equipo_temporal.flujo_id = params[:flujo_id]
         @equipo_temporal.user_id = params[:user_id] unless params[:user_id].blank?
         @equipo_temporal.tipo_equipo = params[:tipo_equipo]
+        render layout: false
+      end 
+    end
+
+    def edit_modal_reitemizacion
+      if params[:tipo_equipo] == "2"
+        empresa = EquipoEmpresa.find_by(flujo_id: params[:flujo_id])
+        @equipo = EquipoTrabajo.where(user_id: params[:user_id], flujo_id: params[:flujo_id], tipo_equipo: params[:tipo_equipo], contribuyente_id: empresa.contribuyente_id).count
+      else
+        @equipo = EquipoTrabajo.where(user_id: params[:user_id], flujo_id: params[:flujo_id], tipo_equipo: params[:tipo_equipo]).count
+      end
+
+      if @equipo > 0
+        render json: { success: false, errors: "La combinación de user_id, flujo_id, tipo_equipo y contribuyente_id ya está en uso" }, status: :unprocessable_entity
+      else  
+        @equipo_temporal = EquipoTrabajo.new
+        if params[:estado] == 'new' 
+          @usuario_temporal = User.new
+        else
+          @usuario_temporal =  User.unscoped.find(params[:user_id])
+        end
+        @usuario_temporal.temporal = true
+        @usuario_temporal.flujo_id = params[:flujo_id]
+        @usuario_temporal.user_id = params[:user_id] unless params[:user_id].blank?
+        @equipo_temporal.flujo_id = params[:flujo_id]
+        @equipo_temporal.user_id = params[:user_id] unless params[:user_id].blank?
+        @equipo_temporal.tipo_equipo = params[:tipo_equipo]
+        @equipo_temporal.id = params[:equipo_id]
+        @codigo_tarea = params[:codigo_tarea]
+
         render layout: false
       end 
     end
@@ -1250,12 +1282,22 @@ class FondoProduccionLimpiasController < ApplicationController
       @usuario_temporal.user_id = equipo_trabajo[:user_id] unless equipo_trabajo[:user_id].blank?
       @equipo_temporal = equipo_trabajo
 
+      @codigo_tarea = params[:codigo_tarea]
+      @equipo_id = @equipo_temporal.id
       render layout: false
     end
 
     def update_equipo
-      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
+      codigo_tarea_actual = params[:codigo_tarea]
+      
+      if codigo_tarea_actual == ""
+        tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
+      else
+        tarea = Tarea.find_by(codigo: codigo_tarea_actual)
+      end
+
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
+      
       #SETEO PARAMETROS USUARIO
       @user = User.find(params[:user][:user_id])
       custom_params = {
@@ -7300,7 +7342,9 @@ class FondoProduccionLimpiasController < ApplicationController
           :nombre_completo,
           :flujo_id,
           :modal_id,
-          :tipo_equipo)
+          :tipo_equipo,
+          :equipo_id,
+          :codigo_tarea)
       end
 
       def registro_proveedores_params

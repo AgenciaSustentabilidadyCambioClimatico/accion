@@ -96,6 +96,7 @@
     $('body').on('change','.usuario-radio',function() {
       $('.seleccionar-usuario-button').removeAttr('disabled');
       $('.seleccionar-y-actualizar-usuario-fpl-button').removeAttr('disabled');
+      $('.seleccionar-y-actualizar-usuario-reitemizacion-fpl-button').removeAttr('disabled');
     });
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -3510,13 +3511,17 @@
                       %td.contenido-form= number_to_currency postulante.valor_hh
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{postulante.id}"}
-                          - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
-                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El postulante no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
-                          - else
-                            = link_to editar_equipo_fondo_produccion_limpia_path(postulante.id), remote: true, method: :get, data: { user_id: postulante.id }, title: "Editar al consultor", class: 'editar-user-consultora', id: "editar-postulante-#{postulante.id}" do
+                          - if @tarea_pendiente.tarea.codigo == Tarea::COD_FPL_11_2
+                            = link_to editar_equipo_fondo_produccion_limpia_path(postulante.id, codigo_tarea: @tarea_pendiente.tarea.codigo, user_id: postulante.id), remote: true, method: :get, title: "Modificar al consultor", class: 'editar-user-consultora', id: "editar-postulante-#{postulante.id}" do
                               %i.fa.fa-edit
-                            = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
-                              %i.fa.fa-trash 
+                          - else
+                            - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
+                              %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El postulante no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                            - else
+                              = link_to editar_equipo_fondo_produccion_limpia_path(postulante.id), remote: true, method: :get, data: { user_id: postulante.id }, title: "Editar al consultor", class: 'editar-user-consultora', id: "editar-postulante-#{postulante.id}" do
+                                %i.fa.fa-edit
+                              = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
+                                %i.fa.fa-trash 
         </br>
         <h1>Equipo de Institución Ejecutora</h1>
         .alert.alert-primary
@@ -3641,13 +3646,17 @@
                       = __descargar_archivo(user.curriculum, user, false, false)
                     - if !solo_lectura
                       %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
-                        - if recurso_humano_existente?(user.id, user.flujo.id)
-                          %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
-                        - else
-                          = link_to editar_equipo_fondo_produccion_limpia_path(user.id), remote: true, method: :get, data: { user_id: user.id }, title: "Editar al consultor", class: 'editar-user-consultora_empresa', id: "editar-usuario_empresa-#{user.id}" do
+                        - if @tarea_pendiente.tarea.codigo == Tarea::COD_FPL_11_2
+                          = link_to editar_equipo_fondo_produccion_limpia_path(user.id, codigo_tarea: @tarea_pendiente.tarea.codigo, user_id: user.id), remote: true, method: :get, title: "Modificar al consultor", class: 'editar-user-consultora_empresa', id: "editar-usuario_empresa-#{user.id}" do
                             %i.fa.fa-edit
-                          = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
-                            %i.fa.fa-trash 
+                        - else
+                          - if recurso_humano_existente?(user.id, user.flujo.id)
+                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                          - else
+                            = link_to editar_equipo_fondo_produccion_limpia_path(user.id), remote: true, method: :get, data: { user_id: user.id }, title: "Editar al consultor", class: 'editar-user-consultora_empresa', id: "editar-usuario_empresa-#{user.id}" do
+                              %i.fa.fa-edit
+                            = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
+                              %i.fa.fa-trash 
   
         %div#div_equipo_consultora.table-responsive{ style: 'display: none;' }
           - if !solo_lectura
@@ -3685,13 +3694,17 @@
                         = __descargar_archivo(user.curriculum, user, false, false)
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
-                          - if recurso_humano_existente?(user.id, user.flujo.id)
-                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
-                          - else
-                            = link_to editar_equipo_fondo_produccion_limpia_path(user.id), remote: true, method: :get, data: { user_id: user.id }, title: "Editar al consultor", class: 'editar-user-consultora', id: "editar-usuario-#{user.id}" do
+                          - if @tarea_pendiente.tarea.codigo == Tarea::COD_FPL_11_2
+                            = link_to editar_equipo_fondo_produccion_limpia_path(user.id, codigo_tarea: @tarea_pendiente.tarea.codigo, user_id: user.id), remote: true, method: :get, title: "Modificar al consultor", class: 'editar-user-consultora', id: "editar-usuario-#{user.id}" do
                               %i.fa.fa-edit
-                            = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
-                              %i.fa.fa-trash 
+                          - else
+                            - if recurso_humano_existente?(user.id, user.flujo.id)
+                              %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                            - else
+                              = link_to editar_equipo_fondo_produccion_limpia_path(user.id), remote: true, method: :get, data: { user_id: user.id }, title: "Editar al consultor", class: 'editar-user-consultora', id: "editar-usuario-#{user.id}" do
+                                %i.fa.fa-edit
+                              = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
+                                %i.fa.fa-trash 
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
           <h1>Auditor</h1> 
           %div#div_auditor.table-responsive
@@ -5103,6 +5116,36 @@
         user_id: data.id,
         tipo_equipo: tipo_equipo,
         estado: 'update'
+      }
+    }).fail(function(a, b, c) {
+      alert( "El usuario seleccionado ya se encuentra asociado al listado de consultores" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#buscar-usuario .body-usuario-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
+  $(document).on('click', '.seleccionar-y-actualizar-usuario-reitemizacion-fpl-button', function(){
+    var radioSeleccionado = document.querySelector('input[name="usuario_buscar-usuario"]:checked');
+    var valorSeleccionado = radioSeleccionado.value;
+    data=JSON.parse(valorSeleccionado);
+    var tipo_equipo = $('#tipo_equipo').val();
+    var equipo_id = $('#equipo_id').val();
+    var codigo_tarea = $('#codigo_tarea').val();
+
+    $('.loading-data').show();
+    $.ajax({
+      url: "#{edit_modal_reitemizacion_fondo_produccion_limpia_path}",
+      type: "GET",
+      data: {
+        id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        user_id: data.id,
+        tipo_equipo: tipo_equipo,
+        estado: 'update',
+        equipo_id: equipo_id,
+        codigo_tarea: codigo_tarea
       }
     }).fail(function(a, b, c) {
       alert( "El usuario seleccionado ya se encuentra asociado al listado de consultores" );
