@@ -1930,7 +1930,7 @@ class FondoProduccionLimpia < ApplicationRecord
                 item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
                 item.try(:tipo_aporte).to_s,
                 ActiveSupport::NumberHelper.number_to_currency(v_unitario, delimiter: '.', precision: 0, format: "%u%n", unit: "$"),
-                ActiveSupport::NumberHelper.number_to_rounded(cant_rendida, precision: 3, separator: ',', delimiter: '.'),
+                ActiveSupport::NumberHelper.number_to_rounded(cant_rendida, precision: 2, separator: ',', delimiter: '.'),
                 ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', precision: 0, format: "%u%n", unit: "$")
               ]
             end
@@ -2024,7 +2024,7 @@ class FondoProduccionLimpia < ApplicationRecord
                 item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--',
                 item.try(:tipo_aporte).to_s,
                 ActiveSupport::NumberHelper.number_to_currency(v_unitario, delimiter: '.', precision: 0, format: "%u%n", unit: "$"),
-                ActiveSupport::NumberHelper.number_to_rounded(cant_rendida, precision: 3, separator: ',', delimiter: '.'),
+                ActiveSupport::NumberHelper.number_to_rounded(cant_rendida, precision: 2, separator: ',', delimiter: '.'),
                 ActiveSupport::NumberHelper.number_to_currency(monto_rendido, delimiter: '.', precision: 0, format: "%u%n", unit: "$")
               ]
             end
