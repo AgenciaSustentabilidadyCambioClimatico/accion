@@ -80,7 +80,7 @@
         $('#modal_actividad_id').val(actId);
         $('#chk_modal_equipo').prop('checked', $('#hidden_equipo_' + actId).val() === "1");
         $('#chk_modal_plan').prop('checked', $('#hidden_plan_' + actId).val() === "1");
-        $('#chk_modal_actividad').prop('checked', $('#hidden_actividad_' + actId).val() === "1");
+        $('#chk_modal_actividad').prop('checked', true);
         $('#modalOpcionesReitimizacion').modal('show');
       } else {
         // Al desmarcar, limpia los valores ocultos y las etiquetas
@@ -429,7 +429,7 @@
           %label.form-check-label.font-weight-bold.text-secondary{for: "chk_modal_plan", style: "font-size: 12px; cursor: pointer;"}
             Actualizar Plan de Actividades
         .form-check.mb-2
-          %input.form-check-input#chk_modal_actividad{type: "checkbox", value: "1"}
+          %input.form-check-input#chk_modal_actividad{type: "checkbox", value: "1", checked: "checked", disabled: "disabled"}
           %label.form-check-label.font-weight-bold.text-secondary{for: "chk_modal_actividad", style: "font-size: 12px; cursor: pointer;"}
             Actualizar Actividad
       .modal-footer.py-2.px-3.bg-light.d-flex.justify-content-between

@@ -312,7 +312,7 @@
 -# 1. Validación previa: ¿Hay alguna actividad autorizada para reitemizar?
 - alguna_autorizada = arr_planes_reitem.any? { |p| [true, 1, '1', 't'].include?(p.try(:autorizado)) }
 
-- if @tarea_pendiente.tarea.codigo == 'FPL-11.2'
+- if @tarea_pendiente.tarea.codigo == Tarea::COD_FPL_11_2
   - if alguna_autorizada
     -# 2. Si está autorizada, verificamos qué checks específicos se marcaron en el popup
     - requiere_equipo = arr_planes_reitem.any? { |p| [true, 1, '1', 't'].include?(p.try(:actualizar_equipo)) }
@@ -325,8 +325,8 @@
     -# Inicializamos el hash vacío y usamos SÍMBOLOS ( : ) para que renderice el contenido correctamente
     - tabs = {}
     - tabs[:"equipo-trabajo"] = false if requiere_equipo
-    - tabs[:"plan-de-actividades"] = false if (requiere_plan || requiere_act)
-    - tabs[:"costos"] = false if (requiere_plan || requiere_act)
+    - tabs[:"plan-de-actividades"] = false if requiere_plan
+    - tabs[:"costos"] = false if (requiere_equipo || requiere_plan || requiere_act)
     
     -# Forzamos a que la primera pestaña disponible quede como "activa" (abierta por defecto)
     - tabs[tabs.keys.first] = true if tabs.keys.any?
