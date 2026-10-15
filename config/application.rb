@@ -42,7 +42,12 @@ module Ascc
       # g.jbuilder false
       # g.test_unit false # con este queda test_unit/system... con -> system_tests false desaparece
     end
-    config.eager_load_paths << Rails.root.join('lib')
+    #config.eager_load_paths << Rails.root.join('lib')
+    # Ignorar librerías/parches en lib que no siguen las convenciones de Zeitwerk:
+    config.to_prepare do
+      Rails.autoloaders.main.ignore(Rails.root.join('lib/gblib'))
+    end
+
     #config.action_mailer.asset_host = '190.215.33.11:3999'
     def updating_record?
       persisted? # This checks if the record already exists (i.e., it's an update)
