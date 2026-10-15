@@ -2066,7 +2066,7 @@ class FondoProduccionLimpiasController < ApplicationController
           objetivos_especifico_id: params['objetivos_especifico_id']
         )
         .where("correlativo LIKE ?", "#{correlativo_objetivo}.%")
-        .order("CAST(split_part(correlativo, '.', 2) AS INTEGER) DESC")
+        .order(Arel.sql("CAST(split_part(correlativo, '.', 2) AS INTEGER) DESC"))
         .limit(1)
         .pluck(:correlativo)
         .first
@@ -2218,7 +2218,7 @@ class FondoProduccionLimpiasController < ApplicationController
           objetivos_especifico_id: params['objetivos_especifico_id']
         )
         .where("correlativo LIKE ?", "#{correlativo_objetivo}.%")
-        .order("CAST(split_part(correlativo, '.', 2) AS INTEGER) DESC")
+        .order(Arel.sql("CAST(split_part(correlativo, '.', 2) AS INTEGER) DESC"))
         .limit(1)
         .pluck(:correlativo)
         .first

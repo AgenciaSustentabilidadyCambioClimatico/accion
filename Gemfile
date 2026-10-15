@@ -16,11 +16,10 @@ gem 'devise', '~> 4.7.3'
 gem 'devise_invitable', '~> 2.0.6'
 gem 'activerecord-session_store', '~> 2.0'
 gem 'autonumeric-rails'
-gem 'rails', '~> 6.0.1'
+gem 'rails', '~> 6.1.7', '>= 6.1.7.9'
 gem 'caxlsx_rails'
 gem 'bootstrap', '~> 4.0.0'
 gem 'chartkick', '~>5.0.4'
-gem 'ckeditor', git: 'https://github.com/galetahub/ckeditor.git', ref: 'dc2cef2c2c3358124ebd86ca2ef2335cc898b41f'
 gem 'crontab_syntax_checker'
 gem 'daemons'
 gem 'data-confirm-modal'
@@ -31,8 +30,8 @@ gem 'geocoder'
 gem 'geoxml-rails'
 gem 'google-api-client'
 gem 'googleauth', '~> 1.5.2'
-gem 'haml'
-gem 'haml-rails', '~> 1.0'
+gem 'haml', '5.2.2'
+gem 'haml-rails', '~> 2.1.0'
 gem "sidekiq", "~> 7.3.8"
 gem 'sidekiq-cron'
 gem 'htmltoword'
@@ -86,6 +85,7 @@ group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'
   # gem 'selenium-webdriver' ## DZC 2019-08-26 14:47:15 comentado por incompatibilidad con axslx -> rubyzip 
+  gem 'bundler-audit', require: false
 end
 
 group :production do
