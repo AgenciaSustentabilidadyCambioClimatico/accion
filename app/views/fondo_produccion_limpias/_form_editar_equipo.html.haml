@@ -1,7 +1,9 @@
+- codigo_tarea = codigo_tarea.nil? ? @codigo_tarea : codigo_tarea
 = simple_form_for @usuario_temporal, url: update_equipo_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off, multipart: true } do |f|
   = f.input :temporal, as: :hidden, wrapper: false
   = f.input :flujo_id, as: :hidden, wrapper: false
   = f.input :user_id, as: :hidden, wrapper: false
+  = hidden_field_tag :codigo_tarea, @codigo_tarea
   .row
     .col-12
       .card
@@ -17,6 +19,9 @@
               = f.input :email, required: true, label: t(:email), placeholder: "Ingresar email", input_html: { class: 'form-temporal-boton-guardar-fpl-usuario' }
             .col-12.col-lg-4
               = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-temporal-boton-guardar-fpl-usuario', onchange: 'limpiarSoloNumeros(this)' }
+            - if @codigo_tarea == Tarea::COD_FPL_11_2
+              .col-12.mt-2.text-right
+                = button_tag 'Modificar Postulante', id: 'open-modal-button_editar_equipo', class: "btn btn-sm btn-primary", type: 'button'
     .col-12.mt-2.text-right
       -#
     = simple_form_for @equipo_temporal, url: update_equipo_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off } do |f|
@@ -78,3 +83,8 @@
     $('.loading-data').hide();
     $('#buscar-usuario').modal('hide');
   }
+
+  $('#open-modal-button_editar_equipo').click(function(){
+    $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-postulante', tipo_equipo: @equipo_temporal.tipo_equipo, codigo_tarea: @codigo_tarea, equipo_id: @equipo_temporal.id, id: params[:id])}");
+    $('#buscar-usuario').modal("show");
+  });
