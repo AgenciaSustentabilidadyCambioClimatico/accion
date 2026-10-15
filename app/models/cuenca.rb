@@ -49,7 +49,7 @@ class Cuenca < ApplicationRecord
   def self.beauty_tree_selector_v2(checkeds=[])
     tree = {}
     min_length = 3
-    cuencas = Cuenca.where("LENGTH(codigo_cuenca) >= ?", min_length).order("LENGTH(codigo_cuenca) asc, codigo_cuenca asc").all
+    cuencas = Cuenca.where("LENGTH(codigo_cuenca) >= ?", min_length).order(Arel.sql("LENGTH(codigo_cuenca) asc, codigo_cuenca asc")).all
     cuencas.each do |cuenca|
       cuenca_length = cuenca.codigo_cuenca.length
       if cuenca_length == min_length

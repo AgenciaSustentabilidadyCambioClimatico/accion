@@ -111,7 +111,7 @@ class ActividadEconomica < ApplicationRecord
   def self.beauty_tree_selector_v2_old(checkeds=[])
   	tree = {}
   	min_length = 2
-  	aes = ActividadEconomica.where("LENGTH(codigo_ciiuv2) >= ?", min_length).order("LENGTH(codigo_ciiuv2) asc, codigo_ciiuv2 asc").all
+  	aes = ActividadEconomica.where("LENGTH(codigo_ciiuv2) >= ?", min_length).order(Arel.sql("LENGTH(codigo_ciiuv2) asc, codigo_ciiuv2 asc")).all
   	aes.each do |ae|
   		ae_length = ae.codigo_ciiuv2.length
   		if ae_length == min_length
@@ -149,7 +149,7 @@ class ActividadEconomica < ApplicationRecord
   	tree = {}
   	min_length = 2
   	aee = nil
-  	aes = ActividadEconomica.where("LENGTH(codigo_ciiuv4) >= ?", min_length).order("LENGTH(codigo_ciiuv4) asc, codigo_ciiuv4 asc").all
+  	aes = ActividadEconomica.where("LENGTH(codigo_ciiuv4) >= ?", min_length).order(Arel.sql("LENGTH(codigo_ciiuv4) asc, codigo_ciiuv4 asc")).all
   	aes.each do |ae|
   		aee = ae
   		ae_length = ae.codigo_ciiuv4.length
