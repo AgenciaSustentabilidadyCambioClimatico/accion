@@ -97,10 +97,9 @@ GEM
     benchmark (0.5.0)
     bigdecimal (3.1.8)
     bindex (0.8.1)
-    bootstrap (4.0.0)
-      autoprefixer-rails (>= 6.0.3)
-      popper_js (>= 1.12.9, < 2)
-      sass (>= 3.5.2)
+    bootstrap (4.6.2.1)
+      autoprefixer-rails (>= 9.1.0)
+      popper_js (>= 1.16.1, < 2)
     builder (3.3.0)
     bundler-audit (0.9.3)
       bundler (>= 1.2.0)
@@ -145,13 +144,12 @@ GEM
     caracal-rails (1.0.2)
       caracal (~> 1.0)
       rails (>= 3.2)
-    carrierwave (2.2.6)
-      activemodel (>= 5.0.0)
-      activesupport (>= 5.0.0)
+    carrierwave (3.1.4)
+      activemodel (>= 6.0.0)
+      activesupport (>= 6.0.0)
       addressable (~> 2.6)
-      image_processing (~> 1.1)
-      marcel (~> 1.0.0)
-      mini_mime (>= 0.1.3)
+      image_processing (>= 1.1, < 3)
+      marcel (>= 1.0.0, < 3)
       ssrf_filter (~> 1.0)
     caxlsx (4.1.0)
       htmlentities (~> 4.3, >= 4.3.4)
@@ -172,6 +170,9 @@ GEM
     concurrent-ruby (1.3.8)
     connection_pool (2.5.0)
     crass (1.0.7)
+    cronex (0.15.0)
+      tzinfo
+      unicode (>= 0.4.4.5)
     crontab_syntax_checker (0.1.0)
     csv (3.3.0)
     daemons (1.4.1)
@@ -203,8 +204,8 @@ GEM
     excon (1.6.0)
       logger
     execjs (2.9.1)
-    faraday (2.12.0)
-      faraday-net_http (>= 2.0, < 3.4)
+    faraday (2.15.0)
+      faraday-net_http (>= 2.0, < 3.6)
       json
       logger
     faraday-follow_redirects (0.5.0)
@@ -288,7 +289,7 @@ GEM
       actionpack
       nokogiri
       rubyzip (>= 1.0)
-    httparty (0.22.0)
+    httparty (0.24.3)
       csv
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
@@ -452,7 +453,7 @@ GEM
       actionpack (>= 5.2)
       railties (>= 5.2)
     retriable (3.1.2)
-    rexml (3.3.8)
+    rexml (3.4.4)
     rollbar (3.6.0)
     roo (2.10.1)
       nokogiri (~> 1)
@@ -492,10 +493,11 @@ GEM
       logger
       rack (>= 2.2.4)
       redis-client (>= 0.22.2)
-    sidekiq-cron (1.12.0)
-      fugit (~> 1.8)
+    sidekiq-cron (2.4.0)
+      cronex (>= 0.13.0)
+      fugit (~> 1.8, >= 1.11.1)
       globalid (>= 1.0.1)
-      sidekiq (>= 6)
+      sidekiq (>= 6.5.0)
     sidekiq-failures (1.0.4)
       sidekiq (>= 4.0.0)
     signet (0.19.0)
@@ -541,6 +543,7 @@ GEM
     uber (0.1.0)
     uglifier (4.2.1)
       execjs (>= 0.3.0, < 3)
+    unicode (0.4.4.5)
     uri (0.13.1)
     warden (1.2.9)
       rack (>= 2.0.9)
@@ -578,7 +581,7 @@ DEPENDENCIES
   animate-rails
   autonumeric-rails
   awesome_print
-  bootstrap (~> 4.0.0)
+  bootstrap (~> 4.3, >= 4.3.1)
   bundler-audit
   byebug
   capistrano (~> 3.10)
@@ -590,7 +593,7 @@ DEPENDENCIES
   capistrano3-puma
   capybara (~> 2.13)
   caracal-rails
-  carrierwave (~> 2.0)
+  carrierwave (>= 3.1.3)
   caxlsx_rails
   chartkick (~> 5.0.4)
   cocoon
@@ -603,7 +606,7 @@ DEPENDENCIES
   devise (~> 4.9)
   devise_invitable (~> 2.0)
   dotenv-rails
-  faraday (~> 2.0)
+  faraday (>= 2.14.3)
   faraday-follow_redirects (~> 0.3)
   faraday-net_http_persistent (~> 2.0)
   ffi (< 1.17.0)
@@ -621,7 +624,7 @@ DEPENDENCIES
   health_check (~> 3.1)
   hirb
   htmltoword
-  httparty
+  httparty (>= 0.24.0)
   jquery-datatables
   jquery-rails
   letter_opener
@@ -641,9 +644,10 @@ DEPENDENCIES
   puredocx (~> 0.0.2)
   quilljs-rails
   rack-attack
-  rails (~> 7.0.8)
+  rails (~> 7.0.8, >= 7.0.8.7)
   rails-erd
   recaptcha
+  rexml (>= 3.4.2)
   rollbar
   roo
   roo-xls
@@ -655,7 +659,7 @@ DEPENDENCIES
   scout_apm
   select2-rails
   sidekiq (~> 7.3.8)
-  sidekiq-cron
+  sidekiq-cron (>= 2.4.0)
   sidekiq-failures
   simple_form
   slack-notifier
