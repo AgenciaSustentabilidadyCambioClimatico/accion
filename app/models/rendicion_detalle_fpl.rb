@@ -9,6 +9,11 @@ class RendicionDetalleFpl < ApplicationRecord
   # CARRIERWAVE:
   mount_uploader :archivo, ArchivoRendicionUploader
 
-  enum tipo_tab: { tecnica: 0, financiera_fpl: 1, financiera_aporte: 2 }
-  enum cumple: { no_evaluado: 0, si: 1, no: 2 }, _prefix: :cumple
+  # Declaración explícita de atributos como enteros para Rails 7.2
+  attribute :tipo_tab, :integer
+  attribute :cumple, :integer
+
+  # Definición de enums con sintaxis de Rails 7+ y asignación de enteros
+  enum :tipo_tab, { tecnica: 0, financiera_fpl: 1, financiera_aporte: 2 }, prefix: :tab
+  enum :cumple, { no_evaluado: 0, si: 1, no: 2 }, prefix: :cumple
 end

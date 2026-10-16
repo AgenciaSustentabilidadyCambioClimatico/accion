@@ -71,11 +71,10 @@ class ManifestacionDeInteres < ApplicationRecord
   # DOSSA 2019-09-30 14:39 se añade para ppp
   serialize :programas_o_proyectos_relacionados_ids, coder: YAML
 
-  enum resultado_admisibilidad: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad
-  enum resultado_admisibilidad_juridica: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad_juridica
-  enum resultado_pertinencia: [:aceptada,:solicita_condiciones,:realiza_observaciones,
-                              :solicita_condiciones_y_contiene_observaciones,:no_aceptada], _prefix: :resultado_pertinencia
-  enum respuesta_resultado_pertinencia: [:aceptada, :solicita_condiciones_o_información, :no_aceptada], _prefix: :respuesta_resultado_pertinencia
+  enum :resultado_admisibilidad, [:aceptado, :rechazado, :en_observación], prefix: :admisibilidad
+  enum :resultado_admisibilidad_juridica, [:aceptado, :rechazado, :en_observación], prefix: :admisibilidad_juridica
+  enum :resultado_pertinencia, [:aceptada, :solicita_condiciones, :realiza_observaciones, :solicita_condiciones_y_contiene_observaciones, :no_aceptada], prefix: :pertinencia
+  enum :respuesta_resultado_pertinencia, [:aceptada, :solicita_condiciones_o_información, :no_aceptada], prefix: :respuesta_pertinencia
 
   attr_accessor :revisor_tecnico_id, :revisor_juridico_id,:coordinador_subtipo_instrumento_id, :encargado_hitos_prensa_id, :fondo_produccion_limpia, :tipo_linea_seleccionada
   attr_accessor :accion_en_mapa_de_actores, :mapa_de_actores_correctamente_construido, :actores_con_observaciones

@@ -1,6 +1,11 @@
 class ActividadPorLinea < ApplicationRecord
-	enum tipo_permiso: [ :obligatoria, :permitida, :no_permitida, :nueva ]
-	enum tipo_actividad: [ :tipo_a, :tipo_b, :no_aplica ]
+	# Declaración de tipos para cumplir con el requisito estricto de Rails 7.2
+	attribute :tipo_permiso, :integer # (o :string si se guarda como texto en la DB)
+	attribute :tipo_actividad, :integer # (o :string si se guarda como texto en la DB)
+
+	# Definición de los enums con la sintaxis de Rails 7+
+	enum :tipo_permiso, [:obligatoria, :permitida, :no_permitida, :nueva], prefix: :permiso
+	enum :tipo_actividad, [:tipo_a, :tipo_b, :no_aplica], prefix: :actividad
 
 	belongs_to :actividad
 	belongs_to :linea, class_name: :TipoInstrumento, foreign_key: :tipo_instrumento_id

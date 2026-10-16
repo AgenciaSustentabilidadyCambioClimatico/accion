@@ -1,6 +1,10 @@
 class DescargableTarea < ApplicationRecord
   mount_uploader :archivo, ArchivosDescargableTareaUploader
-  enum formato: [:docx,:pdf,:xlsx]
+  # Declaración explícita del atributo para Rails 7.2
+  attribute :formato, :integer # (o :string si se guarda el texto directo en la base de datos)
+
+  # Definición del enum con la sintaxis de Rails 7+
+  enum :formato, [:docx, :pdf, :xlsx], prefix: :formato
   belongs_to :tarea
   validates :nombre, presence: true
   validates :tarea_id, presence: true
