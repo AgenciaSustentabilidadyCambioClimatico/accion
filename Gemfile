@@ -16,9 +16,9 @@ gem 'devise', '~> 4.9'
 gem 'devise_invitable', '~> 2.0'
 gem 'activerecord-session_store', '~> 2.0'
 gem 'autonumeric-rails'
-gem 'rails', '~> 7.0.8'
+gem 'rails', '~> 7.0.8', '>= 7.0.8.7'
 gem 'caxlsx_rails'
-gem 'bootstrap', '~> 4.0.0'
+gem 'bootstrap', '~> 4.3', '>= 4.3.1'
 gem 'chartkick', '~>5.0.4'
 gem 'crontab_syntax_checker'
 gem 'daemons'
@@ -33,9 +33,9 @@ gem 'googleauth', '~> 1.5.2'
 gem 'haml', '5.2.2'
 gem 'haml-rails', '~> 2.1.0'
 gem "sidekiq", "~> 7.3.8"
-gem 'sidekiq-cron'
+gem 'sidekiq-cron', '>= 2.4.0'
 gem 'htmltoword'
-gem 'httparty'
+gem 'httparty', '>= 0.24.0'
 gem 'jquery-datatables'
 gem 'jquery-rails'
 gem 'nested_form'
@@ -71,11 +71,12 @@ gem 'will_paginate'
 gem 'will_paginate-bootstrap4'
 gem 'rollbar'
 gem 'ruby-graphviz'
-gem "carrierwave", "~> 2.0"
+gem 'carrierwave', '>= 3.1.3'
 gem "fog-core", "~> 2.3"
 gem "gitlab-fog-azure-rm", "~> 2.0"
+gem 'rexml', '>= 3.4.2'
 # Transitorias del vendor azure-storage-ruby dentro de gitlab-fog-azure-rm 2.0.x (no listadas en el gemspec)
-gem "faraday", "~> 2.0"
+gem 'faraday', '>= 2.14.3'
 gem "faraday-follow_redirects", "~> 0.3"
 gem "faraday-net_http_persistent", "~> 2.0"
 gem "net-http-persistent", "~> 4.0"
