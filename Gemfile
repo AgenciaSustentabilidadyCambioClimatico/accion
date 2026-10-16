@@ -12,11 +12,11 @@ gem 'matrix'
 gem 'caracal-rails'
 gem "animate-rails"
 gem "hashid-rails", "~> 1.0"
-gem 'devise', '~> 4.9'
+gem 'devise', '>= 4.9.4'
 gem 'devise_invitable', '~> 2.0'
 gem 'activerecord-session_store', '~> 2.0'
 gem 'autonumeric-rails'
-gem 'rails', '~> 7.2.2', '>= 7.2.2.2'
+gem 'rails', '~> 7.2.3.2'
 gem 'caxlsx_rails'
 gem 'bootstrap', '~> 4.3', '>= 4.3.1'
 gem 'chartkick', '~>5.0.4'
@@ -42,7 +42,7 @@ gem 'nested_form'
 gem 'pg'
 gem 'prawn', '~>2.4.0'
 gem 'prawn-table', '~> 0.2.2'
-gem 'puma', '~> 6.0'
+gem 'puma', '>= 7.2.1'
 gem 'pundit'
 gem 'puredocx', '~> 0.0.2'
 gem 'quilljs-rails'
@@ -83,6 +83,7 @@ gem "faraday-net_http_persistent", "~> 2.0"
 gem "net-http-persistent", "~> 4.0"
 gem "rack-attack"
 gem "ffi", "< 1.17.0"
+gem 'uri', '>= 0.13.3'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'

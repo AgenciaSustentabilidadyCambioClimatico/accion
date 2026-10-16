@@ -2,7 +2,11 @@ class Minuta < ApplicationRecord
 	# has_one :convocatoria
 	belongs_to :convocatoria
 
-	enum tipo_reunion: [:presencial, :virtual]
+	# Declaración del atributo para cumplir con el requisito de Rails 7.2
+	attribute :tipo_reunion, :integer # (o :string si se guarda como texto en la DB)
+
+	# Definición del enum (ya con la sintaxis correcta)
+	enum :tipo_reunion, [:presencial, :virtual], prefix: :reunion
 
 	attr_accessor :tipo_linea_seleccionada
 

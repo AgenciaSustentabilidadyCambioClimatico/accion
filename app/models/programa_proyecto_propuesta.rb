@@ -52,12 +52,15 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	serialize :instrumentos_relacionados_historico, coder: YAML
 	belongs_to :instrumento_relacionado, polymorphic: true, optional: true #DZC 2018-10-08 17:29:43 se agrega para efectos de la primera vez que se guarda el PPF 
 
-#	enum resultado_revision: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad
-#DZC Gino
-	enum resultado_revision: [:aceptado,:rechazado,:con_observaciones], _prefix: :revision
-	enum resultado_observaciones_tecnica: [:a_postulación,:desechado,:con_observaciones]
-	enum resultado_postulaciones: [:aceptado,:rechazado], _prefix: :postulacion
-#DZC
+	# Declaración explícita de atributos para compatibilidad con Rails 7.2
+	attribute :resultado_revision, :integer
+	attribute :resultado_observaciones_tecnica, :integer
+	attribute :resultado_postulaciones, :integer
+
+	# Definición de enums con la sintaxis de Rails 7+
+	enum :resultado_revision, [:aceptado, :rechazado, :con_observaciones], prefix: :revision
+	enum :resultado_observaciones_tecnica, [:a_postulación, :desechado, :con_observaciones], prefix: :observaciones_tecnica
+	enum :resultado_postulaciones, [:aceptado, :rechazado], prefix: :postulacion
 
 	has_many :set_metas_acciones
 	belongs_to :ppf, optional: true, foreign_key: :tipo_instrumento_id, class_name: :TipoInstrumento

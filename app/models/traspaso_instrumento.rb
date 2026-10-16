@@ -6,7 +6,11 @@ class TraspasoInstrumento < ApplicationRecord
 
   attr_accessor :usuario_origen, :usuario_destino, :no_fecha_retorno
 
-  enum tipo_traspaso: [ :fuera_de_oficina, :heredado ]
+  # Declaración explícita del atributo para Rails 7.2
+  attribute :tipo_traspaso, :integer # (o :string si se guarda como texto en la base de datos)
+
+  # Definición del enum con sintaxis de Rails 7+ y prefijo
+  enum :tipo_traspaso, [:fuera_de_oficina, :heredado], prefix: :traspaso
 
   serialize :cambios_mapa_de_actores, coder: YAML
   serialize :cambios_tareas_pendientes, coder: YAML
