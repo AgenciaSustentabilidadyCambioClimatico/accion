@@ -10,7 +10,7 @@ class Maquinaria < ApplicationRecord
 
   mount_uploaders :archivos_imagen, ArchivosImagenMaquinariaUploader
 
-  serialize :fields_visibility
+  serialize :fields_visibility, coder: YAML
 
   validates :nombre_maquinaria, presence: true
   validates :contribuyente_id, presence: true

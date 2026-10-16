@@ -6,7 +6,7 @@ class Otro < ApplicationRecord
   belongs_to :contribuyente
   has_many :adhesion_elementos
   has_many :adhesiones, through: :adhesion_elementos
-  serialize :fields_visibility
+  serialize :fields_visibility, coder: YAML
 
   mount_uploaders :imagen, ArchivosImagenOtroUploader
 

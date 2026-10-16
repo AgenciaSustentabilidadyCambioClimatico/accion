@@ -16,7 +16,7 @@ gem 'devise', '~> 4.9'
 gem 'devise_invitable', '~> 2.0'
 gem 'activerecord-session_store', '~> 2.0'
 gem 'autonumeric-rails'
-gem 'rails', '~> 7.0.8', '>= 7.0.8.7'
+gem 'rails', '~> 7.2.2', '>= 7.2.2.2'
 gem 'caxlsx_rails'
 gem 'bootstrap', '~> 4.3', '>= 4.3.1'
 gem 'chartkick', '~>5.0.4'
@@ -48,7 +48,7 @@ gem 'puredocx', '~> 0.0.2'
 gem 'quilljs-rails'
 gem 'roo'
 gem 'roo-xls'
-gem 'ruby-units', '~> 2.3'
+gem 'ruby-units', '>= 3.0.0'
 gem "slack-notifier", require: false
 # gem 'rubyzip', '~> 1.2.0'
 gem 'rubyzip'
@@ -75,6 +75,7 @@ gem 'carrierwave', '>= 3.1.3'
 gem "fog-core", "~> 2.3"
 gem "gitlab-fog-azure-rm", "~> 2.0"
 gem 'rexml', '>= 3.4.2'
+gem 'sassc-rails', '~> 2.1'
 # Transitorias del vendor azure-storage-ruby dentro de gitlab-fog-azure-rm 2.0.x (no listadas en el gemspec)
 gem 'faraday', '>= 2.14.3'
 gem "faraday-follow_redirects", "~> 0.3"

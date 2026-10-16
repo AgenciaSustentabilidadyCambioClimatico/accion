@@ -37,19 +37,19 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	accepts_nested_attributes_for :ejecucion_presupuestarias, allow_destroy: true
 #DZC
 
-	serialize :secciones_observadas_revision
-	serialize :historia_respuesta_proponente_revision
-	serialize :historia_observaciones_y_comentarios_revision
+	serialize :secciones_observadas_revision, coder: YAML
+	serialize :historia_respuesta_proponente_revision, coder: YAML
+	serialize :historia_observaciones_y_comentarios_revision, coder: YAML
 #DZC Gino
-	serialize :comentarios_observaciones_tecnicas
-	serialize :comentarios_visitas
-	serialize :comentarios_carga_datos
-	serialize :sectores_economicos	
+	serialize :comentarios_observaciones_tecnicas, coder: YAML
+	serialize :comentarios_visitas, coder: YAML
+	serialize :comentarios_carga_datos, coder: YAML
+	serialize :sectores_economicos, coder: YAML
 #RDO
-	serialize :territorios_regiones
-	serialize :territorios_provincias
-	serialize :territorios_comunas
-	serialize :instrumentos_relacionados_historico
+	serialize :territorios_regiones, coder: YAML
+	serialize :territorios_provincias, coder: YAML
+	serialize :territorios_comunas, coder: YAML
+	serialize :instrumentos_relacionados_historico, coder: YAML
 	belongs_to :instrumento_relacionado, polymorphic: true, optional: true #DZC 2018-10-08 17:29:43 se agrega para efectos de la primera vez que se guarda el PPF 
 
 #	enum resultado_revision: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad

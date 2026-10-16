@@ -8,8 +8,8 @@ class TraspasoInstrumento < ApplicationRecord
 
   enum tipo_traspaso: [ :fuera_de_oficina, :heredado ]
 
-  serialize :cambios_mapa_de_actores
-  serialize :cambios_tareas_pendientes
+  serialize :cambios_mapa_de_actores, coder: YAML
+  serialize :cambios_tareas_pendientes, coder: YAML
 
   validates :usuario_origen, presence: true
   validates :flujo_id, presence: true

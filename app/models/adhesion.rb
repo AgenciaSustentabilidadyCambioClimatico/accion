@@ -33,7 +33,7 @@ class Adhesion < ApplicationRecord
 	validates :email_representante_legal, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { externa && !tipo.present? && current_user.nil?}
 	validate :validar_datos_tareas_25, if: -> { externa && !tipo.present?}
 
-	serialize :adhesiones_data
+	serialize :adhesiones_data, coder: YAML
 
 	attr_accessor :aceptado, :observacion, :tipo, :is_ppf
 	attr_accessor :estado_elementos, :justificacion_elementos, :elementos_seleccionados, :validar_clasificar
