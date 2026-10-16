@@ -13,7 +13,7 @@ Devise.setup do |config|
   ##
   # DZC 2019-08-21 17:27:24
   # se agrega para funcionamiento de envio de correos
-  config.secret_key = Rails.application.secrets.secret_key_base
+  config.secret_key = Rails.application.credentials.secret_key_base || ENV['SECRET_KEY_BASE']
 
   # ==> Mailer Configuration
   # Configure the e-mail address which will be shown in Devise::Mailer,

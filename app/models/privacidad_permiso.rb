@@ -1,6 +1,6 @@
 class PrivacidadPermiso < ApplicationRecord
 
-	serialize :fields_visibility
+	serialize :fields_visibility, coder: YAML
 
 	#enum fields_visibility: [:publico,:privado,:eleccion_usuario], _prefix: :fields_visibility
 	def self.get_fields_visibility_by_entity(entidad)
