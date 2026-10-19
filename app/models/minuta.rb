@@ -6,7 +6,7 @@ class Minuta < ApplicationRecord
 	attribute :tipo_reunion, :integer # (o :string si se guarda como texto en la DB)
 
 	# Definición del enum (ya con la sintaxis correcta)
-	enum :tipo_reunion, [:presencial, :virtual], prefix: :reunion
+	enum :tipo_reunion, [:presencial, :virtual]
 
 	attr_accessor :tipo_linea_seleccionada
 
