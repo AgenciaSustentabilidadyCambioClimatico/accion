@@ -59,7 +59,7 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 
 	# Definición de enums con la sintaxis de Rails 7+
 	enum :resultado_revision, [:aceptado, :rechazado, :con_observaciones], prefix: :revision
-	enum :resultado_observaciones_tecnica, [:a_postulación, :desechado, :con_observaciones], prefix: :observaciones_tecnica
+	enum :resultado_observaciones_tecnica, [:a_postulación, :desechado, :con_observaciones]
 	enum :resultado_postulaciones, [:aceptado, :rechazado], prefix: :postulacion
 
 	has_many :set_metas_acciones

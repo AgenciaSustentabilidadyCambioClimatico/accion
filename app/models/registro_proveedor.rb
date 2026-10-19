@@ -53,7 +53,7 @@ class RegistroProveedor < ApplicationRecord
     :actualizado,
     :calificacion_negativa,
     :actualizar_observado
-  ], prefix: :estado
+  ]
 
   before_validation :normalizar_rut
 

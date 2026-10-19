@@ -4,7 +4,7 @@ class DescargableTarea < ApplicationRecord
   attribute :formato, :integer # (o :string si se guarda el texto directo en la base de datos)
 
   # Definición del enum con la sintaxis de Rails 7+
-  enum :formato, [:docx, :pdf, :xlsx], prefix: :formato
+  enum :formato, [:docx, :pdf, :xlsx]
   belongs_to :tarea
   validates :nombre, presence: true
   validates :tarea_id, presence: true

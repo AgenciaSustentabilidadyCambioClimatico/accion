@@ -4,8 +4,8 @@ class ActividadPorLinea < ApplicationRecord
 	attribute :tipo_actividad, :integer # (o :string si se guarda como texto en la DB)
 
 	# Definición de los enums con la sintaxis de Rails 7+
-	enum :tipo_permiso, [:obligatoria, :permitida, :no_permitida, :nueva], prefix: :permiso
-	enum :tipo_actividad, [:tipo_a, :tipo_b, :no_aplica], prefix: :actividad
+	enum :tipo_permiso, [:obligatoria, :permitida, :no_permitida, :nueva]
+	enum :tipo_actividad, [:tipo_a, :tipo_b, :no_aplica]
 
 	belongs_to :actividad
 	belongs_to :linea, class_name: :TipoInstrumento, foreign_key: :tipo_instrumento_id

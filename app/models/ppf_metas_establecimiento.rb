@@ -11,6 +11,6 @@ class PpfMetasEstablecimiento < ApplicationRecord
 	attribute :estado, :integer # (o :string si se almacena como texto en DB)
 
 	# Definición del enum con sintaxis de Rails 7+ y prefijo
-	enum :estado, [:pendiente, :en_revision, :observada, :aceptada], prefix: :estado
+	enum :estado, [:pendiente, :en_revision, :observada, :aceptada]
 
 end

@@ -8,7 +8,7 @@ class Encuesta < ApplicationRecord
   attribute :unidad_tiempo_para_contestar, :integer # (o :string si se guarda como texto)
 
   # Definición del enum con sintaxis posicional y prefijo
-  enum :unidad_tiempo_para_contestar, [:hours, :days, :weeks], prefix: :unidad_tiempo
+  enum :unidad_tiempo_para_contestar, [:hours, :days, :weeks]
 
   validates :titulo, presence: true
   validates :valor_tiempo_para_contestar, presence: true, numericality: { greater_than: 0 }

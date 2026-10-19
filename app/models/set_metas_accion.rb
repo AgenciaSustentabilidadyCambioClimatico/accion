@@ -18,7 +18,7 @@ class SetMetasAccion < ApplicationRecord
 	mount_uploader :archivo_acta_comite, ArchivoActaComiteSetMetasAccionUploader
 
 	attribute :plazo_unidad_tiempo, :integer # (o :string si se almacena como texto en la DB)
-	enum :plazo_unidad_tiempo, [:years, :months], prefix: :plazo
+	enum :plazo_unidad_tiempo, [:years, :months]
 
 	attr_accessor :solo_comentar, :solo_ultimos_2_campos
 	
