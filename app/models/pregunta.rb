@@ -1,7 +1,7 @@
 class Pregunta < ApplicationRecord
 	PREGUNTAS_BLOQUEDAS = [1,2]
 	attribute :tipo_respuestas, :integer
-	enum :tipo_respuestas, [:escala_likert_numerica_0_7, :texto_libre, :si_o_no], prefix: :tipo_respuesta
+	enum :tipo_respuestas, [:escala_likert_numerica_0_7, :texto_libre, :si_o_no]
 
 	validates :texto, presence: true, uniqueness: { scope: [:tipo_respuestas] }
 	validates :tipo_respuestas, presence: true

@@ -10,7 +10,7 @@ class TraspasoInstrumento < ApplicationRecord
   attribute :tipo_traspaso, :integer # (o :string si se guarda como texto en la base de datos)
 
   # Definición del enum con sintaxis de Rails 7+ y prefijo
-  enum :tipo_traspaso, [:fuera_de_oficina, :heredado], prefix: :traspaso
+  enum :tipo_traspaso, [:fuera_de_oficina, :heredado]
 
   serialize :cambios_mapa_de_actores, coder: YAML
   serialize :cambios_tareas_pendientes, coder: YAML
