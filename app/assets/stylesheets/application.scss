@@ -2117,3 +2117,12 @@ table.table.table-home.dataTable.no-footer{
 .chosen-container .chosen-results li {
   text-transform: capitalize;
 }
+
+/* Forzar tamaño adecuado para checkboxes en tablas de revisión */
+table.dataTable input[type="checkbox"],
+table input[type="checkbox"].form-check-input {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  margin: 0 auto !important;
+  display: block;
+}
