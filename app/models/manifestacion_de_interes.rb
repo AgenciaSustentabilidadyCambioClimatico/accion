@@ -53,29 +53,28 @@ class ManifestacionDeInteres < ApplicationRecord
   has_many :auditoria_historicos, dependent: :destroy
   accepts_nested_attributes_for :auditoria_historicos, allow_destroy: true
 
-  serialize :secciones_observadas_admisibilidad
-  serialize :secciones_observadas_admisibilidad_juridica
-  serialize :secciones_observadas_pertinencia_factibilidad
-  serialize :sectores_economicos
-  serialize :territorios_regiones
-  serialize :territorios_provincias
-  serialize :territorios_comunas
-  serialize :coordernadas_territorios
-  serialize :mapa_de_actores_data
-  serialize :firmantes
-  serialize :comentarios_y_observaciones_actualizacion_mapa_de_actores
-  serialize :comentarios_y_observaciones_documento_diagnosticos
-  serialize :comentarios_y_observaciones_set_metas_acciones
-  serialize :informe
-  serialize :instrumentos_relacionados_historico
+  serialize :secciones_observadas_admisibilidad, coder: YAML
+  serialize :secciones_observadas_admisibilidad_juridica, coder: YAML
+  serialize :secciones_observadas_pertinencia_factibilidad, coder: YAML
+  serialize :sectores_economicos, coder: YAML
+  serialize :territorios_regiones, coder: YAML
+  serialize :territorios_provincias, coder: YAML
+  serialize :territorios_comunas, coder: YAML
+  serialize :coordernadas_territorios, coder: YAML
+  serialize :mapa_de_actores_data, coder: YAML
+  serialize :firmantes, coder: YAML
+  serialize :comentarios_y_observaciones_actualizacion_mapa_de_actores, coder: YAML
+  serialize :comentarios_y_observaciones_documento_diagnosticos, coder: YAML
+  serialize :comentarios_y_observaciones_set_metas_acciones, coder: YAML
+  serialize :informe, coder: YAML
+  serialize :instrumentos_relacionados_historico, coder: YAML
   # DOSSA 2019-09-30 14:39 se añade para ppp
-  serialize :programas_o_proyectos_relacionados_ids
+  serialize :programas_o_proyectos_relacionados_ids, coder: YAML
 
-  enum resultado_admisibilidad: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad
-  enum resultado_admisibilidad_juridica: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad_juridica
-  enum resultado_pertinencia: [:aceptada,:solicita_condiciones,:realiza_observaciones,
-                              :solicita_condiciones_y_contiene_observaciones,:no_aceptada], _prefix: :resultado_pertinencia
-  enum respuesta_resultado_pertinencia: [:aceptada, :solicita_condiciones_o_información, :no_aceptada], _prefix: :respuesta_resultado_pertinencia
+  enum :resultado_admisibilidad, [:aceptado, :rechazado, :en_observación], prefix: :admisibilidad
+  enum :resultado_admisibilidad_juridica, [:aceptado, :rechazado, :en_observación], prefix: :admisibilidad_juridica
+  enum :resultado_pertinencia, [:aceptada, :solicita_condiciones, :realiza_observaciones, :solicita_condiciones_y_contiene_observaciones, :no_aceptada], prefix: :pertinencia
+  enum :respuesta_resultado_pertinencia, [:aceptada, :solicita_condiciones_o_información, :no_aceptada], prefix: :respuesta_pertinencia
 
   attr_accessor :revisor_tecnico_id, :revisor_juridico_id,:coordinador_subtipo_instrumento_id, :encargado_hitos_prensa_id, :fondo_produccion_limpia, :tipo_linea_seleccionada
   attr_accessor :accion_en_mapa_de_actores, :mapa_de_actores_correctamente_construido, :actores_con_observaciones

@@ -272,35 +272,44 @@ class ApplicationRecord < ActiveRecord::Base
     fecha_es_anterior? fecha ? fecha=Time.now.beginning_of_day : fecha.to_time
   end
 
-  # DZC 2018-10-25 19:33:41 método para generar archivo zip desde un atributo con multiples archivos
+  #método para generar archivo zip desde un atributo con multiples archivos
   def genera_zip(atributo)
-    archivos = atributo
-    archivos = [archivos] if !archivos.is_a?(Array)
+    archivos = Array(atributo)
     require 'zip'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       archivos.each do |archivo|
-        if archivo.is_a?(String)
-          archivo_path = "#{Rails.root}/public#{archivo}"
-          if File.exists?(archivo_path)
-            split = archivo_path.split('/')
-            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-            # rename the file
+        next if archivo.blank?
+
+        # 1. Obtener la ruta absoluta del archivo en el servidor
+        path_absoluto = if archivo.is_a?(String)
+                          ruta_relativa = archivo.sub(%r{^/?(accion/)?public/}, '')
+                          Rails.root.join('public', ruta_relativa).to_s
+                        elsif archivo.respond_to?(:path) && archivo.path.present?
+                          archivo.path.to_s
+                        elsif archivo.respond_to?(:current_path) && archivo.current_path.present?
+                          archivo.current_path.to_s
+                        end
+
+        next if path_absoluto.blank?
+
+        # 2. Verificar existencia con .exist? (sin 's') y que no sea un directorio
+        if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+          nombre = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                    archivo.file.filename
+                  else
+                    File.basename(path_absoluto)
+                  end
+
+          # 3. Leer en modo binario 'rb'
+          File.open(path_absoluto, 'rb') do |file_data|
             stream.put_next_entry(nombre)
-            # add file to zip
-            stream.write IO.read(archivo_path)
-          end
-        else
-          if File.exists?(archivo.path)
-            split = archivo.current_path.split('/') rescue archivo.path.split('/')# genera un array de palabras dentro del path
-            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-            # rename the file
-            stream.put_next_entry(nombre)
-            # add file to zip
-            stream.write IO.read((archivo.current_path rescue archivo.path))
+            stream.write file_data.read
           end
         end
       end
     end
+
     archivo_zip.rewind
     archivo_zip.sysread
   end

@@ -12,7 +12,7 @@ class Contribuyente < ApplicationRecord
   belongs_to :contribuyente, optional: true
   belongs_to :flujo, optional: true
 
-	serialize :fields_visibility
+	serialize :fields_visibility, coder: YAML
 
 	accepts_nested_attributes_for :actividad_economica_contribuyentes, :allow_destroy => true, reject_if: :all_blank
 	accepts_nested_attributes_for :establecimiento_contribuyentes, :allow_destroy => true, reject_if: :all_blank

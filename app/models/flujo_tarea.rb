@@ -8,7 +8,7 @@ class FlujoTarea < ApplicationRecord
 	validates :mensaje_salida_asunto, presence: true, if: -> { mensaje_salida_cuerpo.present? }
 	validates :mensaje_salida_cuerpo, presence: true, if: -> { mensaje_salida_asunto.present? }
 
-	serialize :rol_destinatarios
+	serialize :rol_destinatarios, coder: YAML
 
 	before_validation :check_rol_destinatarios
 

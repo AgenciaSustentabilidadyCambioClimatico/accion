@@ -2302,26 +2302,28 @@ class ManifestacionDeInteresController < ApplicationController
 
   def descargar_compilado
     require 'zip'
-    require 'open-uri'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       @manifestacion_de_interes.documento_diagnosticos.each do |doc|
-        if !doc.archivo.url.nil?
-          # add file to zip
-          url = doc.archivo.url
-          nombre = File.basename(URI.parse(url).path)
+        next if doc.archivo.blank? || doc.archivo.url.blank?
 
-          # Open and read the file from S3
-          URI.open(url) do |file_data|
+        # Obtener la ruta física absoluta en el servidor de forma segura
+        path_absoluto = doc.archivo.path.presence || Rails.root.join('public', doc.archivo.url.sub(%r{^\/}, '')).to_s
+
+        if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+          nombre = doc.archivo.file&.filename || File.basename(path_absoluto)
+
+          # Lectura segura en modo binario 'rb'
+          File.open(path_absoluto, 'rb') do |file_data|
             stream.put_next_entry(nombre)
             stream.write file_data.read
           end
         end
       end
     end
+
     archivo_zip.rewind
-    # archivo_zip.read
-    #enviamos el archivo para ser descargado
-    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+    send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'documentacion.zip'
   end
 
   def descargar_mapa_de_actores

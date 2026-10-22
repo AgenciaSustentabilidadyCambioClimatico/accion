@@ -258,7 +258,13 @@ class ActoresController < ApplicationController
   def descargar_revisor
     ruta= "#{Rails.root}/public"
     ruta += @manifestacion_de_interes.mapa_de_actores_archivo.to_s
-    send_data File.open(ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: @manifestacion_de_interes.mapa_de_actores_archivo.file.path.split("/").last.to_s
+    adjunto = @manifestacion_de_interes&.mapa_de_actores_archivo
+    nombre_descarga = adjunto&.file&.filename || File.basename(adjunto&.path.to_s)
+
+    send_data File.open(ruta, 'rb').read, 
+              type: 'application/xlsx', 
+              charset: 'iso-8859-1', 
+              filename: nombre_descarga
   end
 
   def actualizacion_actor

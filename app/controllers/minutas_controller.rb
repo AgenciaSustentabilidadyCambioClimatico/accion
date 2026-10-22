@@ -356,27 +356,28 @@ class MinutasController < ApplicationController #crea la depencia con convocator
     @set_metas = @flujo.set_metas_acciones.includes('meta').group_by{|p| (p.meta['nombre'] rescue "") }
 
     html_acuerdo = render_to_string(
-        template: 'minutas/archivo.docx.erb', 
-        layout: 'layouts/wicked_pdf',
-        locals: {
-          partes: @partes,
-          fundamentos: @fundamentos,
-          antecedentes: @antecedentes,
-          normativas_aplicables: @normativas_aplicables,
-          alcance: @alcance,
-          campo_de_aplicacion: @campo_de_aplicacion,
-          definiciones: @definiciones,
-          objetivo_general: @objetivo_general,
-          objetivo_especifico: @objetivo_especifico,
-          set_metas: @set_metas,
-          mecanismo_de_implementacion: @mecanismo_de_implementacion,
-          tipo_de_acuerdo: @tipo_de_acuerdo,
-          auditorias: @auditorias,
-          informe_de_acuerdo: @informe_de_acuerdo,
-          personeria: @personeria,
-          firmas: @firmas
-        }
-      )
+      template: 'minutas/archivo',
+      formats: [:html],
+      layout: 'layouts/wicked_pdf',
+      locals: {
+        partes: @partes,
+        fundamentos: @fundamentos,
+        antecedentes: @antecedentes,
+        normativas_aplicables: @normativas_aplicables,
+        alcance: @alcance,
+        campo_de_aplicacion: @campo_de_aplicacion,
+        definiciones: @definiciones,
+        objetivo_general: @objetivo_general,
+        objetivo_especifico: @objetivo_especifico,
+        set_metas: @set_metas,
+        mecanismo_de_implementacion: @mecanismo_de_implementacion,
+        tipo_de_acuerdo: @tipo_de_acuerdo,
+        auditorias: @auditorias,
+        informe_de_acuerdo: @informe_de_acuerdo,
+        personeria: @personeria,
+        firmas: @firmas
+      }
+    )
 
     archivo_acuerdo = Htmltoword::Document.create html_acuerdo, 'acuerdo.docx'
     archivos = []
