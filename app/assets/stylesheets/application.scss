@@ -2118,11 +2118,19 @@ table.table.table-home.dataTable.no-footer{
   text-transform: capitalize;
 }
 
-/* Forzar tamaño adecuado para checkboxes en tablas de revisión */
-table.dataTable input[type="checkbox"],
-table input[type="checkbox"].form-check-input {
-  width: 1.25rem !important;
-  height: 1.25rem !important;
+/* Corrección global para checkboxes en Bootstrap 5 / DataTables */
+table input[type="checkbox"],
+input[type="checkbox"].form-control,
+input[type="checkbox"].form-check-input {
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   margin: 0 auto !important;
-  display: block;
+  display: block !important;
+}
+
+/* Para checkboxes fuera de tablas (en formularios normales) */
+form:not(table) input[type="checkbox"].form-control {
+  display: inline-block !important;
 }
