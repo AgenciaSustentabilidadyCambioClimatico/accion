@@ -235,43 +235,52 @@ class AdhesionesController < ApplicationController
 
   def descargar_compilado
     require 'zip'
-    require 'open-uri'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+
       if params[:aid].blank?
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+        # CASO 1: Descargar TODOS los archivos de todas las adhesiones del flujo
         @adhesiones_todas.each do |adhesion|
           next if adhesion.archivos_adhesion_y_documentacion.blank?
+
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-
             next if archivo.blank? || archivo.url.blank?
-            url = archivo.url
 
-            # 🔥 nombre único (clave)
-            nombre = "adhesion_#{adhesion.id}_#{archivo.identifier}"
+            # Ruta física absoluta en el disco
+            path_absoluto = archivo.path.presence || Rails.root.join('public', archivo.url.sub(%r{^\/}, '')).to_s
 
-            begin
-              URI.open(url) do |file_data|
-                stream.put_next_entry(nombre)
+            if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+              # Generar un nombre único dentro del zip para evitar sobreescrituras si hay nombres iguales
+              nombre_archivo_disco = archivo.file&.filename || File.basename(path_absoluto)
+              nombre_en_zip = "adhesion_#{adhesion.id}_#{nombre_archivo_disco}"
+
+              File.open(path_absoluto, 'rb') do |file_data|
+                stream.put_next_entry(nombre_en_zip)
                 stream.write file_data.read
               end
-            rescue => e
-              Rails.logger.error "Error descargando archivo #{url}: #{e.message}"
             end
           end
         end
       else
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+        # CASO 2: Descargar un archivo específico (filtrado por aid y nombre_archivo)
         @adhesiones_todas.each do |adhesion|
+          next if adhesion.archivos_adhesion_y_documentacion.blank?
+
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            unless archivo.url.nil?
-              if params[:nombre_archivo] == archivo.file.path.split('/').last
-                if archivo.model.id == params[:aid].to_i
-                  url = archivo.url
-                  nombre = File.basename(URI.parse(url).path)
-                  URI.open(url) do |file_data|
-                    stream.put_next_entry(nombre)
-                    stream.write file_data.read
-                  end
+            next if archivo.blank? || archivo.url.blank?
+
+            nombre_archivo_disco = archivo.file&.filename || File.basename(archivo.path.to_s)
+
+            if params[:nombre_archivo] == nombre_archivo_disco && archivo.model.id == params[:aid].to_i
+              path_absoluto = archivo.path.presence || Rails.root.join('public', archivo.url.sub(%r{^\/}, '')).to_s
+
+              if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+                nombre_en_zip = File.basename(path_absoluto)
+
+                File.open(path_absoluto, 'rb') do |file_data|
+                  stream.put_next_entry(nombre_en_zip)
+                  stream.write file_data.read
                 end
               end
             end
@@ -279,10 +288,9 @@ class AdhesionesController < ApplicationController
         end
       end
     end
+
     archivo_zip.rewind
-    # archivo_zip.read
-    #enviamos el archivo para ser descargado
-    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+    send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'documentacion.zip'
   end
 
   def descargar_compilado_two

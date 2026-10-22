@@ -92,8 +92,8 @@ class Minuta < ApplicationRecord
 	end
 
 	def establece_mensaje_cuerpo
-		acta=self.acta.blank? ? '': self.acta.file.path.split('/').last
-		lista=self.lista_asistencia.blank? ? '': self.lista_asistencia.file.path.split('/').last
+		acta = self.acta.present? ? (self.acta.file&.filename || File.basename(self.acta.path.to_s)) : ''
+		lista = self.lista_asistencia.present? ? (self.lista_asistencia.file&.filename || File.basename(self.lista_asistencia.path.to_s)) : ''
 		self.mensaje_cuerpo = "Se adjuntan los siguientes documentos: \n 
 			#{acta}\n
 			#{lista}\n
