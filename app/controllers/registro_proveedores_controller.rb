@@ -7,16 +7,10 @@ class RegistroProveedoresController < ApplicationController
 
   # PRO-002
   def index
-    # @registro_proveedor = RegistroProveedor.find(params[:registro_proveedor_id])
-    # user = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
-    # habilitado = user.select { |f| f.id == current_user.id }
-    # if habilitado.present?
     if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.where(user_encargado: nil)
-
       @users = Responsable.responsables_por_rol(Rol::REVISOR_PROVEEDORES)
     else
-
       redirect_to root_path
       flash.now[:success] = "Registro enviado correctamente"
     end
@@ -66,7 +60,7 @@ class RegistroProveedoresController < ApplicationController
   # PRO-002
   def asignar_revisor
     encargados = params[:encargado]
-    encargados_seleccionados = encargados.select { |k, v| v.present? }
+    encargados_seleccionados = encargados.select { |_k, v| v.present? }
 
     encargados_seleccionados.each do |k, v|
       key = k
@@ -98,7 +92,7 @@ class RegistroProveedoresController < ApplicationController
   # PRO-003
   def revisar_pertinencia
     estados = params[:estado]
-    estados_seleccionados = estados.select { |k, v| v.present? }
+    estados_seleccionados = estados.select { |_k, v| v.present? }
 
     estados_seleccionados.each do |k, v|
       key = k
@@ -119,7 +113,7 @@ class RegistroProveedoresController < ApplicationController
     end
 
     comentarios = params[:comentario]
-    comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+    comentarios_seleccionados = comentarios.select { |_k, v| v.present? }
 
     comentarios_seleccionados.each do |k, v|
       key = k
@@ -127,7 +121,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(comentario: value)
 
-      if @registro_proveedor.estado == 'rechazado' && @registro_proveedor.rechazo <= 1 || @registro_proveedor.estado == 'con_observaciones'
+      if (@registro_proveedor.estado == 'rechazado' && @registro_proveedor.rechazo <= 1) || @registro_proveedor.estado == 'con_observaciones'
         if @registro_proveedor.estado == 'rechazado'
           RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
         elsif @registro_proveedor.estado == 'con_observaciones'
@@ -156,10 +150,9 @@ class RegistroProveedoresController < ApplicationController
     flash[:success] = "Registro enviado correctamente"
   end
 
-  #PRO-004
+  # PRO-004
   def edit
     @editar = params[:editar]
-
     @tarea = Tarea.find(104)
     @descargables_tarea = DescargableTarea.where(tarea_id: 104)
     @registro_proveedor = RegistroProveedor.find(params[:id])
@@ -171,17 +164,9 @@ class RegistroProveedoresController < ApplicationController
         @comuna = comuna.id if comuna.present?
       end
     end
-
-    # if current_user.rut == @registro_proveedor.rut
-    #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
-    #   @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
-    # else
-    #   redirect_to root_path
-    #   flash.now[:success] = "No tienes permiso para acceder a esta pagina"
-    # end
   end
 
-  #PRO-004
+  # PRO-004
   def update
     @editar = params[:editar]
     @registro_proveedor = RegistroProveedor.find(params[:id])
@@ -197,12 +182,12 @@ class RegistroProveedoresController < ApplicationController
           if params[:registro_proveedor][:editar] != 'true'
             flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
             tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
-            tarea_pendiente.destroy
+            tarea_pendiente&.destroy
             tarea = Tarea.where(codigo: "PRO-003").first
             send_message(tarea, @registro_proveedor.user_encargado)
             TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
           end
-       end
+        end
         format.js {
           render js: "window.location='#{root_path}'"
           flash[:success] = "Registro enviado correctamente"
@@ -211,7 +196,6 @@ class RegistroProveedoresController < ApplicationController
           redirect_to root_path
           flash[:success] = "Registro enviado correctamente"
         }
-
       else
         format.html { render :edit }
         format.js
@@ -219,11 +203,11 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
-  #PRO-005
+  # PRO-005
   def resultado_revision
     if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.where(estado: 'recomendado')
-      rechazo_aprobado_array = RegistroProveedor.select { |registro| (registro.estado == 'aprobado' || registro.estado == 'rechazado_directiva') && (registro.tipo_proveedor_id == 1 || registro.tipo_proveedor_id == 2)}
+      rechazo_aprobado_array = RegistroProveedor.select { |registro| (registro.estado == 'aprobado' || registro.estado == 'rechazado_directiva') && (registro.tipo_proveedor_id == 1 || registro.tipo_proveedor_id == 2) }
       @rechazo_aprobado = rechazo_aprobado_array.paginate(page: params[:page], per_page: 10)
     else
       redirect_to root_path
@@ -231,10 +215,10 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
-  #PRO-005
+  # PRO-005
   def resultado_de_revision
     estados = params[:estado]
-    estados_seleccionados = estados.select { |k, v| v.present? }
+    estados_seleccionados = estados.select { |_k, v| v.present? }
 
     estados_seleccionados.each do |k, v|
       key = k
@@ -260,7 +244,7 @@ class RegistroProveedoresController < ApplicationController
     end
 
     comentarios = params[:comentario]
-    comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+    comentarios_seleccionados = comentarios.select { |_k, v| v.present? }
 
     comentarios_seleccionados.each do |k, v|
       key = k
@@ -289,34 +273,18 @@ class RegistroProveedoresController < ApplicationController
     end
 
     fechas = params[:fecha]
-    fechas_seleccionados = fechas.select { |k, v| v.present? }
+    fechas_seleccionados = fechas.select { |_k, v| v.present? }
 
     fechas_seleccionados.each do |k, v|
       key = k
       value = v
       @registro_proveedor = RegistroProveedor.find(key)
-    
-      if @registro_proveedor.tipo_proveedor_id == 1
-        @registro_proveedor.update!(fecha_aprobado: nil)
-      else
-        @registro_proveedor.update!(fecha_aprobado: value)
-      end
-
+      @registro_proveedor.update!(fecha_aprobado: value)
+      
       if @registro_proveedor.estado == 'aprobado'
         RegistroProveedorMailer.aprobado_directiva(@registro_proveedor).deliver_now
       end
     end
-
-    #archivos = params[:archivo]
-    #archivos_seleccionados = archivos.select { |k, v| v.present? }
-
-    #archivos_seleccionados.each do |k, v|
-    #  key = k
-    #  value = v
-    #  @registro_proveedor = RegistroProveedor.find(key)
-    #  @registro_proveedor.archivo_respuesta_rechazo_directiva = value
-    #  @registro_proveedor.save!
-    #end
 
     redirect_to root_path
     flash[:success] = "Registro enviado correctamente"
@@ -324,13 +292,6 @@ class RegistroProveedoresController < ApplicationController
 
   # PRO-006
   def edit_proveedor
-    # if current_user.rut == @registro_proveedor.rut
-    #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
-    #   @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
-    # else
-    #   redirect_to root_path
-    #   flash.now[:success] = "No tienes permiso para acceder a esta pagina"
-    # end
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
@@ -344,7 +305,7 @@ class RegistroProveedoresController < ApplicationController
         @registro_proveedor.update(estado: 1)
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
-        tarea_pendiente.destroy
+        tarea_pendiente&.destroy
         tarea = Tarea.where(codigo: 'PRO-005').first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
 
@@ -361,14 +322,6 @@ class RegistroProveedoresController < ApplicationController
 
   # PRO-007
   def actualizar_proveedor
-    # if current_user.rut == @registro_proveedor.rut
-    #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
-    #   @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
-    # else
-    #   redirect_to root_path
-    #   flash.now[:success] = "No tienes permiso para acceder a esta pagina"
-    # end
-
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @registro_proveedor.certificado_proveedor_extras.build
     @registro_proveedor.documento_proveedor_extras.build
@@ -406,7 +359,7 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
-  #PRO-008
+  # PRO-008
   def resultado_actualizacion
     if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.where(estado: 'actualizado')
@@ -416,10 +369,10 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
-  #PRO-008
+  # PRO-008
   def resultado_de_actualizacion
     estados = params[:estado]
-    estados_seleccionados = estados.select { |k, v| v.present? }
+    estados_seleccionados = estados.select { |_k, v| v.present? }
 
     estados_seleccionados.each do |k, v|
       key = k
@@ -442,20 +395,19 @@ class RegistroProveedoresController < ApplicationController
         RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_now
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_pendiente = TareaPendiente.where(flujo_id: 1000).first
-        tarea_pendiente.destroy
-        # flujo.destroy
+        tarea_pendiente&.destroy
       end
 
       if value == 3
         comentarios = params[:comentario]
-        comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+        comentarios_seleccionados = comentarios.select { |_k, v| v.present? }
 
         comentarios_seleccionados.each do |k, v|
           key = k
           value = v
           @registro_proveedor = RegistroProveedor.find(key)
           @registro_proveedor.update!(comentario: value, estado: 11)
-    
+
           flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
           tarea = Tarea.where(codigo: 'PRO-007').first
           user = User.where(rut: @registro_proveedor.rut).first
@@ -469,7 +421,7 @@ class RegistroProveedoresController < ApplicationController
     end
 
     fechas = params[:fecha]
-    fechas_seleccionados = fechas.select { |k, v| v.present? } 
+    fechas_seleccionados = fechas.select { |_k, v| v.present? }
 
     fechas_seleccionados.each do |k, v|
       key = k
@@ -480,15 +432,13 @@ class RegistroProveedoresController < ApplicationController
         @registro_proveedor.update!(fecha_revalidacion: value, estado: 'aprobado')
         RegistroProveedorMailer.revision_positiva(@registro_proveedor).deliver_now
       end
-      #@registro_proveedor.update!(fecha_revalidacion: value, estado: 'aprobado')
-
     end
 
     redirect_to root_path
     flash[:success] = "Registro enviado correctamente"
   end
 
-  #PRO-009
+  # PRO-009
   def evaluacion_proveedores
     if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
       registro_proveedor = RegistroProveedor.where(estado: 'aprobado')
@@ -502,7 +452,7 @@ class RegistroProveedoresController < ApplicationController
 
   def clasificar_proveedores
     estados = params[:estado]
-    estados_seleccionados = estados.select { |k, v| v.present? }
+    estados_seleccionados = estados.select { |_k, v| v.present? }
 
     estados_seleccionados.each do |k, v|
       key = k
@@ -518,7 +468,7 @@ class RegistroProveedoresController < ApplicationController
     end
 
     comentarios = params[:comentario]
-    comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+    comentarios_seleccionados = comentarios.select { |_k, v| v.present? }
 
     comentarios_seleccionados.each do |k, v|
       key = k
@@ -531,131 +481,71 @@ class RegistroProveedoresController < ApplicationController
         tarea = Tarea.where(codigo: 'PRO-010').first
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id)
-        # tarea_previa = Tarea.where(codigo: 'PRO-009').first
-        # tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        # tarea_pendiente.first.delete
       end
     end
 
     redirect_to root_path
     flash[:success] = "Registro enviado correctamente"
-
   end
 
-  #PRO-010
+  # PRO-010
   def enviar_carta_compromiso
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @descargables_tarea = DescargableTarea.where(tarea_id: 110)
   end
 
-  #PRO-11
+  # PRO-11
   def proveedores_pendientes
     @tareas = RegistroProveedor.proveedores_pendientes.to_a
   end
 
   def descargar_documentos_proveedores
     require 'zip'
-    require 'open-uri'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
-      documentos = registro_proveedor.documento_registro_proveedores
-      documentos.each do |documento|
-        unless documento.archivo.url.nil?
-          #nombre = documento.archivo.file.identifier
-          url = documento.archivo.url
-          nombre = File.basename(URI.parse(url).path)
 
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-
-        end
+      registro_proveedor.documento_registro_proveedores.each do |documento|
+        agregar_archivo_al_zip(stream, documento&.archivo)
       end
-      documentos_extras = registro_proveedor.documento_proveedor_extras
-      documentos_extras.each do |documento|
-        unless documento.archivo.url.nil?
-          #nombre = documento.archivo.file.identifier
-          url = documento.archivo.url
-          nombre = File.basename(URI.parse(url).path)
 
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
+      registro_proveedor.documento_proveedor_extras.each do |documento|
+        agregar_archivo_al_zip(stream, documento&.archivo)
+      end
 
-        end
+      registro_proveedor.certificado_proveedores.each do |certificado|
+        agregar_archivo_al_zip(stream, certificado&.archivo_certificado)
       end
-      certificados = registro_proveedor.certificado_proveedores
-      certificados.each do |certificado|
-        unless certificado.archivo_certificado.url.nil?
-          url = certificado.archivo_certificado.url
-          nombre = File.basename(URI.parse(url).path)
-          # nombre = "certificado"
-          # rename the file
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-        end
-      end
-      certificados_extras = registro_proveedor.certificado_proveedor_extras
-      certificados_extras.each do |certificado|
-        unless certificado.archivo.url.nil?
-          url = certificado.archivo.url
-          nombre = File.basename(URI.parse(url).path)
-          # nombre = "certificado"
-          # rename the file
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-        end
+
+      registro_proveedor.certificado_proveedor_extras.each do |certificado|
+        agregar_archivo_al_zip(stream, certificado&.archivo)
       end
     end
+
     archivo_zip.rewind
-    #enviamos el archivo para ser descargado
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
 
   def descargar_documentos_proveedores_filtrados
     require 'zip'
-    require 'open-uri'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
-      documentos = registro_proveedor.documento_registro_proveedores
-      documentos.each do |documento|
-        unless documento.archivo.url.nil? || documento.description == 'Curriculum Vitae' || documento.description == "Copia CI"
-          url = documento.archivo.url
-          nombre = File.basename(URI.parse(url).path)
 
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
+      registro_proveedor.documento_registro_proveedores.each do |documento|
+        next if documento.description == 'Curriculum Vitae' || documento.description == "Copia CI"
 
-        end
+        agregar_archivo_al_zip(stream, documento&.archivo)
       end
-      certificados = registro_proveedor.certificado_proveedores
-      certificados.each do |certificado|
-        unless certificado.archivo_certificado.url.nil?
-          url = certificado.archivo_certificado.url
-          nombre = File.basename(URI.parse(url).path)
-          # nombre = "certificado"
-          # rename the file
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-        end
+
+      registro_proveedor.certificado_proveedores.each do |certificado|
+        agregar_archivo_al_zip(stream, certificado&.archivo_certificado)
       end
     end
 
     archivo_zip.rewind
-    #enviamos el archivo para ser descargado
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
-
 
   def descargar_registro_proveedor_pdf_archivo
     @registro_proveedor = RegistroProveedor.find(params[:id])
@@ -671,7 +561,7 @@ class RegistroProveedoresController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render :json => @contribuyentes }
+      format.json { render json: @contribuyentes }
     end
   end
 
@@ -679,7 +569,7 @@ class RegistroProveedoresController < ApplicationController
     @user = User.find_by(rut: params[:rut])
     respond_to do |format|
       format.html
-      format.json { render :json => @user}
+      format.json { render json: @user }
     end
   end
 
@@ -693,36 +583,50 @@ class RegistroProveedoresController < ApplicationController
     @comunas = @region.comunas.order('nombre').vigente?
   end
 
-  def subir_documento()
+  def subir_documento
     registro = RegistroProveedor.find(params[:id])
-    campo = params[:nombre_campo] # "archivo_aprobado_directiva"
-    archivo = params[:archivo]    # #<UploadedFile ...>
+    campo = params[:nombre_campo]
+    archivo = params[:archivo]
     registro.update(campo => archivo)
     render json: { ok: true, mensaje: "Archivo guardado" }
   end
 
   def validar_tipo_proveedor
-  registros = RegistroProveedor.where(
-    rut: params[:rut],
-    tipo_proveedor_id: params[:tipo_proveedor_id]
-  )
+    registros = RegistroProveedor.where(
+      rut: params[:rut],
+      tipo_proveedor_id: params[:tipo_proveedor_id]
+    )
 
-  registro = registros.where.not(estado: "rechazado_definitivo").first
+    registro = registros.where.not(estado: "rechazado_definitivo").first
 
-  if registro
-    render json: {
-      existe: true,
-      registro: {
-        tipo_proveedor: registro.tipo_proveedor.nombre,
-        estado: registro.estado
+    if registro
+      render json: {
+        existe: true,
+        registro: {
+          tipo_proveedor: registro.tipo_proveedor.nombre,
+          estado: registro.estado
+        }
       }
-    }
-  else
-    render json: { existe: false }
+    else
+      render json: { existe: false }
+    end
   end
-end
 
   private
+
+  def agregar_archivo_al_zip(stream, archivo_uploader)
+    return if archivo_uploader.blank? || archivo_uploader.url.blank?
+
+    path_absoluto = archivo_uploader.path.presence || Rails.root.join('public', archivo_uploader.url.sub(%r{^\/}, '')).to_s
+
+    return unless File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+
+    nombre = archivo_uploader.file&.filename || File.basename(path_absoluto)
+    File.open(path_absoluto, 'rb') do |file_data|
+      stream.put_next_entry(nombre)
+      stream.write file_data.read
+    end
+  end
 
   def send_message(tarea, user)
     u = User.find(user)
@@ -745,16 +649,18 @@ end
   end
 
   def registro_proveedores_params
-    params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
+    params.require(:registro_proveedor).permit(
+      :rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
       :rut_institucion, :nombre_institucion, :tipo_contribuyente, :editar, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :correlativo, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario,
       :archivo_respuesta_rechazo, :comentario_directiva, :respuesta_comentario_directiva, :archivo_respuesta_rechazo_directiva, :fecha_aprobado, :fecha_actualizado, :archivo_aprobado_directiva, :archivo_aprobado_directiva_cache, :carta_compromiso, :carta_compromiso_cache,
-      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id,  :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy],
-      certificado_proveedor_extras_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo, :archivo_cache, :_destroy], documento_proveedor_extras_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
+      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy],
+      documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy],
+      certificado_proveedor_extras_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo, :archivo_cache, :_destroy],
+      documento_proveedor_extras_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy]
+    )
   end
 
   def datos_header_no_signed
-    if !user_signed_in?
-      @header = ReporteriaDato.find_by(ruta: nil)
-    end
+    @header = ReporteriaDato.find_by(ruta: nil) unless user_signed_in?
   end
 end
