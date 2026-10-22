@@ -56,7 +56,7 @@ gem 'rubyzip', '>= 3.4.0'
 gem 'rut_validation'
 gem 'sass-rails', '~> 5.0'
 gem 'simple_form'
-gem 'uglifier', '>= 1.3.0'
+gem 'terser'
 gem 'whenever', require: false # DZC 2019-08-23 18:41:54 se agrega para manejar cron
 gem 'zip-zip'
 gem 'select2-rails'
