@@ -22,7 +22,6 @@
 // = require data-confirm-modal
 // = require geoxml3
 // = require datatables
-// = require ckeditor/init
 // = require date
 // = require date/es-ES
 // = require dataTables.fixedHeader.min
@@ -321,9 +320,6 @@ function htmlErrorToTooltip(placement) {
     }
     else if(campo.hasClass('select2-hidden-accessible')){
       campo = campo.closest('div').find('span.select2-container');
-    }
-    else if(campo.hasClass('ckeditor')){
-      campo = campo.closest('div');
     }
     mensaje = error.text();
     showTooltipError(mensaje, campo, placement);

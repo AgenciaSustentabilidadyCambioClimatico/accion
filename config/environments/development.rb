@@ -91,4 +91,8 @@ Rails.application.configure do
   config.hosts = nil
   config.web_console.permissions = '0.0.0.0/0'
   config.action_controller.allow_forgery_protection = false
+
+  config.active_support.disallowed_deprecation = :raise
+  config.active_support.disallowed_deprecation_warnings = []
+  config.active_record.verbose_query_logs = true
 end
