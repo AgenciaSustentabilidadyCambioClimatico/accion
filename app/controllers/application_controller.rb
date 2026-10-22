@@ -20,7 +20,7 @@ class ApplicationController < ActionController::Base
     session.delete(:user_return_to) if request.path == session[:user_return_to]
   end
 
-  # DZC 2018-10-25 20:21:52 permite descargar zips, independiente de la clase, objeto y atributo donde se almacenan los archivos a comprimir
+  #permite descargar zips, independiente de la clase, objeto y atributo donde se almacenan los archivos a comprimir
   def desacarga_zip
     # 
     clase = params[:clase].to_s.constantize
@@ -31,7 +31,13 @@ class ApplicationController < ActionController::Base
     else
       atributo = objeto.send(params[:atributo].to_sym)
     end
-    send_data(objeto.genera_zip(atributo), type: 'application/zip',filename: "archivos_adjuntos.zip")
+
+    zip_data = objeto.genera_zip(atributo)
+
+    send_data zip_data, 
+              type: 'application/zip', 
+              disposition: 'attachment', 
+              filename: 'archivos_adjuntos.zip'
   end
   
   protected
