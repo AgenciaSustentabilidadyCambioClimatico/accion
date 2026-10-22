@@ -197,37 +197,19 @@ class AuditoriasController < ApplicationController
 
   def descargar_compilado
     require 'zip'
-    require 'open-uri'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       @auditoria_elementos.each do |auditoria_elemento|
-        adhesion = Adhesion.unscoped.where(id: auditoria_elemento.adhesion_elemento.adhesion_externa_id).first
-        archivo_evidencia = auditoria_elemento.archivo_evidencia
-        archivo_informe = auditoria_elemento.archivo_informe
-
-        unless archivo_evidencia.url.nil?
-          url = archivo_evidencia.url
-          nombre = File.basename(URI.parse(url).path)
-
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-        end
-
-        unless archivo_informe.url.nil?
-          url = archivo_informe.url
-          nombre = File.basename(URI.parse(url).path)
-
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-        end
+        # Inyectar archivo de evidencia
+        agregar_adjunto_al_zip(stream, auditoria_elemento.archivo_evidencia, prefijo: "evidencia_#{auditoria_elemento.id}_")
+        
+        # Inyectar archivo de informe
+        agregar_adjunto_al_zip(stream, auditoria_elemento.archivo_informe, prefijo: "informe_#{auditoria_elemento.id}_")
       end
     end
+
     archivo_zip.rewind
-    #enviamos el archivo para ser descargado
-    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+    send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'documentacion.zip'
   end
 
   private
@@ -387,4 +369,21 @@ class AuditoriasController < ApplicationController
       params.require(:auditoria).permit(auditoria_elementos_attributes: [:id, :validacion_observaciones, :validacion_aceptada])
     end
 
+    def agregar_adjunto_al_zip(stream, uploader, prefijo: '')
+      return if uploader.blank? || uploader.url.blank?
+
+      # Obtener la ruta absoluta física en el servidor
+      path_absoluto = uploader.path.presence || Rails.root.join('public', uploader.url.sub(%r{^\/}, '')).to_s
+
+      if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+        nombre_base = uploader.file&.filename || File.basename(path_absoluto)
+        nombre_en_zip = "#{prefijo}#{nombre_base}"
+
+        # Leer en modo binario 'rb' de forma segura
+        File.open(path_absoluto, 'rb') do |file_data|
+          stream.put_next_entry(nombre_en_zip)
+          stream.write file_data.read
+        end
+      end
+    end
 end
