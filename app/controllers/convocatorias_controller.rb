@@ -192,88 +192,108 @@ class ConvocatoriasController < ApplicationController
 		  	}
 	    end
 	  end
-  end
+  	end
 
 	#**descarga de archivos copiado desde rendicion_actividades_controler.descargar_tecnicas
 	def descargar_adjuntos
 		require 'zip'
 
 		archivos = []
-		archivos += @convocatoria.archivo_adjunto if !@convocatoria.archivo_adjunto.blank?
-		if !@convocatoria.minuta.nil?
-			archivos << @convocatoria.minuta.lista_asistencia if !@convocatoria.minuta.lista_asistencia.blank?
-			archivos << @convocatoria.minuta.acta if !@convocatoria.minuta.acta.blank?
-		end
-    archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      archivos.each do |archivo|
-        if archivo.is_a?(String)
-          archivo_path = "#{Rails.root}/public#{archivo}"
-          if File.exists?(archivo_path)
-            split = archivo_path.split('/')
-            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-            # rename the file
-            stream.put_next_entry(nombre)
-            # add file to zip
-            stream.write IO.read(archivo_path)
-          end
-        else
-          unless archivo.url.nil?
-            url = archivo.url
-            nombre = File.basename(URI.parse(url).path)
+		archivos.concat(Array(@convocatoria.archivo_adjunto)) if @convocatoria.archivo_adjunto.present?
 
-            URI.open(url) do |file_data|
-              stream.put_next_entry(nombre)
-              stream.write file_data.read
-            end
-          end
-        end
-      end
-    end
-    archivo_zip.rewind
-		send_data(archivo_zip.sysread, type: 'application/zip',filename: "archivos_adjuntos.zip")
+		if @convocatoria.minuta.present?
+			archivos << @convocatoria.minuta.lista_asistencia if @convocatoria.minuta.lista_asistencia.present?
+			archivos << @convocatoria.minuta.acta if @convocatoria.minuta.acta.present?
+		end
+
+		archivo_zip = Zip::OutputStream.write_buffer do |stream|
+			archivos.each do |archivo|
+			next if archivo.blank?
+
+			# 1. Determinar la ruta física absoluta según el tipo de objeto
+			path_absoluto = if archivo.is_a?(String)
+								# Limpia prefijo duplicado si la cadena ya trae /public
+								ruta_relativa = archivo.sub(%r{^/?(accion/)?public/}, '')
+								Rails.root.join('public', ruta_relativa).to_s
+							elsif archivo.respond_to?(:path) && archivo.path.present?
+								archivo.path.to_s
+							elsif archivo.respond_to?(:url) && archivo.url.present?
+								ruta_relativa = archivo.url.to_s.sub(%r{^/?(accion/)?public/}, '')
+								Rails.root.join('public', ruta_relativa).to_s
+							end
+
+			next if path_absoluto.blank?
+
+			# 2. Verificar existencia en el disco y que no sea directorio
+			if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+				nombre_archivo = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+								archivo.file.filename
+								else
+								File.basename(path_absoluto)
+								end
+
+				# 3. Leer en modo binario 'rb' e inyectar al zip
+				File.open(path_absoluto, 'rb') do |file_data|
+				stream.put_next_entry(nombre_archivo)
+				stream.write file_data.read
+				end
+			end
+			end
+		end
+
+		archivo_zip.rewind
+		send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'archivos_adjuntos.zip'
 	end
 
 	# Descarga compilado de todos los adjuntos tarea APL-016
 	def descargar_compilado_adjuntos
 		require 'zip'
-    require 'open-uri'
-		if params[:codigo] == "016"
-			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-016").all
-		elsif params[:codigo] == "030"
-			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-030").all
-		elsif params[:codigo] == "011"
-			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-011").all
+
+		if params[:codigo].present?
+			codigo_tarea = "APL-#{params[:codigo]}"
+			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id, tarea_codigo: codigo_tarea)
 		end
 
-		if !@convocatorias_apl.nil?
+		if @convocatorias_apl.present?
 			archivo_zip = Zip::OutputStream.write_buffer do |stream|
-				@convocatorias_apl.each do |convocatoria|
-					archivos = []
-					archivos += convocatoria.archivo_adjunto if !convocatoria.archivo_adjunto.blank?
-					if !convocatoria.minuta.nil?
-						archivos << convocatoria.minuta.lista_asistencia if !convocatoria.minuta.lista_asistencia.blank?
-						archivos << convocatoria.minuta.acta if !convocatoria.minuta.acta.blank?
-					end
-					nombre = convocatoria.nombre
-					stream.put_next_entry("#{nombre}/")
+			@convocatorias_apl.each do |convocatoria|
+				archivos = []
+				archivos.concat(Array(convocatoria.archivo_adjunto)) if convocatoria.archivo_adjunto.present?
 
-					archivos.each do |archivo|
-            unless archivo.url.nil?
-              url = archivo.url
-              nombre = File.basename(URI.parse(url).path)
+				if convocatoria.minuta.present?
+				archivos << convocatoria.minuta.lista_asistencia if convocatoria.minuta.lista_asistencia.present?
+				archivos << convocatoria.minuta.acta if convocatoria.minuta.acta.present?
+				end
 
-              URI.open(url) do |file_data|
-                stream.put_next_entry(nombre)
-                stream.write file_data.read
-              end
-            end
+				# Nombre de la carpeta para organizar la convocatoria dentro del ZIP
+				carpeta = convocatoria.nombre.to_s.parameterize.underscore
+
+				archivos.each do |archivo|
+				next if archivo.blank? || archivo.url.blank?
+
+				# Ruta física absoluta en el servidor
+				path_absoluto = archivo.path.presence || Rails.root.join('public', archivo.url.sub(%r{^\/}, '')).to_s
+
+				if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+					nombre_archivo = archivo.file&.filename || File.basename(path_absoluto)
+					# Ruta relativa limpia dentro del archivo .zip
+					entry_path = "#{carpeta}/#{nombre_archivo}"
+
+					File.open(path_absoluto, 'rb') do |file_data|
+					stream.put_next_entry(entry_path)
+					stream.write file_data.read
 					end
 				end
+				end
 			end
+			end
+
 			archivo_zip.rewind
-			send_data(archivo_zip.sysread, type: 'application/zip',filename: "archivos_adjuntos_compilados.zip")
+			send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'archivos_adjuntos_compilados.zip'
+		else
+			redirect_back fallback_location: root_path, alert: 'No se encontraron convocatorias o archivos para descargar.'
 		end
-	end
+		end	
 
 
 	#DZC REVISAR UTILIDAD
