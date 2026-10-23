@@ -210,40 +210,46 @@ class ConvocatoriasController < ApplicationController
 			archivos.each do |archivo|
 			next if archivo.blank?
 
-			# 1. Determinar la ruta física absoluta según el tipo de objeto
-			path_absoluto = if archivo.is_a?(String)
-								# Limpia prefijo duplicado si la cadena ya trae /public
-								ruta_relativa = archivo.sub(%r{^/?(accion/)?public/}, '')
-								Rails.root.join('public', ruta_relativa).to_s
-							elsif archivo.respond_to?(:path) && archivo.path.present?
-								archivo.path.to_s
+			# 1. Determinar el nombre del archivo
+			nombre_archivo = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+								archivo.file.filename
 							elsif archivo.respond_to?(:url) && archivo.url.present?
-								ruta_relativa = archivo.url.to_s.sub(%r{^/?(accion/)?public/}, '')
-								Rails.root.join('public', ruta_relativa).to_s
+								File.basename(URI.parse(archivo.url).path)
+							elsif archivo.is_a?(String)
+								File.basename(archivo)
 							end
 
-			next if path_absoluto.blank?
+			next if nombre_archivo.blank?
 
-			# 2. Verificar existencia en el disco y que no sea directorio
-			if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-				nombre_archivo = if archivo.respond_to?(:file) && archivo.file&.filename.present?
-								archivo.file.filename
-								else
-								File.basename(path_absoluto)
-								end
+			# 2. Obtener el contenido del archivo (Azure o Local)
+			contenido = nil
 
-				# 3. Leer en modo binario 'rb' e inyectar al zip
-				File.open(path_absoluto, 'rb') do |file_data|
-				stream.put_next_entry(nombre_archivo)
-				stream.write file_data.read
+			if archivo.respond_to?(:read) # CarrierWave Uploader (Azure o Local)
+				begin
+				contenido = archivo.read
+				rescue StandardError => e
+				Rails.logger.error "Error al leer archivo remoto/local: #{e.message}"
 				end
+			elsif archivo.is_a?(String) # Ruta local o URL directa
+				path_local = archivo.sub(%r{^/?(accion/)?public/}, '')
+				path_absoluto = Rails.root.join('public', path_local).to_s
+
+				if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+				contenido = File.binread(path_absoluto)
+				end
+			end
+
+			# 3. Escribir en el ZIP si se obtuvo contenido
+			if contenido.present?
+				stream.put_next_entry(nombre_archivo)
+				stream.write contenido
 			end
 			end
 		end
 
 		archivo_zip.rewind
 		send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'archivos_adjuntos.zip'
-	end
+		end
 
 	# Descarga compilado de todos los adjuntos tarea APL-016
 	def descargar_compilado_adjuntos
@@ -269,20 +275,42 @@ class ConvocatoriasController < ApplicationController
 				carpeta = convocatoria.nombre.to_s.parameterize.underscore
 
 				archivos.each do |archivo|
-				next if archivo.blank? || archivo.url.blank?
+				next if archivo.blank?
 
-				# Ruta física absoluta en el servidor
-				path_absoluto = archivo.path.presence || Rails.root.join('public', archivo.url.sub(%r{^\/}, '')).to_s
+				# 1. Obtener el nombre del archivo
+				nombre_archivo = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+									archivo.file.filename
+								elsif archivo.respond_to?(:url) && archivo.url.present?
+									File.basename(URI.parse(archivo.url).path)
+								elsif archivo.is_a?(String)
+									File.basename(archivo)
+								end
 
-				if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-					nombre_archivo = archivo.file&.filename || File.basename(path_absoluto)
-					# Ruta relativa limpia dentro del archivo .zip
-					entry_path = "#{carpeta}/#{nombre_archivo}"
+				next if nombre_archivo.blank?
 
-					File.open(path_absoluto, 'rb') do |file_data|
-					stream.put_next_entry(entry_path)
-					stream.write file_data.read
+				# 2. Obtener los binarios (Azure Blob o Local)
+				contenido = nil
+
+				if archivo.respond_to?(:read) # Uploader CarrierWave (Azure / Local)
+					begin
+					contenido = archivo.read
+					rescue StandardError => e
+					Rails.logger.error "Error leyendo adjunto para ZIP (ID Convocatoria: #{convocatoria.id}): #{e.message}"
 					end
+				elsif archivo.is_a?(String) # Caso de ruta física manual
+					path_local = archivo.sub(%r{^/?(accion/)?public/}, '')
+					path_absoluto = Rails.root.join('public', path_local).to_s
+
+					if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+					contenido = File.binread(path_absoluto)
+					end
+				end
+
+				# 3. Escribir dentro de la subcarpeta en el ZIP
+				if contenido.present?
+					entry_path = "#{carpeta}/#{nombre_archivo}"
+					stream.put_next_entry(entry_path)
+					stream.write contenido
 				end
 				end
 			end
@@ -293,7 +321,7 @@ class ConvocatoriasController < ApplicationController
 		else
 			redirect_back fallback_location: root_path, alert: 'No se encontraron convocatorias o archivos para descargar.'
 		end
-		end	
+	end
 
 
 	#DZC REVISAR UTILIDAD
