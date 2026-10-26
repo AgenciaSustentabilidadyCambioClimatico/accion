@@ -245,20 +245,36 @@ class AdhesionesController < ApplicationController
           next if adhesion.archivos_adhesion_y_documentacion.blank?
 
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            next if archivo.blank? || archivo.url.blank?
+            next if archivo.blank?
 
-            # Ruta física absoluta en el disco
-            path_absoluto = archivo.path.presence || Rails.root.join('public', archivo.url.sub(%r{^\/}, '')).to_s
+            nombre_archivo_disco = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                                    archivo.file.filename
+                                  elsif archivo.respond_to?(:url) && archivo.url.present?
+                                    File.basename(URI.parse(archivo.url).path)
+                                  elsif archivo.is_a?(String)
+                                    File.basename(archivo)
+                                  end
 
-            if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-              # Generar un nombre único dentro del zip para evitar sobreescrituras si hay nombres iguales
-              nombre_archivo_disco = archivo.file&.filename || File.basename(path_absoluto)
-              nombre_en_zip = "adhesion_#{adhesion.id}_#{nombre_archivo_disco}"
+            next if nombre_archivo_disco.blank?
 
-              File.open(path_absoluto, 'rb') do |file_data|
-                stream.put_next_entry(nombre_en_zip)
-                stream.write file_data.read
+            contenido = nil
+
+            if archivo.respond_to?(:read) # CarrierWave (Azure / Local)
+              begin
+                contenido = archivo.read
+              rescue StandardError => e
+                Rails.logger.error "Error leyendo adjunto adhesión #{adhesion.id} (Azure/Local): #{e.message}"
               end
+            elsif archivo.is_a?(String)
+              path_relativo = archivo.sub(%r{^/?(accion/)?public/}, '')
+              path_absoluto = Rails.root.join('public', path_relativo).to_s
+              contenido = File.binread(path_absoluto) if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+            end
+
+            if contenido.present?
+              nombre_en_zip = "adhesion_#{adhesion.id}_#{nombre_archivo_disco}"
+              stream.put_next_entry(nombre_en_zip)
+              stream.write contenido
             end
           end
         end
@@ -268,20 +284,36 @@ class AdhesionesController < ApplicationController
           next if adhesion.archivos_adhesion_y_documentacion.blank?
 
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            next if archivo.blank? || archivo.url.blank?
+            next if archivo.blank?
 
-            nombre_archivo_disco = archivo.file&.filename || File.basename(archivo.path.to_s)
+            nombre_archivo_disco = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                                    archivo.file.filename
+                                  elsif archivo.respond_to?(:url) && archivo.url.present?
+                                    File.basename(URI.parse(archivo.url).path)
+                                  elsif archivo.is_a?(String)
+                                    File.basename(archivo)
+                                  end
 
-            if params[:nombre_archivo] == nombre_archivo_disco && archivo.model.id == params[:aid].to_i
-              path_absoluto = archivo.path.presence || Rails.root.join('public', archivo.url.sub(%r{^\/}, '')).to_s
+            archivo_model_id = archivo.respond_to?(:model) ? archivo.model&.id : adhesion.id
 
-              if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-                nombre_en_zip = File.basename(path_absoluto)
+            if params[:nombre_archivo] == nombre_archivo_disco && archivo_model_id == params[:aid].to_i
+              contenido = nil
 
-                File.open(path_absoluto, 'rb') do |file_data|
-                  stream.put_next_entry(nombre_en_zip)
-                  stream.write file_data.read
+              if archivo.respond_to?(:read) # CarrierWave (Azure / Local)
+                begin
+                  contenido = archivo.read
+                rescue StandardError => e
+                  Rails.logger.error "Error leyendo adjunto específico #{nombre_archivo_disco}: #{e.message}"
                 end
+              elsif archivo.is_a?(String)
+                path_relativo = archivo.sub(%r{^/?(accion/)?public/}, '')
+                path_absoluto = Rails.root.join('public', path_relativo).to_s
+                contenido = File.binread(path_absoluto) if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+              end
+
+              if contenido.present?
+                stream.put_next_entry(nombre_archivo_disco)
+                stream.write contenido
               end
             end
           end

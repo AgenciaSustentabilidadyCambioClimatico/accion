@@ -615,16 +615,41 @@ class RegistroProveedoresController < ApplicationController
   private
 
   def agregar_archivo_al_zip(stream, archivo_uploader)
-    return if archivo_uploader.blank? || archivo_uploader.url.blank?
+    return if archivo_uploader.blank?
 
-    path_absoluto = archivo_uploader.path.presence || Rails.root.join('public', archivo_uploader.url.sub(%r{^\/}, '')).to_s
+    # 1. Determinar el nombre del archivo dentro del ZIP
+    nombre = if archivo_uploader.respond_to?(:file) && archivo_uploader.file&.filename.present?
+              archivo_uploader.file.filename
+            elsif archivo_uploader.respond_to?(:url) && archivo_uploader.url.present?
+              File.basename(URI.parse(archivo_uploader.url).path)
+            elsif archivo_uploader.is_a?(String)
+              File.basename(archivo_uploader)
+            end
 
-    return unless File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+    return if nombre.blank?
 
-    nombre = archivo_uploader.file&.filename || File.basename(path_absoluto)
-    File.open(path_absoluto, 'rb') do |file_data|
+    # 2. Obtener los binarios (Azure Blob Storage o Local)
+    contenido = nil
+
+    if archivo_uploader.respond_to?(:read) # Uploader CarrierWave (Azure / Fog / Local)
+      begin
+        contenido = archivo_uploader.read
+      rescue StandardError => e
+        Rails.logger.error "Error al agregar archivo al ZIP (Azure/Local): #{e.message}"
+      end
+    elsif archivo_uploader.is_a?(String) # Ruta local manual en servidor
+      path_relativo = archivo_uploader.sub(%r{^/?(accion/)?public/}, '')
+      path_absoluto = Rails.root.join('public', path_relativo).to_s
+
+      if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+        contenido = File.binread(path_absoluto)
+      end
+    end
+
+    # 3. Escribir la entrada en el stream del ZIP si hay contenido válido
+    if contenido.present?
       stream.put_next_entry(nombre)
-      stream.write file_data.read
+      stream.write contenido
     end
   end
 

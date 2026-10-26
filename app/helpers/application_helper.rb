@@ -722,28 +722,48 @@ module ApplicationHelper
 
     file = Zip::OutputStream.write_buffer do |stream|
       archivos.each do |archivo_tecnica|
+        next if archivo_tecnica.blank?
+
         if archivo_tecnica.is_a?(Hash)
-          # Manejo de entradas tipo Hash (data memoria-pe)
+          # 1. Manejo de entradas tipo Hash (datos generados dinámicamente en memoria)
           nombre = archivo_tecnica[:nombre]
           if nombre.present? && archivo_tecnica[:data].present?
             stream.put_next_entry(nombre)
             stream.write archivo_tecnica[:data]
           end
         else
-          # Manejo de objetos CarrierWave / Uploader
-          next if archivo_tecnica.blank? || archivo_tecnica.url.blank?
+          # 2. Manejo de objetos CarrierWave / Uploader / Cadenas de texto
+          nombre = if archivo_tecnica.respond_to?(:file) && archivo_tecnica.file&.filename.present?
+                    archivo_tecnica.file.filename
+                  elsif archivo_tecnica.respond_to?(:url) && archivo_tecnica.url.present?
+                    File.basename(URI.parse(archivo_tecnica.url).path)
+                  elsif archivo_tecnica.is_a?(String)
+                    File.basename(archivo_tecnica)
+                  end
 
-          # Oguenohẽ ruta física absoluta disco-gui
-          path_absoluto = archivo_tecnica.path.presence || Rails.root.join('public', archivo_tecnica.url.sub(%r{^\/}, '')).to_s
+          next if nombre.blank?
 
-          if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-            nombre = archivo_tecnica.file&.filename || File.basename(path_absoluto)
+          contenido = nil
 
-            # Omoñe'ẽ modo binario 'rb'-pe ani haguã oñembyai
-            File.open(path_absoluto, 'rb') do |file_data|
-              stream.put_next_entry(nombre)
-              stream.write file_data.read
+          if archivo_tecnica.respond_to?(:read) # CarrierWave (Azure Blob Storage o Local)
+            begin
+              contenido = archivo_tecnica.read
+            rescue StandardError => e
+              Rails.logger.error "Error leyendo adjunto para ZIP en Helper (Azure/Local): #{e.message}"
             end
+          elsif archivo_tecnica.is_a?(String) # Ruta local manual en servidor
+            ruta_relativa = archivo_tecnica.sub(%r{^/?(accion/)?public/}, '')
+            path_absoluto = Rails.root.join('public', ruta_relativa).to_s
+
+            if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+              contenido = File.binread(path_absoluto)
+            end
+          end
+
+          # 3. Inyectar contenido al ZIP si se recuperó correctamente
+          if contenido.present?
+            stream.put_next_entry(nombre)
+            stream.write contenido
           end
         end
       end
