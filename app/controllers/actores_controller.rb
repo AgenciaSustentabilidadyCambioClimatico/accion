@@ -256,15 +256,33 @@ class ActoresController < ApplicationController
   end
 
   def descargar_revisor
-    ruta= "#{Rails.root}/public"
-    ruta += @manifestacion_de_interes.mapa_de_actores_archivo.to_s
     adjunto = @manifestacion_de_interes&.mapa_de_actores_archivo
-    nombre_descarga = adjunto&.file&.filename || File.basename(adjunto&.path.to_s)
 
-    send_data File.open(ruta, 'rb').read, 
-              type: 'application/xlsx', 
-              charset: 'iso-8859-1', 
-              filename: nombre_descarga
+    # 1. Validar que exista el adjunto antes de intentar la lectura
+    if adjunto.blank? || adjunto.url.blank?
+      return redirect_back fallback_location: root_path, alert: 'No hay ningún archivo mapa de actores adjunto.'
+    end
+
+    # 2. Obtener el nombre del archivo
+    nombre_descarga = adjunto.file&.filename || File.basename(adjunto.url.to_s)
+
+    # 3. Obtener los binarios (CarrierWave lee nativamente desde Azure o Local)
+    contenido = if adjunto.respond_to?(:read)
+                  adjunto.read
+                else
+                  path_relativo = adjunto.to_s.sub(%r{^/?(accion/)?public/}, '')
+                  path_absoluto = Rails.root.join('public', path_relativo).to_s
+                  File.binread(path_absoluto) if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+                end
+
+    if contenido.present?
+      send_data contenido,
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                charset: 'iso-8859-1',
+                filename: nombre_descarga
+    else
+      redirect_back fallback_location: root_path, alert: 'El archivo solicitado no se encuentra disponible.'
+    end
   end
 
   def actualizacion_actor
