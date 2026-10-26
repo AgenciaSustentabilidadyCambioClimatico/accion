@@ -369,21 +369,45 @@ class AuditoriasController < ApplicationController
       params.require(:auditoria).permit(auditoria_elementos_attributes: [:id, :validacion_observaciones, :validacion_aceptada])
     end
 
+    
     def agregar_adjunto_al_zip(stream, uploader, prefijo: '')
-      return if uploader.blank? || uploader.url.blank?
+      return if uploader.blank?
 
-      # Obtener la ruta absoluta física en el servidor
-      path_absoluto = uploader.path.presence || Rails.root.join('public', uploader.url.sub(%r{^\/}, '')).to_s
+      # 1. Obtener el nombre del archivo
+      nombre_base = if uploader.respond_to?(:file) && uploader.file&.filename.present?
+                      uploader.file.filename
+                    elsif uploader.respond_to?(:url) && uploader.url.present?
+                      File.basename(URI.parse(uploader.url).path)
+                    elsif uploader.is_a?(String)
+                      File.basename(uploader)
+                    end
 
-      if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-        nombre_base = uploader.file&.filename || File.basename(path_absoluto)
-        nombre_en_zip = "#{prefijo}#{nombre_base}"
+      return if nombre_base.blank?
 
-        # Leer en modo binario 'rb' de forma segura
-        File.open(path_absoluto, 'rb') do |file_data|
-          stream.put_next_entry(nombre_en_zip)
-          stream.write file_data.read
+      nombre_en_zip = "#{prefijo}#{nombre_base}"
+
+      # 2. Obtener el contenido binario (Azure Blob Storage o Local)
+      contenido = nil
+
+      if uploader.respond_to?(:read) # CarrierWave (Azure Blob / Local)
+        begin
+          contenido = uploader.read
+        rescue StandardError => e
+          Rails.logger.error "Error leyendo adjunto para ZIP (Azure/Local): #{e.message}"
         end
+      elsif uploader.is_a?(String) # Manejo de rutas locales directas
+        ruta_relativa = uploader.sub(%r{^/?(accion/)?public/}, '')
+        path_absoluto = Rails.root.join('public', ruta_relativa).to_s
+
+        if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+          contenido = File.binread(path_absoluto)
+        end
+      end
+
+      # 3. Escribir la entrada en el ZIP si existe contenido
+      if contenido.present?
+        stream.put_next_entry(nombre_en_zip)
+        stream.write contenido
       end
     end
 end

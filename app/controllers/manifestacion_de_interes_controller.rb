@@ -2305,19 +2305,42 @@ class ManifestacionDeInteresController < ApplicationController
 
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       @manifestacion_de_interes.documento_diagnosticos.each do |doc|
-        next if doc.archivo.blank? || doc.archivo.url.blank?
+        archivo = doc.archivo
+        next if archivo.blank?
 
-        # Obtener la ruta física absoluta en el servidor de forma segura
-        path_absoluto = doc.archivo.path.presence || Rails.root.join('public', doc.archivo.url.sub(%r{^\/}, '')).to_s
+        # 1. Determinar el nombre del archivo dentro del ZIP
+        nombre = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                  archivo.file.filename
+                elsif archivo.respond_to?(:url) && archivo.url.present?
+                  File.basename(URI.parse(archivo.url).path)
+                elsif archivo.is_a?(String)
+                  File.basename(archivo)
+                end
 
-        if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-          nombre = doc.archivo.file&.filename || File.basename(path_absoluto)
+        next if nombre.blank?
 
-          # Lectura segura en modo binario 'rb'
-          File.open(path_absoluto, 'rb') do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
+        # 2. Obtener el contenido binario (Azure Blob Storage o Local)
+        contenido = nil
+
+        if archivo.respond_to?(:read) # Uploader CarrierWave (Azure / Local)
+          begin
+            contenido = archivo.read
+          rescue StandardError => e
+            Rails.logger.error "Error al leer documento de diagnóstico (ID: #{doc.id}): #{e.message}"
           end
+        elsif archivo.is_a?(String) # Ruta local manual en servidor
+          ruta_relativa = archivo.sub(%r{^/?(accion/)?public/}, '')
+          path_absoluto = Rails.root.join('public', ruta_relativa).to_s
+
+          if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+            contenido = File.binread(path_absoluto)
+          end
+        end
+
+        # 3. Inyectar entrada al ZIP si hay contenido disponible
+        if contenido.present?
+          stream.put_next_entry(nombre)
+          stream.write contenido
         end
       end
     end

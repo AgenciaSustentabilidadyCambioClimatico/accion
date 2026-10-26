@@ -273,7 +273,7 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   #método para generar archivo zip desde un atributo con multiples archivos
-  def genera_zip(atributo)
+  def self.genera_zip(atributo)
     archivos = Array(atributo)
     require 'zip'
 
@@ -281,37 +281,50 @@ class ApplicationRecord < ActiveRecord::Base
       archivos.each do |archivo|
         next if archivo.blank?
 
-        # 1. Obtener la ruta absoluta del archivo en el servidor
-        path_absoluto = if archivo.is_a?(String)
-                          ruta_relativa = archivo.sub(%r{^/?(accion/)?public/}, '')
-                          Rails.root.join('public', ruta_relativa).to_s
-                        elsif archivo.respond_to?(:path) && archivo.path.present?
-                          archivo.path.to_s
-                        elsif archivo.respond_to?(:current_path) && archivo.current_path.present?
-                          archivo.current_path.to_s
-                        end
+        # 1. Determinar el nombre del archivo
+        nombre = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                  archivo.file.filename
+                elsif archivo.respond_to?(:url) && archivo.url.present?
+                  File.basename(URI.parse(archivo.url).path)
+                elsif archivo.is_a?(String)
+                  File.basename(archivo)
+                end
 
-        next if path_absoluto.blank?
+        next if nombre.blank?
 
-        # 2. Verificar existencia con .exist? (sin 's') y que no sea un directorio
-        if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
-          nombre = if archivo.respond_to?(:file) && archivo.file&.filename.present?
-                    archivo.file.filename
-                  else
-                    File.basename(path_absoluto)
-                  end
+        # 2. Obtener el contenido binario (CarrierWave Azure o Local)
+        contenido = nil
 
-          # 3. Leer en modo binario 'rb'
-          File.open(path_absoluto, 'rb') do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
+        if archivo.respond_to?(:read) # Objeto CarrierWave (Azure / Fog / Local)
+          begin
+            contenido = archivo.read
+          rescue StandardError => e
+            Rails.logger.error "Error leyendo archivo para ZIP (Azure/Local): #{e.message}"
           end
+        elsif archivo.is_a?(String) # Ruta local manual en disco
+          ruta_relativa = archivo.sub(%r{^/?(accion/)?public/}, '')
+          path_absoluto = Rails.root.join('public', ruta_relativa).to_s
+
+          if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+            contenido = File.binread(path_absoluto)
+          end
+        end
+
+        # 3. Escribir en el stream del ZIP si hay contenido válido
+        if contenido.present?
+          stream.put_next_entry(nombre)
+          stream.write contenido
         end
       end
     end
 
     archivo_zip.rewind
     archivo_zip.sysread
+  end
+
+  # Alias de instancia para permitir inst.genera_zip(atributo)
+  def genera_zip(atributo)
+    self.class.genera_zip(atributo)
   end
 
   protected
