@@ -1085,14 +1085,23 @@ class ManifestacionDeInteres < ApplicationRecord
     require 'stringio'
 
     pdf = Prawn::Document.new
-    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
+
+    # 1. Registrar la familia de fuentes Open_Sans en Prawn
+    pdf.font_families.update("Open_Sans" => {
+      normal: Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf"),
+      bold:   Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+    })
+
+    # 2. Establecer Open_Sans como fuente por defecto del documento
+    pdf.font "Open_Sans"
     
     ## HEADER
     pdf.repeat :all do
-      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width  => pdf.bounds.width do
-        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
-        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width  => pdf.bounds.width do
-          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width => pdf.bounds.width do
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png").to_s, width: 119
+        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width => pdf.bounds.width do
+          # Usar Helvetica-Bold estándar para el header evita que Prawn rompa el subset en Acrobat
+          pdf.font "Helvetica", style: :bold do
             pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 10, color: "003DA6", align: :right
           end
         end
@@ -1111,7 +1120,7 @@ class ManifestacionDeInteres < ApplicationRecord
     # OPTIMIZACIÓN BD: Precargar el establecimiento antes de empezar a dibujar
     establecimiento_contribuyente = EstablecimientoContribuyente.unscoped.find_by(id: self.sucursal_ligada)
 
-    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width  => pdf.bounds.width do
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width => pdf.bounds.width do
       
       # PESTAÑA 1
       self.pdf_titulo_formato(pdf, I18n.t(:objetivo_acuerdo), "Motivación y fundamentos del acuerdo")
@@ -1129,7 +1138,7 @@ class ManifestacionDeInteres < ApplicationRecord
         pdf,
         :estandar_de_certificacion_id,
         (self.estandar_homologacion.nil? ? '' : self.estandar_homologacion.nombre),
-        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,estandar_id: self.estandar_de_certificacion_id),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self, estandar_id: self.estandar_de_certificacion_id),
         validaciones
       )
       self.pdf_separador(pdf, 11)
@@ -1139,7 +1148,7 @@ class ManifestacionDeInteres < ApplicationRecord
         pdf,
         :diagnostico_id,
         (self.antiguo.nil? ? '' : self.antiguo.nombre_acuerdo),
-        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,diagnostico_id: self.diagnostico_id),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self, diagnostico_id: self.diagnostico_id),
         validaciones
       )
       self.pdf_contenido_formato(pdf, :informe_de_acuerdo_anterior, validaciones)
@@ -1240,7 +1249,6 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato(pdf, :otros_estudios, validaciones)
     end
 
-    # Retornamos el objeto PDF directo a la memoria para que el controlador lo envíe al navegador.
     pdf
   end
 
