@@ -10,7 +10,7 @@ Bundler.require(*Rails.groups)
 module Ascc
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
+    config.load_defaults 7.2
     config.time_zone = 'Santiago'
     config.i18n.default_locale = :es
     config.assets.paths << Rails.root.join('app', 'assets', 'fonts')

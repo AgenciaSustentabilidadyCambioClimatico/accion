@@ -4,7 +4,7 @@ git_source(:github) do |repo_name|
   repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
   "https://github.com/#{repo_name}.git"
 end
-ruby '3.1.4'
+ruby '3.2.3'
 
 # Required for Ruby 3.1+
 gem 'matrix'
@@ -12,13 +12,13 @@ gem 'matrix'
 gem 'caracal-rails'
 gem "animate-rails"
 gem "hashid-rails", "~> 1.0"
-gem 'devise', '~> 4.7.3'
-gem 'devise_invitable', '~> 2.0.6'
+gem 'devise', '>= 4.9.4'
+gem 'devise_invitable', '~> 2.0'
 gem 'activerecord-session_store', '~> 2.0'
 gem 'autonumeric-rails'
-gem 'rails', '~> 6.1.7', '>= 6.1.7.9'
+gem 'rails', '~> 7.2.3.2'
 gem 'caxlsx_rails'
-gem 'bootstrap', '~> 4.0.0'
+gem 'bootstrap', '~> 4.3', '>= 4.3.1'
 gem 'chartkick', '~>5.0.4'
 gem 'crontab_syntax_checker'
 gem 'daemons'
@@ -33,29 +33,30 @@ gem 'googleauth', '~> 1.5.2'
 gem 'haml', '5.2.2'
 gem 'haml-rails', '~> 2.1.0'
 gem "sidekiq", "~> 7.3.8"
-gem 'sidekiq-cron'
+gem 'sidekiq-cron', '>= 2.4.0'
 gem 'htmltoword'
-gem 'httparty'
+gem 'httparty', '>= 0.24.0'
 gem 'jquery-datatables'
 gem 'jquery-rails'
 gem 'nested_form'
 gem 'pg'
 gem 'prawn', '~>2.4.0'
 gem 'prawn-table', '~> 0.2.2'
-gem 'puma', '< 6.0', '>= 5.6.9'
+gem 'puma', '>= 7.2.1'
 gem 'pundit'
-gem 'puredocx', '~> 0.0.2'
+gem 'puredocx', path: 'vendor/gems/puredocx-0.0.2'
+gem 'fastimage'
 gem 'quilljs-rails'
 gem 'roo'
 gem 'roo-xls'
-gem 'ruby-units', '~> 2.3'
+gem 'ruby-units', '>= 3.0.0'
 gem "slack-notifier", require: false
 # gem 'rubyzip', '~> 1.2.0'
-gem 'rubyzip'
+gem 'rubyzip', '>= 3.4.0'
 gem 'rut_validation'
 gem 'sass-rails', '~> 5.0'
 gem 'simple_form'
-gem 'uglifier', '>= 1.3.0'
+gem 'terser'
 gem 'whenever', require: false # DZC 2019-08-23 18:41:54 se agrega para manejar cron
 gem 'zip-zip'
 gem 'select2-rails'
@@ -71,16 +72,19 @@ gem 'will_paginate'
 gem 'will_paginate-bootstrap4'
 gem 'rollbar'
 gem 'ruby-graphviz'
-gem "carrierwave", "~> 2.0"
+gem 'carrierwave', '>= 3.1.3'
 gem "fog-core", "~> 2.3"
 gem "gitlab-fog-azure-rm", "~> 2.0"
+gem 'rexml', '>= 3.4.2'
+gem 'sassc-rails', '~> 2.1'
 # Transitorias del vendor azure-storage-ruby dentro de gitlab-fog-azure-rm 2.0.x (no listadas en el gemspec)
-gem "faraday", "~> 2.0"
+gem 'faraday', '>= 2.14.3'
 gem "faraday-follow_redirects", "~> 0.3"
 gem "faraday-net_http_persistent", "~> 2.0"
 gem "net-http-persistent", "~> 4.0"
 gem "rack-attack"
 gem "ffi", "< 1.17.0"
+gem 'uri', '>= 0.13.3'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'

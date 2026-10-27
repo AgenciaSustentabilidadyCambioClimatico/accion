@@ -4,7 +4,11 @@ class Encuesta < ApplicationRecord
   has_many :encuesta_user_respuestas, foreign_key: :encuesta_id, dependent: :destroy
   accepts_nested_attributes_for :encuesta_preguntas, allow_destroy: true #, update_only: true
 
-  enum unidad_tiempo_para_contestar: [:hours,:days,:weeks]
+  # Declaración explícita de atributo para Rails 7.2
+  attribute :unidad_tiempo_para_contestar, :integer # (o :string si se guarda como texto)
+
+  # Definición del enum con sintaxis posicional y prefijo
+  enum :unidad_tiempo_para_contestar, [:hours, :days, :weeks]
 
   validates :titulo, presence: true
   validates :valor_tiempo_para_contestar, presence: true, numericality: { greater_than: 0 }

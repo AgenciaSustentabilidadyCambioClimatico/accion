@@ -23,7 +23,7 @@ class EstablecimientoContribuyente < ApplicationRecord
   validates :telefono, format: { with: /\A\d{8,11}\z/ }, if: -> { !self.skip_telefono_validation && !self.telefono.blank? }
 
 
-  serialize :fields_visibility
+  serialize :fields_visibility, coder: YAML
 
 	#validates_uniqueness_of :casa_matriz, scope: [:contribuyente_id], if: proc{ !self.casa_matriz.blank? && !contribuyente.temporal}
 

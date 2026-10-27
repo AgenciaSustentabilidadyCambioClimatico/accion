@@ -4,10 +4,6 @@ require "sidekiq/web"
 #require "sidekiq-status/web"
 require "sidekiq/cron/web"
 
-# if Rails.env.development?
-# redis_url =  'redis://localhost:6379/0'
-# end
-
 Sidekiq.default_job_options = { "backtrace" => true }
 
 schedule_file = "#{Rails.root}/config/sidekiq_schedule.yml"
@@ -24,10 +20,6 @@ Sidekiq.configure_client do |config|
 end
 
 Sidekiq.configure_server do |config|
-  # The config.redis is calculated by the
-  # concurrency value so you do not need to
-  # specify this. For this demo I do
-  # show it to understand the numbers
   config.error_handlers << Proc.new { |ex, ctx_hash| Rollbar.log(ex, ctx_hash) }
 
   config.death_handlers << ->(job, ex) do
@@ -36,23 +28,32 @@ Sidekiq.configure_server do |config|
   end
 
   if Rails.env.production?
-
-    #Sidekiq::Logging.logger =  Rails.logger
     Rails.application.config.after_initialize do
-      Rails.logger.info("DB Connection Pool size for Sidekiq Server before disconnect is: #{ActiveRecord::Base.connection.pool.instance_variable_get("@size")}")
+      pool_size = (ENV["REDIS_SIZE"].presence || 20).to_i + 2
+      reap_freq = (ENV["DATABASE_REAP_FREQ"].presence || 10).to_i
+
       ActiveRecord::Base.connection_pool.disconnect!
 
       ActiveSupport.on_load(:active_record) do
-        #config = Rails.application.config.database_configuration[Rails.env]
-        config = ActiveRecord::Base.connection_config.dup
-        config["reaping_frequency"] = ENV["DATABASE_REAP_FREQ"] || 10 # seconds
-        # config['pool'] = ENV['WORKER_DB_POOL_SIZE'] || Sidekiq.options[:concurrency]
+        # 1. Si existe DATABASE_URL (Dokku / Heroku), respetar la URL inyectada
+        if ENV["DATABASE_URL"].present?
+          uri = URI.parse(ENV["DATABASE_URL"])
+          params = Rack::Utils.parse_nested_query(uri.query || "")
+          params["pool"] = pool_size
+          params["reaping_frequency"] = reap_freq
+          uri.query = Rack::Utils.build_query(params)
 
-        config["pool"] = ENV["REDIS_SIZE"].to_i + 2
+          ActiveRecord::Base.establish_connection(uri.to_s)
+        else
+          # 2. Si no hay DATABASE_URL, tomar la configuración de database.yml de Rails 7
+          db_config = ActiveRecord::Base.configurations.configs_for(env_name: Rails.env).first.configuration_hash.dup
+          db_config[:pool] = pool_size
+          db_config[:reaping_frequency] = reap_freq
 
-        ActiveRecord::Base.establish_connection(config)
+          ActiveRecord::Base.establish_connection(db_config)
+        end
 
-        Rails.logger.info("DB Connection Pool size for Sidekiq Server is now: #{ActiveRecord::Base.connection.pool.instance_variable_get("@size")}")
+        Rails.logger.info("DB Connection Pool size for Sidekiq Server is now: #{ActiveRecord::Base.connection_pool.size}")
       end
     end
   end
@@ -61,8 +62,8 @@ Sidekiq.configure_server do |config|
 
   config.server_middleware do |chain|
     #chain.add Sidekiq::Status::ServerMiddleware, expiration: 60.minutes.to_i # default
-    #chain.add AttentiveSidekiq::Middleware::Server::Attentionist
   end
+
   config.client_middleware do |chain|
     #chain.add Sidekiq::Status::ClientMiddleware
   end

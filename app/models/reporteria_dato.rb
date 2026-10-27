@@ -1,5 +1,5 @@
 class ReporteriaDato < ApplicationRecord
 
-  serialize :datos
+  serialize :datos, coder: YAML
 
 end

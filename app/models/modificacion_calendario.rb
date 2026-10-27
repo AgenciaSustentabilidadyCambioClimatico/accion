@@ -1,7 +1,7 @@
 class ModificacionCalendario < ApplicationRecord
-	serialize :atributos_proyecto
-	serialize :atributos_proyecto_actividades
-	serialize :atributos_rendiciones
+	serialize :atributos_proyecto, coder: YAML
+	serialize :atributos_proyecto_actividades, coder: YAML
+	serialize :atributos_rendiciones, coder: YAML
 
 	def self.agregar_proyecto_vacio(id)
 		proyecto = self.find_or_create_by({proyecto_id: id})
