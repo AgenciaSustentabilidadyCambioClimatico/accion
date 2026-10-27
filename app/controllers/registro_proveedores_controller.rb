@@ -561,7 +561,11 @@ class RegistroProveedoresController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render json: @contribuyentes }
+      format.json do
+        render json: @contribuyentes.as_json(
+          only: [:id, :rut, :dv, :razon_social]
+        )
+      end
     end
   end
 
@@ -569,7 +573,15 @@ class RegistroProveedoresController < ApplicationController
     @user = User.find_by(rut: params[:rut])
     respond_to do |format|
       format.html
-      format.json { render json: @user }
+      format.json do
+        if @user
+          render json: @user.as_json(
+            only: [:id, :rut, :nombre_completo, :telefono, :email]
+          )
+        else
+          render json: nil, status: :not_found
+        end
+      end
     end
   end
 
