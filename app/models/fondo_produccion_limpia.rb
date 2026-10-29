@@ -2088,7 +2088,7 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.start_new_page
       end
 
-      self.pdf_sub_titulo_formato(pdf, "RESUMEN FINANCIERO DEL PROYECTO") rescue nil
+      self.pdf_sub_titulo_formato(pdf, "RESUMEN FINANCIERO DEL PROYECTO HASTA RENDICIÓN #{mes_actual_num}") rescue nil
       self.pdf_separador(pdf, 5) rescue nil
 
       items_costo = [
