@@ -240,6 +240,7 @@ Rails.application.routes.draw do
 
   #Modal User
   get 'edit_modal', to: "fondo_produccion_limpias#edit_modal", as: :edit_modal_fondo_produccion_limpia
+  get 'edit_modal_reitemizacion', to: "fondo_produccion_limpias#edit_modal_reitemizacion", as: :edit_modal_reitemizacion_fondo_produccion_limpia
   patch  'update_modal', to: "fondo_produccion_limpias#update_modal", as: :update_modal_fondo_produccion_limpia
   post  'insert', to: "fondo_produccion_limpias#insert", as: :insert_fondo_produccion_limpia
   post  'insert_modal', to: "fondo_produccion_limpias#insert_modal", as: :insert_modal_fondo_produccion_limpia
@@ -247,6 +248,7 @@ Rails.application.routes.draw do
   delete '/eliminar_equipo/:id', to: 'fondo_produccion_limpias#eliminar_equipo', as: 'eliminar_equipo'
   get 'editar_equipo/:id', to: "fondo_produccion_limpias#editar_equipo", as: :editar_equipo_fondo_produccion_limpia
   patch 'update_equipo', to: "fondo_produccion_limpias#update_equipo", as: :update_equipo_fondo_produccion_limpia
+  patch 'update_equipo_reitemizar', to: "fondo_produccion_limpias#update_equipo_reitemizar", as: :update_equipo_reitemizar_fondo_produccion_limpia
 
   #Modal Contribuyentes
   get 'edit_modal_contribuyente/:id', to: "fondo_produccion_limpias#edit_modal_contribuyente", as: :edit_modal_contribuyente_fondo_produccion_limpia

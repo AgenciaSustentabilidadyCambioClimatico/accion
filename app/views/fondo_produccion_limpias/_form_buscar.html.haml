@@ -1,5 +1,7 @@
 - modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
 - tipo_equipo = tipo_equipo.nil? ? @tipo_equipo : tipo_equipo
+- equipo_id = equipo_id.nil? ? @equipo_id : equipo_id
+- codigo_tarea = codigo_tarea.nil? ? @codigo_tarea : codigo_tarea
 :javascript
   function buscarUsuario(id) {
     alert('entro buscador');
@@ -30,6 +32,9 @@
         =f.hidden_field :flujo_id, value: (@flujo_id.present? ? @flujo_id : nil)
         -#=f.hidden_field :modal_id, value: modal_id
         =f.hidden_field :tipo_equipo, id: "tipo_equipo", value: @tipo_equipo, data: { tipo_equipo: @tipo_equipo }
+        =f.hidden_field :equipo_id, id: "equipo_id", value: @equipo_id, data: { equipo_id: @equipo_id }
+        =f.hidden_field :codigo_tarea, id: "codigo_tarea", value: @codigo_tarea, data: { codigo_tarea: @codigo_tarea }
+
         .row
           .col-lg-4.pr-lg-0.col-12
             = f.input :rut, label: false, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0' }, placeholder: "R.U.T", as: :string, required: true
