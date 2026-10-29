@@ -2122,8 +2122,8 @@ table.table.table-home.dataTable.no-footer{
 table input[type="checkbox"],
 input[type="checkbox"].form-control,
 input[type="checkbox"].form-check-input {
-  width: 0.8rem !important;
-  height: 0.8rem !important;
+  width: 1.1rem !important;
+  height: 1.1rem !important;
   padding: 0 !important;
   box-shadow: none !important;
   margin: 0 auto !important;
@@ -2133,19 +2133,4 @@ input[type="checkbox"].form-check-input {
 /* Para checkboxes fuera de tablas (en formularios normales) */
 form:not(table) input[type="checkbox"].form-control {
   display: inline-block !important;
-}
-
-/* Reset transversal para radio buttons y checkboxes con clase form-control */
-input[type="radio"].form-control,
-input[type="checkbox"].form-control {
-  width: auto !important;
-  height: auto !important;
-  min-height: unset !important;
-  display: inline-block !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  box-shadow: none !important;
-  border: initial !important;
-  vertical-align: middle !important;
-  cursor: pointer;
 }

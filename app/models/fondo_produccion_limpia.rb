@@ -1752,10 +1752,12 @@ class FondoProduccionLimpia < ApplicationRecord
     tps_14_mes   = tps_14_todas.select { |tp| extraer_mes_data.call(tp) == mes_actual_num }
     tp_14_primera = tps_14_mes.first
 
-    tps_16 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_16&.id, flujo_id: flujo_actual_id).order(created_at: :asc).first
-
+    tps_14_update = TareaPendiente.where(tarea_id: tarea_fondo_fpl_14&.id, flujo_id: flujo_actual_id).order(updated_at: :asc)
+    tps_14_mes_update   = tps_14_update.select { |tp| extraer_mes_data.call(tp) == mes_actual_num }
+    tp_14_ultima = tps_14_mes_update.last
+  
     f_recepcion_raw  = tp_14_primera&.created_at
-    f_evaluacion_raw = tps_16&.created_at || tps_16&.updated_at
+    f_evaluacion_raw = tp_14_ultima&.updated_at
 
     fecha_recepcion  = f_recepcion_raw.respond_to?(:strftime)  ? f_recepcion_raw.strftime('%d/%m/%Y')  : "--"
     fecha_evaluacion = f_evaluacion_raw.respond_to?(:strftime) ? f_evaluacion_raw.strftime('%d/%m/%Y') : "--"
@@ -2125,9 +2127,22 @@ class FondoProduccionLimpia < ApplicationRecord
         end
       end
 
-      # Gastos rendidos acumulados de todas las rendiciones del proyecto
-      rend_ids_todas = RendicionFpl.where(flujo_id: flujo_actual_id).pluck(:id)
-      todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_todas).to_a rescue []
+      # =========================================================================
+      # GASTOS RENDIDOS ACUMULADOS HASTA LA RENDICIÓN ACTUAL (<= mes_actual_num)
+      # =========================================================================
+      # Solo considerar rendiciones hasta el mes/número actual
+      rendiciones_acumuladas_scope = RendicionFpl.where(flujo_id: flujo_actual_id)
+
+      if mes_actual_num.to_i > 0
+        # Incluye las aprobadas anteriores (<= mes_actual_num) y la rendición que se está descargando
+        rend_ids_acumuladas = rendiciones_acumuladas_scope.where("mes_a_rendir <= ?", mes_actual_num.to_i)
+                                                          .where("estado = 5 OR id = ?", rendicion&.id.to_i)
+                                                          .pluck(:id)
+      else
+        rend_ids_acumuladas = rendiciones_acumuladas_scope.pluck(:id)
+      end
+
+      todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_acumuladas).to_a rescue []
 
       cat_key_map = { 
         'rrhh_propios' => :rrhh_propios, 
