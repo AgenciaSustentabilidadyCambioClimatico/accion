@@ -235,54 +235,94 @@ class AdhesionesController < ApplicationController
 
   def descargar_compilado
     require 'zip'
-    require 'open-uri'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+
       if params[:aid].blank?
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+        # CASO 1: Descargar TODOS los archivos de todas las adhesiones del flujo
         @adhesiones_todas.each do |adhesion|
           next if adhesion.archivos_adhesion_y_documentacion.blank?
+
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+            next if archivo.blank?
 
-            next if archivo.blank? || archivo.url.blank?
-            url = archivo.url
+            nombre_archivo_disco = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                                    archivo.file.filename
+                                  elsif archivo.respond_to?(:url) && archivo.url.present?
+                                    File.basename(URI.parse(archivo.url).path)
+                                  elsif archivo.is_a?(String)
+                                    File.basename(archivo)
+                                  end
 
-            # 🔥 nombre único (clave)
-            nombre = "adhesion_#{adhesion.id}_#{archivo.identifier}"
+            next if nombre_archivo_disco.blank?
 
-            begin
-              URI.open(url) do |file_data|
-                stream.put_next_entry(nombre)
-                stream.write file_data.read
+            contenido = nil
+
+            if archivo.respond_to?(:read) # CarrierWave (Azure / Local)
+              begin
+                contenido = archivo.read
+              rescue StandardError => e
+                Rails.logger.error "Error leyendo adjunto adhesión #{adhesion.id} (Azure/Local): #{e.message}"
               end
-            rescue => e
-              Rails.logger.error "Error descargando archivo #{url}: #{e.message}"
+            elsif archivo.is_a?(String)
+              path_relativo = archivo.sub(%r{^/?(accion/)?public/}, '')
+              path_absoluto = Rails.root.join('public', path_relativo).to_s
+              contenido = File.binread(path_absoluto) if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+            end
+
+            if contenido.present?
+              nombre_en_zip = "adhesion_#{adhesion.id}_#{nombre_archivo_disco}"
+              stream.put_next_entry(nombre_en_zip)
+              stream.write contenido
             end
           end
         end
       else
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+        # CASO 2: Descargar un archivo específico (filtrado por aid y nombre_archivo)
         @adhesiones_todas.each do |adhesion|
+          next if adhesion.archivos_adhesion_y_documentacion.blank?
+
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            unless archivo.url.nil?
-              if params[:nombre_archivo] == archivo.file.path.split('/').last
-                if archivo.model.id == params[:aid].to_i
-                  url = archivo.url
-                  nombre = File.basename(URI.parse(url).path)
-                  URI.open(url) do |file_data|
-                    stream.put_next_entry(nombre)
-                    stream.write file_data.read
-                  end
+            next if archivo.blank?
+
+            nombre_archivo_disco = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                                    archivo.file.filename
+                                  elsif archivo.respond_to?(:url) && archivo.url.present?
+                                    File.basename(URI.parse(archivo.url).path)
+                                  elsif archivo.is_a?(String)
+                                    File.basename(archivo)
+                                  end
+
+            archivo_model_id = archivo.respond_to?(:model) ? archivo.model&.id : adhesion.id
+
+            if params[:nombre_archivo] == nombre_archivo_disco && archivo_model_id == params[:aid].to_i
+              contenido = nil
+
+              if archivo.respond_to?(:read) # CarrierWave (Azure / Local)
+                begin
+                  contenido = archivo.read
+                rescue StandardError => e
+                  Rails.logger.error "Error leyendo adjunto específico #{nombre_archivo_disco}: #{e.message}"
                 end
+              elsif archivo.is_a?(String)
+                path_relativo = archivo.sub(%r{^/?(accion/)?public/}, '')
+                path_absoluto = Rails.root.join('public', path_relativo).to_s
+                contenido = File.binread(path_absoluto) if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+              end
+
+              if contenido.present?
+                stream.put_next_entry(nombre_archivo_disco)
+                stream.write contenido
               end
             end
           end
         end
       end
     end
+
     archivo_zip.rewind
-    # archivo_zip.read
-    #enviamos el archivo para ser descargado
-    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+    send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'documentacion.zip'
   end
 
   def descargar_compilado_two

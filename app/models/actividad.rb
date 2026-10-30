@@ -24,10 +24,10 @@ class Actividad < ApplicationRecord
 			apl.tipo_permiso,
 			pa.correlativo"
 			)
-			.order("
+			.order(Arel.sql("
 			apl.tipo_actividad ASC,
 			string_to_array(pa.correlativo, '.')::int[] ASC NULLS LAST
-			")
+			"))
 			.select(
 			"actividades.id,
 			actividades.nombre,

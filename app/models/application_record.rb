@@ -272,37 +272,59 @@ class ApplicationRecord < ActiveRecord::Base
     fecha_es_anterior? fecha ? fecha=Time.now.beginning_of_day : fecha.to_time
   end
 
-  # DZC 2018-10-25 19:33:41 método para generar archivo zip desde un atributo con multiples archivos
-  def genera_zip(atributo)
-    archivos = atributo
-    archivos = [archivos] if !archivos.is_a?(Array)
+  #método para generar archivo zip desde un atributo con multiples archivos
+  def self.genera_zip(atributo)
+    archivos = Array(atributo)
     require 'zip'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       archivos.each do |archivo|
-        if archivo.is_a?(String)
-          archivo_path = "#{Rails.root}/public#{archivo}"
-          if File.exists?(archivo_path)
-            split = archivo_path.split('/')
-            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-            # rename the file
-            stream.put_next_entry(nombre)
-            # add file to zip
-            stream.write IO.read(archivo_path)
+        next if archivo.blank?
+
+        # 1. Determinar el nombre del archivo
+        nombre = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+                  archivo.file.filename
+                elsif archivo.respond_to?(:url) && archivo.url.present?
+                  File.basename(URI.parse(archivo.url).path)
+                elsif archivo.is_a?(String)
+                  File.basename(archivo)
+                end
+
+        next if nombre.blank?
+
+        # 2. Obtener el contenido binario (CarrierWave Azure o Local)
+        contenido = nil
+
+        if archivo.respond_to?(:read) # Objeto CarrierWave (Azure / Fog / Local)
+          begin
+            contenido = archivo.read
+          rescue StandardError => e
+            Rails.logger.error "Error leyendo archivo para ZIP (Azure/Local): #{e.message}"
           end
-        else
-          if File.exists?(archivo.path)
-            split = archivo.current_path.split('/') rescue archivo.path.split('/')# genera un array de palabras dentro del path
-            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-            # rename the file
-            stream.put_next_entry(nombre)
-            # add file to zip
-            stream.write IO.read((archivo.current_path rescue archivo.path))
+        elsif archivo.is_a?(String) # Ruta local manual en disco
+          ruta_relativa = archivo.sub(%r{^/?(accion/)?public/}, '')
+          path_absoluto = Rails.root.join('public', ruta_relativa).to_s
+
+          if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+            contenido = File.binread(path_absoluto)
           end
+        end
+
+        # 3. Escribir en el stream del ZIP si hay contenido válido
+        if contenido.present?
+          stream.put_next_entry(nombre)
+          stream.write contenido
         end
       end
     end
+
     archivo_zip.rewind
     archivo_zip.sysread
+  end
+
+  # Alias de instancia para permitir inst.genera_zip(atributo)
+  def genera_zip(atributo)
+    self.class.genera_zip(atributo)
   end
 
   protected

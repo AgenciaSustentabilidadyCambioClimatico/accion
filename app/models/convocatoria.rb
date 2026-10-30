@@ -4,7 +4,7 @@ class Convocatoria < ApplicationRecord
 	has_many :convocatoria_tipos
 	has_one :minuta, dependent: :destroy 
 
-	enum tipo_reunion: [:presencial, :virtual]
+	enum :tipo_reunion, [:presencial, :virtual]
 
 	attr_accessor :accion #DZC permite pasar al modelo el nombre de la accion actual (comando REST)
 	validate :direccion_en_mapa

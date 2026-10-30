@@ -88,7 +88,7 @@
 														- if archivo.object.new_record?
 															- if archivo.object.archivo?
 																%i.fa.fa-check-circle
-																-na=archivo.object.archivo.path.split("/").last
+																- na = archivo.object.archivo.present? ? File.basename(archivo.object.archivo.path.to_s) : ''
 																- if na.size > 20
 																	="...#{na[15,na.size]}"
 																- else
@@ -98,7 +98,7 @@
 														- else
 															%i.fa.fa-check-circle
 															= link_to '#', "data-toggle"=>:modal, "data-target"=>"##{detalle_archivo}" do
-																= archivo.object.archivo.path.split("/").last
+																= archivo.object.archivo.present? ? File.basename(archivo.object.archivo.path.to_s) : ''
 															.modal.fade{id: detalle_archivo, tabindex: "-1", role: :dialog, "aria-labelledby"=>:detalleHitoDePrensaArchivoLabel, "aria-hidden"=>true}
 																.modal-dialog.modal-dialog-centered.modal-lg{role: :document}
 																	.modal-content

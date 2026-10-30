@@ -9,8 +9,8 @@ class User < ApplicationRecord
   has_many :registro_apertura_correos, dependent: :destroy # DZC 2019-08-06 15:57:06 se agrega dependencia para destroy
   belongs_to :user, optional: true
   accepts_nested_attributes_for :personas, :allow_destroy => true#, reject_if: :all_blank
-  serialize :fields_visibility
-  serialize :session
+  serialize :fields_visibility, coder: YAML
+  serialize :session, coder: YAML
 
   ROOT  = 1
   ADMIN = 2

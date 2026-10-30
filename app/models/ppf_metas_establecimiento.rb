@@ -7,6 +7,10 @@ class PpfMetasEstablecimiento < ApplicationRecord
 	accepts_nested_attributes_for :ppf_metas_comentarios
 
 	#validates :estado, inclusion: { in: [ true, false ] }
-	enum estado: [:pendiente, :en_revision, :observada, :aceptada]
+	# Declaración explícita de atributo para Rails 7.2
+	attribute :estado, :integer # (o :string si se almacena como texto en DB)
+
+	# Definición del enum con sintaxis de Rails 7+ y prefijo
+	enum :estado, [:pendiente, :en_revision, :observada, :aceptada]
 
 end

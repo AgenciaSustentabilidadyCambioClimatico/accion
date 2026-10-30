@@ -2,16 +2,15 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# This file is the source Rails uses to define your schema when running `rails
-# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
 # be faster and is potentially less error prone than running all of your
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_09_30_203757) do
-
+ActiveRecord::Schema[7.0].define(version: 2026_10_16_130906) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "unaccent"
@@ -19,16 +18,16 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "accion_clasificaciones", force: :cascade do |t|
     t.integer "accion_id", null: false
     t.integer "clasificacion_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "accion_relacionadas", force: :cascade do |t|
     t.integer "accion_id", null: false
     t.integer "accion_relacionada_id", null: false
     t.text "descripcion", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "acciones", force: :cascade do |t|
@@ -37,15 +36,15 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "descripcion", null: false
     t.boolean "debe_asociar_materia_sustancia", default: true, null: false
     t.text "medio_de_verificacion_generico", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "actividad_economica_contribuyentes", force: :cascade do |t|
     t.integer "actividad_economica_id"
     t.integer "contribuyente_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["actividad_economica_id"], name: "idx_aec_actividad"
     t.index ["contribuyente_id"], name: "idx_aec_contribuyente"
   end
@@ -53,8 +52,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "actividad_economica_flujos", force: :cascade do |t|
     t.bigint "actividad_economica_id"
     t.bigint "flujo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["actividad_economica_id"], name: "index_actividad_economica_flujos_on_actividad_economica_id"
     t.index ["flujo_id"], name: "index_actividad_economica_flujos_on_flujo_id"
   end
@@ -65,8 +64,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "descripcion_ciiuv2"
     t.string "codigo_ciiuv4"
     t.text "descripcion_ciiuv4"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "actividad_items", force: :cascade do |t|
@@ -81,25 +80,25 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "estado_respaldo_id", default: 1
     t.string "observacion_tecnica"
     t.string "observacion_respaldo"
-    t.datetime "fecha_ultima_rendicion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "fecha_ultima_rendicion", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "actividad_por_lineas", force: :cascade do |t|
     t.integer "actividad_id", null: false
     t.integer "tipo_instrumento_id", null: false
     t.integer "tipo_permiso", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "tipo_actividad"
   end
 
   create_table "actividades", force: :cascade do |t|
     t.string "nombre", null: false
     t.text "descripcion", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "adhesion_elemento_retirados", force: :cascade do |t|
@@ -113,8 +112,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "archivo_respaldo"
     t.string "archivo_retiro"
     t.text "fila"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "adhesion_externa_id"
     t.index ["adhesion_id"], name: "index_adhesion_elemento_retirados_on_adhesion_id"
     t.index ["alcance_id"], name: "index_adhesion_elemento_retirados_on_alcance_id"
@@ -134,8 +133,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "archivo_adhesion"
     t.string "archivo_respaldo"
     t.text "fila"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "adhesion_externa_id"
     t.index ["adhesion_externa_id"], name: "index_adhesion_elementos_on_adhesion_externa_id"
     t.index ["adhesion_id"], name: "index_adhesion_elementos_on_adhesion_id"
@@ -150,8 +149,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.json "archivos_adhesion_y_documentacion"
     t.string "archivo_elementos"
     t.text "adhesiones_data"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
     t.bigint "manifestacion_de_interes_id"
     t.bigint "flujo_id"
     t.string "rut_institucion_adherente"
@@ -176,15 +175,15 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "alcances", force: :cascade do |t|
     t.string "nombre", null: false
     t.text "descripcion", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "auditoria_elemento_archivos", force: :cascade do |t|
     t.string "archivo"
     t.bigint "auditoria_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["auditoria_id"], name: "index_auditoria_elemento_archivos_on_auditoria_id"
   end
 
@@ -201,12 +200,12 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "rut_auditor"
     t.text "observacion"
     t.boolean "validacion_aceptada"
-    t.datetime "validacion_fecha"
-    t.datetime "aprobacion_fecha"
+    t.datetime "validacion_fecha", precision: nil
+    t.datetime "aprobacion_fecha", precision: nil
     t.integer "estado", limit: 2, default: 1
     t.text "validacion_observaciones"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "archivo_informe_id"
     t.bigint "archivo_evidencia_id"
     t.index ["adhesion_elemento_id"], name: "index_auditoria_elementos_on_adhesion_elemento_id"
@@ -223,8 +222,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.date "fecha"
     t.string "resultado_ponderado"
     t.string "documento_respaldo"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["manifestacion_de_interes_id"], name: "index_auditoria_historicos_on_manifestacion_de_interes_id"
   end
 
@@ -241,8 +240,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "user_id"
     t.text "validaciones"
     t.string "archivo"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["auditoria_id"], name: "index_auditoria_validaciones_on_auditoria_id"
     t.index ["user_id"], name: "index_auditoria_validaciones_on_user_id"
   end
@@ -255,8 +254,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.boolean "con_validacion"
     t.boolean "final"
     t.bigint "flujo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "auditoria_id"
     t.bigint "convocatoria_id"
     t.date "ceremonia_certificacion_fecha"
@@ -276,8 +275,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "campo_tareas", force: :cascade do |t|
     t.bigint "campo_id"
     t.bigint "tarea_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["campo_id"], name: "index_campo_tareas_on_campo_id"
     t.index ["tarea_id"], name: "index_campo_tareas_on_tarea_id"
   end
@@ -292,8 +291,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "validacion_vacio_mensaje"
     t.bigint "validacion_min"
     t.bigint "validacion_max"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "validacion_min_activa", default: true
     t.boolean "validacion_max_activa", default: true
     t.string "tooltip"
@@ -307,8 +306,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "nombre", limit: 50, null: false
     t.text "descripcion", null: false
     t.boolean "agencia", default: true
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "mostrar_en_excel", default: true
     t.index ["nombre"], name: "index_cargos_on_nombre", unique: true
   end
@@ -318,8 +317,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "descripcion", null: false
     t.integer "ano_asignacion", null: false
     t.bigint "monto_asignacion", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "certificacion_adhesion_historicos", force: :cascade do |t|
@@ -336,8 +335,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.date "vigencia_certificacion_3"
     t.string "rut_auditor_cert_3"
     t.string "nombre_archivo_respaldo_certificacion_3"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["adhesion_elemento_id"], name: "index_certificacion_adhesion_historicos_on_adhesion_elemento_id"
   end
 
@@ -346,8 +345,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "materia_sustancia_id"
     t.bigint "actividad_economica_id"
     t.string "archivo"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["actividad_economica_id"], name: "index_certificado_proveedor_extras_on_actividad_economica_id"
     t.index ["materia_sustancia_id"], name: "index_certificado_proveedor_extras_on_materia_sustancia_id"
     t.index ["registro_proveedor_id"], name: "index_certificado_proveedor_extras_on_registro_proveedor_id"
@@ -358,8 +357,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "materia_sustancia_id"
     t.bigint "actividad_economica_id"
     t.string "archivo_certificado"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["actividad_economica_id"], name: "index_certificado_proveedores_on_actividad_economica_id"
     t.index ["materia_sustancia_id"], name: "index_certificado_proveedores_on_materia_sustancia_id"
     t.index ["registro_proveedor_id"], name: "index_certificado_proveedores_on_registro_proveedor_id"
@@ -372,8 +371,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "type", limit: 30
     t.integer "width"
     t.integer "height"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["type"], name: "index_ckeditor_assets_on_type"
   end
 
@@ -383,8 +382,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "descripcion", null: false
     t.text "referencia", null: false
     t.boolean "es_meta", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "imagen"
     t.string "icono"
     t.string "color"
@@ -393,8 +392,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "comentario_archivos", force: :cascade do |t|
     t.integer "comentario_id"
     t.string "archivo"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "comentario_flujos", force: :cascade do |t|
@@ -402,8 +401,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "flujo_id"
     t.bigint "user_id"
     t.bigint "tarea_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["flujo_id"], name: "index_comentario_flujos_on_flujo_id"
     t.index ["tarea_id"], name: "index_comentario_flujos_on_tarea_id"
     t.index ["user_id"], name: "index_comentario_flujos_on_user_id"
@@ -417,9 +416,9 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "url_referencia"
     t.boolean "leido"
     t.boolean "resuelto"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "fecha_lectura"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "fecha_lectura", precision: nil
     t.string "comentario_leido"
     t.string "comentario_resuelto"
   end
@@ -431,8 +430,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "rut", null: false
     t.string "email"
     t.text "comentario", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["informe_acuerdo_id"], name: "index_comentarios_informe_acuerdos_on_informe_acuerdo_id"
     t.index ["user_id"], name: "index_comentarios_informe_acuerdos_on_user_id"
   end
@@ -444,8 +443,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "rut", null: false
     t.string "email"
     t.text "comentario", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["set_metas_accion_id"], name: "index_comentarios_metas_acciones_on_set_metas_accion_id"
     t.index ["user_id"], name: "index_comentarios_metas_acciones_on_user_id"
   end
@@ -455,8 +454,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "nombre", limit: 40
     t.string "codigo", limit: 5
     t.boolean "vigente", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "comunas_alternativas", force: :cascade do |t|
@@ -473,8 +472,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "comunas_flujos", force: :cascade do |t|
     t.bigint "comuna_id"
     t.bigint "flujo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["comuna_id"], name: "index_comunas_flujos_on_comuna_id"
     t.index ["flujo_id"], name: "index_comunas_flujos_on_flujo_id"
   end
@@ -484,8 +483,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "dv", limit: 1
     t.string "razon_social"
     t.text "fields_visibility"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "temporal", default: false
     t.bigint "flujo_id"
     t.bigint "contribuyente_id"
@@ -498,16 +497,16 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "convocatoria_destinatarios", force: :cascade do |t|
     t.integer "convocatoria_id"
     t.integer "destinatario_id"
-    t.datetime "fecha_correo"
+    t.datetime "fecha_correo", precision: nil
     t.boolean "asistio", default: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "convocatoria_tipos", force: :cascade do |t|
     t.string "descripcion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "tarea_codigo"
   end
 
@@ -519,8 +518,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.decimal "lng"
     t.string "mensaje_encabezado"
     t.string "mensaje_cuerpo"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.json "archivo_adjunto"
     t.text "caracterizacion"
     t.boolean "terminada", default: false
@@ -528,7 +527,7 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "tarea_codigo"
     t.integer "tipo"
     t.text "nombre"
-    t.datetime "fecha_hora"
+    t.datetime "fecha_hora", precision: nil
     t.integer "tipo_reunion", default: 0
     t.index ["flujo_id"], name: "index_convocatorias_on_flujo_id"
   end
@@ -536,23 +535,23 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "correlativos", force: :cascade do |t|
     t.integer "year"
     t.integer "valor"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "cuencas", force: :cascade do |t|
     t.string "codigo_cuenca"
     t.string "nombre_cuenca"
     t.string "region"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "cuencas_flujos", force: :cascade do |t|
     t.bigint "flujo_id"
     t.bigint "cuenca_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["cuenca_id"], name: "index_cuencas_flujos_on_cuenca_id"
     t.index ["flujo_id"], name: "index_cuencas_flujos_on_flujo_id"
   end
@@ -563,8 +562,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "nota"
     t.string "justificacion"
     t.integer "tipo_cuestionario_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "revision"
     t.index ["flujo_id"], name: "index_cuestionario_fpls_on_flujo_id"
   end
@@ -577,8 +576,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "numero_trabajadores"
     t.bigint "f22c_645"
     t.bigint "f22c_646"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["contribuyente_id"], name: "index_dato_anual_contribuyentes_on_contribuyente_id"
   end
 
@@ -592,8 +591,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "año"
     t.string "tipo_de_valor"
     t.float "valor"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["dato_productivo_elemento_adherido_id"], name: "dpea_dlm_id"
   end
 
@@ -601,8 +600,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "set_metas_accion_id"
     t.bigint "adhesion_elemento_id"
     t.bigint "dato_recolectado_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["adhesion_elemento_id"], name: "adhe_ele_id"
     t.index ["dato_recolectado_id"], name: "dat_rec_id"
     t.index ["set_metas_accion_id"], name: "index_dato_productivo_elemento_adheridos_on_set_metas_accion_id"
@@ -615,8 +614,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "medios_verificacion"
     t.string "unidad_base"
     t.string "unidades_compatibles"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "datos_publicos", force: :cascade do |t|
@@ -624,8 +623,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "visibilidad_empresas_adheridas"
     t.text "visibilidad_empresas_certificadas"
     t.integer "extension_reporte"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "descargable_tareas", force: :cascade do |t|
@@ -636,8 +635,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "codigo"
     t.string "archivo"
     t.boolean "subido", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["codigo"], name: "index_descargable_tareas_on_codigo", unique: true
   end
 
@@ -645,8 +644,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "estado"
     t.bigint "descargable_tareas_id"
     t.bigint "tipo_contribuyentes_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "tipo_descargable"
     t.string "nombre_campo"
     t.integer "orden"
@@ -662,8 +661,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.boolean "publico", default: false, null: false
     t.boolean "requiere_correcciones", default: false, null: false
     t.date "fecha_documento"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "documento_garantias", force: :cascade do |t|
@@ -676,8 +675,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "monto"
     t.string "archivo"
     t.bigint "estado_documento_garantia_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["documento_garantia_id"], name: "index_documento_garantias_on_documento_garantia_id"
     t.index ["estado_documento_garantia_id"], name: "index_documento_garantias_on_estado_documento_garantia_id"
     t.index ["proyecto_id"], name: "index_documento_garantias_on_proyecto_id"
@@ -688,8 +687,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "registro_proveedor_id"
     t.string "archivo"
     t.string "description"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["registro_proveedor_id"], name: "index_documento_proveedor_extras_on_registro_proveedor_id"
   end
 
@@ -697,8 +696,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "archivo"
     t.string "description"
     t.bigint "registro_proveedor_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["registro_proveedor_id"], name: "index_documento_registro_proveedores_on_registro_proveedor_id"
   end
 
@@ -709,15 +708,15 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.date "fecha_transferencia"
     t.integer "montos_transferidos"
     t.integer "montos_ejecutados"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "encuesta_descarga_roles", force: :cascade do |t|
     t.bigint "tarea_id"
     t.bigint "rol_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["rol_id"], name: "index_encuesta_descarga_roles_on_rol_id"
     t.index ["tarea_id"], name: "index_encuesta_descarga_roles_on_tarea_id"
   end
@@ -725,8 +724,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "encuesta_ejecucion_roles", force: :cascade do |t|
     t.bigint "tarea_id"
     t.bigint "rol_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["rol_id"], name: "index_encuesta_ejecucion_roles_on_rol_id"
     t.index ["tarea_id"], name: "index_encuesta_ejecucion_roles_on_tarea_id"
   end
@@ -737,8 +736,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "orden", limit: 2, default: 0, null: false
     t.boolean "obligatorio", default: false, null: false
     t.boolean "base", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "encuesta_user_respuestas", force: :cascade do |t|
@@ -747,8 +746,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "pregunta_id", null: false
     t.text "respuesta", null: false
     t.integer "flujo_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "institucion_proveedor_id"
     t.bigint "tarea_pendiente_id"
     t.index ["tarea_pendiente_id"], name: "index_encuesta_user_respuestas_on_tarea_pendiente_id"
@@ -759,8 +758,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "valor_tiempo_para_contestar", null: false
     t.integer "unidad_tiempo_para_contestar", null: false
     t.boolean "solo_dias_habiles", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "base", default: false, null: false
   end
 
@@ -768,8 +767,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "id_empresa"
     t.bigint "flujo_id"
     t.bigint "contribuyente_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["contribuyente_id"], name: "index_equipo_empresas_on_contribuyente_id"
     t.index ["flujo_id"], name: "index_equipo_empresas_on_flujo_id"
   end
@@ -784,8 +783,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "user_id"
     t.bigint "flujo_id"
     t.bigint "contribuyente_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "registro_proveedores_id"
     t.index ["contribuyente_id"], name: "index_equipo_trabajos_on_contribuyente_id"
     t.index ["flujo_id"], name: "index_equipo_trabajos_on_flujo_id"
@@ -808,42 +807,42 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "telefono"
     t.string "email"
     t.text "fields_visibility"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "fecha_eliminacion"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "fecha_eliminacion", precision: nil
     t.integer "establecimiento_contribuyente_id"
     t.index ["contribuyente_id"], name: "index_establecimiento_contribuyentes_on_contribuyente_id"
   end
 
   create_table "estado_admisibilidades", force: :cascade do |t|
     t.string "nombre", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "estado_documento_garantias", force: :cascade do |t|
     t.string "nombre", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "estado_rendiciones", force: :cascade do |t|
     t.string "nombre"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "estado_tarea_pendientes", force: :cascade do |t|
     t.string "nombre", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "estandar_homologaciones", force: :cascade do |t|
     t.string "nombre"
     t.json "referencias"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "descripcion"
     t.string "url_referencia"
   end
@@ -866,8 +865,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "criterio_inclusion_exclusion"
     t.string "descripcion_accion"
     t.string "detalle_medio_verificacion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "puntaje"
     t.bigint "estandar_nivel_id"
     t.index ["accion_id"], name: "index_estandar_set_metas_acciones_on_accion_id"
@@ -882,14 +881,14 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "orden"
     t.string "nombre", null: false
     t.text "descripcion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "feriados", force: :cascade do |t|
     t.date "fecha", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "flujo_tareas", force: :cascade do |t|
@@ -901,15 +900,15 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "mensaje_salida_cuerpo"
     t.boolean "sin_salida", default: false, null: false
     t.text "descripcion_flujo"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "flujos", force: :cascade do |t|
     t.integer "contribuyente_id"
     t.integer "tipo_instrumento_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "proyecto_id"
     t.integer "manifestacion_de_interes_id"
     t.integer "programa_proyecto_propuesta_id"
@@ -930,8 +929,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "flujo_id"
     t.bigint "linea_id"
     t.bigint "sub_linea_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "institucion_entregables_id"
     t.integer "usuario_entregables_id"
     t.string "instrumento_constitucion_estatutos_postulante"
@@ -995,8 +994,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "body"
     t.string "asunto"
     t.bigint "tarea_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["tarea_id"], name: "index_fondo_produccion_limpia_mensajes_on_tarea_id"
   end
 
@@ -1007,8 +1006,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "tipo_aporte_id"
     t.bigint "flujo_id"
     t.bigint "plan_actividad_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "tipo_gasto"
     t.integer "unidad_medida"
     t.index ["flujo_id"], name: "index_gastos_on_flujo_id"
@@ -1018,30 +1017,30 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
 
   create_table "glosas", force: :cascade do |t|
     t.string "nombre"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "hito_de_prensa_archivos", force: :cascade do |t|
     t.integer "hitos_de_prensa_id", null: false
     t.string "archivo", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "hito_de_prensa_instrumentos", force: :cascade do |t|
     t.integer "hitos_de_prensa_id"
     t.integer "flujo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["flujo_id"], name: "index_hito_de_prensa_instrumentos_on_flujo_id"
   end
 
   create_table "hito_de_prensa_responsables", force: :cascade do |t|
     t.integer "hitos_de_prensa_id"
     t.integer "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "hitos_de_prensa", force: :cascade do |t|
@@ -1051,8 +1050,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.date "fecha_publicacion", null: false
     t.string "enlace"
     t.text "observaciones"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "flujo_id"
     t.index ["flujo_id"], name: "index_hitos_de_prensa_on_flujo_id"
   end
@@ -1083,8 +1082,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "ejemplares"
     t.text "firmas"
     t.json "archivos_anexos", default: []
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "con_extension"
     t.boolean "nuevo", default: true, null: false
     t.json "archivos_anexos_posteriores_firmas", default: []
@@ -1106,8 +1105,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "documento"
     t.boolean "publico", default: false, null: false
     t.string "nombre_documento"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.date "fecha_informe_impacto"
     t.index ["manifestacion_de_interes_id"], name: "index_informe_impactos_on_manifestacion_de_interes_id"
   end
@@ -1119,15 +1118,15 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "poligono_ubicacion"
     t.string "glosario"
     t.string "certificaciones_homologables"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "lineas", force: :cascade do |t|
     t.string "codigo"
     t.string "descripcion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "listado_actores_temporals", force: :cascade do |t|
@@ -1148,8 +1147,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "comuna_institucion"
     t.integer "estado"
     t.bigint "manifestacion_de_interes_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "direccion"
     t.string "codigo_ciiuv4"
     t.index ["manifestacion_de_interes_id"], name: "index_listado_actores_temporals_on_manifestacion_de_interes_id"
@@ -1159,8 +1158,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "lugar"
     t.float "latitud"
     t.float "longitud"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["lugar"], name: "index_lugar_coordenadas_on_lugar"
   end
 
@@ -1257,8 +1256,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "archivo_usuario_entregables"
     t.text "usuario_entregables_comentario"
     t.text "usuario_entregables_otros"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "mapa_de_actores_data"
     t.text "comentarios_y_observaciones_actualizacion_mapa_de_actores"
     t.date "firma_fecha"
@@ -1280,10 +1279,10 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "comentarios_y_observaciones_documento_diagnosticos"
     t.text "comentarios_y_observaciones_set_metas_acciones"
     t.string "archivo_acta_comite_informe"
-    t.datetime "fecha_observaciones_admisibilidad"
-    t.datetime "fecha_observaciones_pertinencia"
+    t.datetime "fecha_observaciones_admisibilidad", precision: nil
+    t.datetime "fecha_observaciones_pertinencia", precision: nil
     t.text "comentarios_y_observaciones_negociacion_acuerdo"
-    t.datetime "fecha_termino_negociacion"
+    t.datetime "fecha_termino_negociacion", precision: nil
     t.date "ceremonia_certificacion_fecha"
     t.string "ceremonia_certificacion_direccion"
     t.decimal "ceremonia_certificacion_lat"
@@ -1292,8 +1291,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.json "ceremonia_certificacion_archivo"
     t.text "tarea_codigo"
     t.text "comentarios_y_observaciones_termino_acuerdo"
-    t.datetime "fecha_termino_acuerdo"
-    t.datetime "diagnostico_fecha_termino"
+    t.datetime "fecha_termino_acuerdo", precision: nil
+    t.datetime "diagnostico_fecha_termino", precision: nil
     t.text "instrumentos_relacionados_historico"
     t.date "fecha_manifestacion"
     t.json "documentos_historicos"
@@ -1325,17 +1324,17 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "observaciones_admisibilidad_juridica"
     t.text "respuesta_observaciones_admisibilidad_juridica"
     t.string "archivo_admisibilidad_juridica"
-    t.datetime "fecha_observaciones_admisibilidad_juridica"
+    t.datetime "fecha_observaciones_admisibilidad_juridica", precision: nil
     t.integer "institucion_entregables_id"
     t.string "institucion_entregables_name"
     t.string "usuario_entregable_name"
     t.text "observaciones_propuesta_acuerdo"
     t.integer "firma_tipo_reunion", default: 0
-    t.datetime "firma_fecha_hora"
+    t.datetime "firma_fecha_hora", precision: nil
     t.integer "ceremonia_certificacion_tipo_reunion", default: 0
-    t.datetime "ceremonia_certificacion_fecha_hora"
+    t.datetime "ceremonia_certificacion_fecha_hora", precision: nil
     t.text "comentarios_y_observaciones_detencion_acuerdo"
-    t.datetime "fecha_detencion_acuerdo"
+    t.datetime "fecha_detencion_acuerdo", precision: nil
     t.boolean "detenido", default: false
   end
 
@@ -1343,8 +1342,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "flujo_id", null: false
     t.integer "rol_id", null: false
     t.integer "persona_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "persona_cargo_id"
   end
 
@@ -1353,13 +1352,13 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "nombre_maquinaria"
     t.string "numero_serie"
     t.string "patente"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "contribuyente_id"
     t.text "tipo"
     t.json "archivos_imagen"
     t.text "fields_visibility"
-    t.datetime "fecha_eliminacion"
+    t.datetime "fecha_eliminacion", precision: nil
     t.index ["contribuyente_id"], name: "index_maquinarias_on_contribuyente_id"
     t.index ["establecimiento_contribuyente_id"], name: "index_maquinarias_on_establecimiento_contribuyente_id"
   end
@@ -1367,15 +1366,15 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "materia_rubro_dato_relacions", force: :cascade do |t|
     t.integer "materia_rubro_relacion_id"
     t.integer "dato_recolectado_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "materia_rubro_relacions", force: :cascade do |t|
     t.bigint "materia_sustancia_id"
     t.bigint "actividad_economica_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["actividad_economica_id"], name: "index_materia_rubro_relacions_on_actividad_economica_id"
     t.index ["materia_sustancia_id"], name: "index_materia_rubro_relacions_on_materia_sustancia_id"
   end
@@ -1383,8 +1382,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "materia_sustancia_clasificaciones", force: :cascade do |t|
     t.integer "materia_sustancia_id", null: false
     t.integer "clasificacion_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "materia_sustancia_metas", force: :cascade do |t|
@@ -1399,8 +1398,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "descripcion", null: false
     t.boolean "posee_una_magnitud_fisica_asociada", default: false, null: false
     t.string "unidad_base"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "minutas", force: :cascade do |t|
@@ -1411,21 +1410,21 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.decimal "lng"
     t.json "acta"
     t.json "lista_asistencia"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "fecha_acta"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "fecha_acta", precision: nil
     t.text "mensaje_encabezado"
     t.text "mensaje_cuerpo"
-    t.datetime "fecha_hora"
+    t.datetime "fecha_hora", precision: nil
     t.integer "tipo_reunion", default: 0
     t.string "archivo_resolucion"
-    t.datetime "fecha_resolucion"
+    t.datetime "fecha_resolucion", precision: nil
   end
 
   create_table "modalidades", force: :cascade do |t|
     t.string "nombre"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "modificacion_calendarios", force: :cascade do |t|
@@ -1433,16 +1432,16 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "atributos_proyecto"
     t.text "atributos_proyecto_actividades"
     t.text "atributos_rendiciones"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "nota_registro_proveedores", force: :cascade do |t|
     t.bigint "registro_proveedor_id"
     t.bigint "manifestacion_de_interes_id"
     t.integer "nota", default: 0
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["manifestacion_de_interes_id"], name: "index_nota_registro_proveedores_on_manifestacion_de_interes_id"
     t.index ["registro_proveedor_id"], name: "index_nota_registro_proveedores_on_registro_proveedor_id"
   end
@@ -1453,8 +1452,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "metodologia"
     t.string "resultado"
     t.string "indicadores"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "correlativo"
     t.index ["flujo_id"], name: "index_objetivos_especificos_on_flujo_id"
   end
@@ -1467,10 +1466,10 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "tipo"
     t.string "identificador_unico"
     t.json "imagen"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "fields_visibility"
-    t.datetime "fecha_eliminacion"
+    t.datetime "fecha_eliminacion", precision: nil
     t.index ["alcance_id"], name: "index_otros_on_alcance_id"
     t.index ["contribuyente_id"], name: "index_otros_on_contribuyente_id"
     t.index ["establecimiento_contribuyente_id"], name: "index_otros_on_establecimiento_contribuyente_id"
@@ -1485,16 +1484,16 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "codigo_corto", limit: 2
     t.string "codigo_largo", limit: 3
     t.string "gentilicio"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "vigente", default: true, null: false
   end
 
   create_table "persona_cargos", force: :cascade do |t|
     t.integer "persona_id", null: false
     t.integer "cargo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "establecimiento_contribuyente_id"
     t.index ["establecimiento_contribuyente_id"], name: "index_persona_cargos_on_establecimiento_contribuyente_id"
   end
@@ -1505,8 +1504,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "establecimiento_contribuyente_id"
     t.string "email_institucional"
     t.string "telefono_institucional"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "plan_actividades", force: :cascade do |t|
@@ -1514,11 +1513,14 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "actividad_id"
     t.bigint "flujo_id"
     t.bigint "objetivos_especifico_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "correlativo"
     t.boolean "autorizado"
     t.string "archivo_reitimizacion"
+    t.boolean "actualizar_equipo", default: false
+    t.boolean "actualizar_plan", default: false
+    t.boolean "actualizar_actividad", default: false
     t.index ["actividad_id"], name: "index_plan_actividades_on_actividad_id"
     t.index ["flujo_id"], name: "index_plan_actividades_on_flujo_id"
     t.index ["objetivos_especifico_id"], name: "index_plan_actividades_on_objetivos_especifico_id"
@@ -1532,8 +1534,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "direccion"
     t.boolean "estado_tecnica_id", default: false
     t.text "observaciones"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.date "fecha"
     t.index ["comuna_id"], name: "index_ppf_actividades_on_comuna_id"
     t.index ["contribuyente_id"], name: "index_ppf_actividades_on_contribuyente_id"
@@ -1545,8 +1547,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "ppf_metas_establecimiento_id"
     t.bigint "user_id"
     t.string "comentario"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["ppf_metas_establecimiento_id"], name: "index_ppf_metas_comentarios_on_ppf_metas_establecimiento_id"
     t.index ["user_id"], name: "index_ppf_metas_comentarios_on_user_id"
   end
@@ -1554,8 +1556,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "ppf_metas_establecimientos", force: :cascade do |t|
     t.bigint "establecimiento_contribuyente_id"
     t.bigint "flujo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "estado", limit: 2, default: 0
     t.index ["flujo_id"], name: "index_ppf_metas_establecimientos_on_flujo_id"
   end
@@ -1563,23 +1565,23 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "ppf_tipo_actividades", force: :cascade do |t|
     t.string "nombre"
     t.string "descripcion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "preguntas", force: :cascade do |t|
     t.text "texto", null: false
     t.integer "tipo_respuestas", null: false
     t.boolean "base", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "privacidad_permisos", force: :cascade do |t|
     t.string "entidad"
     t.text "fields_visibility"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "programa_proyecto_propuestas", force: :cascade do |t|
@@ -1609,8 +1611,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "nombre_del_fondo_al_cual_se_esta_postulando"
     t.string "documento_con_programa_proyecto_existente"
     t.integer "programa_proyecto_propuesta_base_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "comentario_al_asignar_revisor"
     t.text "secciones_observadas_revision"
     t.integer "resultado_de_la_revision"
@@ -1677,8 +1679,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "proveedor_tipo_proveedores", force: :cascade do |t|
     t.integer "proveedor_id", null: false
     t.integer "tipo_proveedor_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "proveedores", force: :cascade do |t|
@@ -1687,8 +1689,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "materia_sustancia_id"
     t.integer "clasificacion_id"
     t.integer "alcance_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "evaluacion"
   end
 
@@ -1696,8 +1698,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "region_id", null: false
     t.string "nombre", limit: 30, null: false
     t.boolean "vigente", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "proyecto_actividades", force: :cascade do |t|
@@ -1706,18 +1708,18 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.date "fecha_finalizacion"
     t.date "fecha_realizacion_compromiso"
     t.integer "duracion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "proyecto_pagos", force: :cascade do |t|
     t.bigint "proyecto_id"
-    t.datetime "fecha_pago", default: -> { "now()" }, null: false
+    t.datetime "fecha_pago", precision: nil, default: -> { "now()" }, null: false
     t.integer "monto", null: false
     t.integer "numero_orden_pago"
     t.date "fecha_pago_efectiva"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["proyecto_id"], name: "index_proyecto_pagos_on_proyecto_id"
   end
 
@@ -1745,8 +1747,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.date "fecha_restitucion"
     t.integer "monto_restitucion"
     t.bigint "tipo_instrumento_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "total_anticipo", default: 0
     t.integer "total_reembolso", default: 0
     t.integer "total_nuevo_anticipo", default: 0
@@ -1768,8 +1770,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "tamano_contribuyente_id"
     t.string "rango"
     t.string "venta_anual_en_uf"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "recurso_humanos", force: :cascade do |t|
@@ -1777,8 +1779,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "equipo_trabajo_id"
     t.bigint "flujo_id"
     t.bigint "plan_actividad_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "tipo_aporte_id"
     t.index ["equipo_trabajo_id"], name: "index_recurso_humanos_on_equipo_trabajo_id"
     t.index ["flujo_id"], name: "index_recurso_humanos_on_flujo_id"
@@ -1790,8 +1792,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "nombre", limit: 42
     t.bigint "pais_id"
     t.boolean "vigente", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["pais_id"], name: "index_regiones_on_pais_id"
   end
 
@@ -1800,12 +1802,12 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "flujo_id"
     t.bigint "flujo_tarea_id"
     t.bigint "convocatoria_destinatario_id"
-    t.datetime "fecha_envio_correo"
-    t.datetime "fecha_apertura_correo"
+    t.datetime "fecha_envio_correo", precision: nil
+    t.datetime "fecha_apertura_correo", precision: nil
     t.boolean "estado", default: false
     t.boolean "asistio", default: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["convocatoria_destinatario_id"], name: "index_registro_apertura_correos_on_convocatoria_destinatario_id"
     t.index ["flujo_id"], name: "index_registro_apertura_correos_on_flujo_id"
     t.index ["flujo_tarea_id"], name: "index_registro_apertura_correos_on_flujo_tarea_id"
@@ -1816,8 +1818,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "body"
     t.string "asunto"
     t.bigint "tarea_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["tarea_id"], name: "index_registro_proveedor_mensajes_on_tarea_id"
   end
 
@@ -1837,8 +1839,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "documentos"
     t.bigint "contribuyente_id"
     t.bigint "tipo_contribuyente_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "rut_institucion"
     t.string "nombre_institucion"
     t.integer "tipo_contribuyente"
@@ -1873,8 +1875,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "rendicion_detalle_actividades_fpl", force: :cascade do |t|
     t.bigint "rendicion_detalle_fpl_id", null: false
     t.bigint "plan_actividad_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["plan_actividad_id"], name: "idx_rend_det_act_on_act_id"
     t.index ["rendicion_detalle_fpl_id"], name: "idx_rend_det_act_on_det_id"
   end
@@ -1884,8 +1886,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "tipo_tab", default: 0, null: false
     t.boolean "realizada"
     t.text "observacion"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "archivo"
     t.integer "cumple"
     t.text "comentario_revisor"
@@ -1910,8 +1912,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.decimal "costo_postulado", precision: 14, scale: 2, default: "0.0"
     t.decimal "cantidad_rendida", precision: 20, scale: 10, default: "0.0"
     t.decimal "costo_rendido", precision: 14, scale: 2, default: "0.0"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.decimal "valor_unitario_rendido"
     t.string "comprobante_ref"
     t.index ["plan_actividad_id"], name: "index_rendicion_gastos_fpl_on_plan_actividad_id"
@@ -1923,16 +1925,16 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "proyecto_id"
     t.date "fecha_rendicion"
     t.integer "modalidad_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "rendiciones_fpl", force: :cascade do |t|
     t.bigint "flujo_id", null: false
     t.integer "mes_a_rendir", null: false
     t.integer "estado", default: 0, null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "revisor_tecnico_id"
     t.integer "revisor_financiero_id"
     t.text "comentario_asignar_revisor"
@@ -1944,14 +1946,11 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.index ["flujo_id"], name: "index_rendiciones_fpl_on_flujo_id"
   end
 
-  create_table "rendiciones_y_detalles", force: :cascade do |t|
-  end
-
   create_table "reporte_sustentabilidads", force: :cascade do |t|
     t.string "titulo_intro"
     t.text "cuerpo_intro"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "reporteria_datos", force: :cascade do |t|
@@ -1960,8 +1959,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "acuerdo_id"
     t.string "vista"
     t.text "datos"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "responsables", force: :cascade do |t|
@@ -1971,8 +1970,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "contribuyente_id"
     t.integer "actividad_economica_id"
     t.integer "tipo_contribuyente_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["contribuyente_id"], name: "index_responsables_on_contribuyente_id"
   end
 
@@ -1980,8 +1979,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "reunion_id"
     t.integer "destinatario_id"
     t.boolean "visto"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "reuniones", force: :cascade do |t|
@@ -1992,23 +1991,23 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.decimal "lng"
     t.string "encabezado"
     t.string "mensaje"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "roles", force: :cascade do |t|
     t.string "nombre"
     t.text "descripcion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "mostrar_en_excel", default: true
   end
 
   create_table "sessions", force: :cascade do |t|
     t.string "session_id", null: false
     t.text "data"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
@@ -2033,8 +2032,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "flujo_id"
     t.bigint "ppf_metas_establecimiento_id"
     t.integer "estado", limit: 2, default: 1
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "puntaje"
     t.bigint "estandar_nivel_id"
     t.bigint "id_referencia"
@@ -2048,15 +2047,15 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "codigo"
     t.string "descripcion"
     t.bigint "linea_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["linea_id"], name: "index_sub_lineas_on_linea_id"
   end
 
   create_table "tamano_contribuyentes", force: :cascade do |t|
     t.string "nombre"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "tarea_pendientes", force: :cascade do |t|
@@ -2066,8 +2065,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.integer "user_id"
     t.text "data"
     t.text "resultado"
-    t.datetime "created_at", default: -> { "now()" }, null: false
-    t.datetime "updated_at", default: -> { "now()" }, null: false
+    t.datetime "created_at", precision: nil, default: -> { "now()" }, null: false
+    t.datetime "updated_at", precision: nil, default: -> { "now()" }, null: false
     t.boolean "primera_ejecucion", default: true
     t.bigint "persona_id"
     t.index ["estado_tarea_pendiente_id"], name: "index_tarea_pendientes_on_estado_tarea_pendiente_id"
@@ -2092,8 +2091,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.boolean "es_una_encuesta", default: false, null: false
     t.integer "encuesta_id"
     t.string "codigo"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "duracion"
     t.index ["codigo"], name: "index_tareas_on_codigo"
   end
@@ -2101,49 +2100,49 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "tipo_aportes", force: :cascade do |t|
     t.string "nombre", null: false
     t.text "descripcion", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "tipo_comentarios", force: :cascade do |t|
     t.string "nombre", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "tipo_contribuyentes", force: :cascade do |t|
     t.integer "tipo_contribuyente_id"
     t.string "nombre", null: false
     t.text "descripcion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "tipo_de_medios", force: :cascade do |t|
     t.string "nombre"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "tipo_documento_diagnosticos", force: :cascade do |t|
     t.string "nombre", null: false
     t.text "descripcion", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "tipo_documento_garantias", force: :cascade do |t|
     t.string "nombre"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "tipo_instrumentos", force: :cascade do |t|
     t.string "nombre", null: false
     t.text "descripcion", null: false
     t.integer "tipo_instrumento_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["nombre"], name: "index_tipo_instrumentos_on_nombre", unique: true
   end
 
@@ -2151,8 +2150,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.string "nombre", null: false
     t.text "descripcion", null: false
     t.boolean "solo_asignable_por_ascc", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "traspaso_instrumentos", force: :cascade do |t|
@@ -2161,8 +2160,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.bigint "destino_id"
     t.integer "tipo_traspaso"
     t.date "fecha_retorno"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "cambios_mapa_de_actores"
     t.text "cambios_tareas_pendientes"
     t.index ["destino_id"], name: "index_traspaso_instrumentos_on_destino_id"
@@ -2180,27 +2179,27 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
     t.text "session"
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
+    t.datetime "reset_password_sent_at", precision: nil
+    t.datetime "remember_created_at", precision: nil
     t.integer "sign_in_count", default: 0, null: false
-    t.datetime "current_sign_in_at"
-    t.datetime "last_sign_in_at"
+    t.datetime "current_sign_in_at", precision: nil
+    t.datetime "last_sign_in_at", precision: nil
     t.inet "current_sign_in_ip"
     t.inet "last_sign_in_ip"
     t.string "confirmation_token"
-    t.datetime "confirmed_at"
-    t.datetime "confirmation_sent_at"
+    t.datetime "confirmed_at", precision: nil
+    t.datetime "confirmation_sent_at", precision: nil
     t.string "unconfirmed_email"
     t.integer "failed_attempts", default: 0, null: false
     t.string "unlock_token"
-    t.datetime "locked_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "locked_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "nombre_completo", null: false
     t.string "invitation_token"
-    t.datetime "invitation_created_at"
-    t.datetime "invitation_sent_at"
-    t.datetime "invitation_accepted_at"
+    t.datetime "invitation_created_at", precision: nil
+    t.datetime "invitation_sent_at", precision: nil
+    t.datetime "invitation_accepted_at", precision: nil
     t.integer "invitation_limit"
     t.string "invited_by_type"
     t.bigint "invited_by_id"
@@ -2224,8 +2223,8 @@ ActiveRecord::Schema.define(version: 2026_09_30_203757) do
   create_table "variables", force: :cascade do |t|
     t.string "nombre", limit: 20, null: false
     t.text "valor", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   add_foreign_key "accion_clasificaciones", "acciones"
