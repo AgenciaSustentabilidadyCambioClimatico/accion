@@ -151,6 +151,11 @@ class ActualizarComiteAcuerdosController < ApplicationController
 
   def guardar_comite
     @informe.assign_attributes(informe_params)
+
+    # Si en la BD era nil y el form no lo envió, asignar el valor exacto del enum
+    if @informe.tipo_acuerdo.blank?
+      @informe.tipo_acuerdo = 'desde_firma_acuerdo'
+    end
     respond_to do |format|
       r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
       @informe.auditorias = params[:informe_acuerdo][:auditorias].values rescue []
@@ -328,6 +333,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
         :plazo_maximo_adhesion, :plazo_finalizacion_implementacion,
         :plazo_maximo, :plazo_maximo_neto,
         :vigencia_certificacion_final,
+        :tipo_acuerdo,
         :archivos_anexos_cache,
         archivos_anexos: [],
       )
