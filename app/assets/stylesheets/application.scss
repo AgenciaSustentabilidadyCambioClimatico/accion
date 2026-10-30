@@ -2121,6 +2121,7 @@ table.table.table-home.dataTable.no-footer{
 /* Corrección global para checkboxes en Bootstrap 5 / DataTables */
 table input[type="checkbox"],
 input[type="checkbox"].form-control,
+input[type="radio"].form-control,
 input[type="checkbox"].form-check-input {
   width: 0.8rem !important;
   height: 0.8rem !important;

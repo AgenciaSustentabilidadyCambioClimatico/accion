@@ -262,7 +262,9 @@
                       = f.input :fecha_vigencia_acuerdo, as: :string, input_html: {value: @informe.fecha_vigencia_acuerdo.strftime("%d/%m/%Y")}, label: false, required: false, disabled: true, wrapper: false
                 .col-12.col-lg-4.desactivado_ta
                   = f.label t(:plazos_de_implementación_y_certificación_se_miden_desde), required: false
-                  = f.input :tipo_acuerdo, as: :radio_buttons, collection: InformeAcuerdo.tipo_acuerdos.keys.map { |w| [t(w+"_apl_023"), w] }, label: false, checked: @informe.tipo_acuerdo, input_html: {class: 'ta mr-2'}, required: false, disabled: true
+                  - valor_tipo_acuerdo = @informe.tipo_acuerdo.presence || 'desde_firma_acuerdo'
+                  = f.hidden_field :tipo_acuerdo, value: valor_tipo_acuerdo
+                  = f.input :tipo_acuerdo, as: :radio_buttons, collection: InformeAcuerdo.tipo_acuerdos.keys.map { |w| [t(w+"_apl_023"), w] }, label: false, checked: valor_tipo_acuerdo, input_html: {class: 'ta mr-2'}, required: false, disabled: true
                   
               .row.mt-3
                 .col-12.col-lg-5
