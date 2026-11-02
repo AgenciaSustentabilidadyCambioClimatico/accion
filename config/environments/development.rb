@@ -70,7 +70,7 @@ Rails.application.configure do
   # Permitir conexiones desde cualquier host e IP en desarrollo
   config.hosts = nil
   config.web_console.permissions = '0.0.0.0/0'
-  config.action_controller.allow_forgery_protection = false
+  config.action_controller.allow_forgery_protection = true
 
   config.active_support.disallowed_deprecation = :raise
   config.active_support.disallowed_deprecation_warnings = []
