@@ -505,7 +505,7 @@ module ApplicationHelper
             field.each do |archivo|
               split = archivo.current_path.split('/') rescue archivo.path.split('/')# DZC genera un array de palabras dentro del path
               archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/'...
-              atributo << archivo.path.split('/public').last
+              atributo << archivo.url.to_s
             end
             begin
               atributo = field[0].mounted_as
@@ -520,7 +520,7 @@ module ApplicationHelper
             # --- INICIO DEL CAMBIO: LÓGICA PROXY (Archivo Único) ---
             begin
               # 1. Sacamos el nombre del archivo de forma segura
-              file_name = field.file.filename rescue field.path.split('/').last
+              file_name = field.file&.filename || File.basename(field.path.to_s)
               
               # 2. Obtenemos modelo y campo
               nombre_campo = field.mounted_as rescue 'archivo'
@@ -563,7 +563,7 @@ module ApplicationHelper
             field.each do |archivo|
               split = archivo.current_path.split('/') rescue archivo.path.split('/')
               archivos << split[split.length-1]
-              atributo << archivo.path.split('/public').last
+              atributo << archivo.url.to_s
             end
             begin
               atributo = field[0].mounted_as
@@ -576,7 +576,7 @@ module ApplicationHelper
           else
             # --- INICIO DEL CAMBIO MEJORADO ---
             begin
-              file_name = field.file.filename rescue field.path.split('/').last
+              file_name = field.file&.filename || File.basename(field.path.to_s)
               nombre_campo = field.mounted_as rescue 'archivo'
               nombre_modelo = objeto.class.name.underscore
 
@@ -717,32 +717,61 @@ module ApplicationHelper
   # DZC 2018-11-05 14:37:46 se descomenta para uso por helper de Ricardo
 
 
-def generar_zip(archivos)
-  require 'open-uri'
-  require 'zip'
-  file = Zip::OutputStream.write_buffer do |stream|
-    archivos.each do |archivo_tecnica|
-      if archivo_tecnica.is_a?(Hash)
-        # Handle hash entries with in-memory data
-        nombre = archivo_tecnica[:nombre]
-        stream.put_next_entry(nombre)
-        stream.write archivo_tecnica[:data] if archivo_tecnica[:data]
-      else
-        url = archivo_tecnica.url
-        nombre = File.basename(URI.parse(url).path)
+  def generar_zip(archivos)
+    require 'zip'
 
-        # Open and read the file from remote storage (Azure Blob vía CarrierWave)
-        URI.open(url) do |file_data|
-          stream.put_next_entry(nombre)
-          stream.write file_data.read
+    file = Zip::OutputStream.write_buffer do |stream|
+      archivos.each do |archivo_tecnica|
+        next if archivo_tecnica.blank?
+
+        if archivo_tecnica.is_a?(Hash)
+          # 1. Manejo de entradas tipo Hash (datos generados dinámicamente en memoria)
+          nombre = archivo_tecnica[:nombre]
+          if nombre.present? && archivo_tecnica[:data].present?
+            stream.put_next_entry(nombre)
+            stream.write archivo_tecnica[:data]
+          end
+        else
+          # 2. Manejo de objetos CarrierWave / Uploader / Cadenas de texto
+          nombre = if archivo_tecnica.respond_to?(:file) && archivo_tecnica.file&.filename.present?
+                    archivo_tecnica.file.filename
+                  elsif archivo_tecnica.respond_to?(:url) && archivo_tecnica.url.present?
+                    File.basename(URI.parse(archivo_tecnica.url).path)
+                  elsif archivo_tecnica.is_a?(String)
+                    File.basename(archivo_tecnica)
+                  end
+
+          next if nombre.blank?
+
+          contenido = nil
+
+          if archivo_tecnica.respond_to?(:read) # CarrierWave (Azure Blob Storage o Local)
+            begin
+              contenido = archivo_tecnica.read
+            rescue StandardError => e
+              Rails.logger.error "Error leyendo adjunto para ZIP en Helper (Azure/Local): #{e.message}"
+            end
+          elsif archivo_tecnica.is_a?(String) # Ruta local manual en servidor
+            ruta_relativa = archivo_tecnica.sub(%r{^/?(accion/)?public/}, '')
+            path_absoluto = Rails.root.join('public', ruta_relativa).to_s
+
+            if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+              contenido = File.binread(path_absoluto)
+            end
+          end
+
+          # 3. Inyectar contenido al ZIP si se recuperó correctamente
+          if contenido.present?
+            stream.put_next_entry(nombre)
+            stream.write contenido
+          end
         end
       end
     end
-  end
 
-  file.rewind
-  file.read
-end
+    file.rewind
+    file.read
+  end
 
   def descarga_formato_carta_de_patrocinio()
   
@@ -1036,13 +1065,15 @@ end
     when Tarea::COD_PRO_007
     user_rut = User.find(pendiente.user_id).rut
     registro_proveedor = RegistroProveedor.where(rut: user_rut).last
-      if registro_proveedor.fecha_aprobado.blank?
+    if registro_proveedor.fecha_aprobado.present?
+      if registro_proveedor.tipo_proveedor_id == 1
         data[:url] = actualizar_proveedor_path(registro_proveedor.id)
         data[:icon] = "<i class='fa fa-edit'></i>"
       elsif registro_proveedor.fecha_aprobado + (2.year + 11.month) <= Date.today && registro_proveedor.fecha_aprobado + 3.year >= Date.today 
         data[:url] = actualizar_proveedor_path(registro_proveedor.id)
         data[:icon] = "<i class='fa fa-edit'></i>"
       end
+    end
     when Tarea::COD_PRO_008
     data[:url] = resultado_actualizacion_path
     data[:icon] = "<i class='fa fa-edit'></i>"

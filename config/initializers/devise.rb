@@ -1,5 +1,7 @@
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
+require Rails.root.join('lib/gblib/authenticable')
+
 Devise.setup do |config|
   # The secret key used by Devise. Devise uses this key to generate
   # random tokens. Changing this key will render invalid all existing
@@ -11,7 +13,7 @@ Devise.setup do |config|
   ##
   # DZC 2019-08-21 17:27:24
   # se agrega para funcionamiento de envio de correos
-  config.secret_key = Rails.application.secrets.secret_key_base
+  config.secret_key = Rails.application.credentials.secret_key_base || ENV['SECRET_KEY_BASE']
 
   # ==> Mailer Configuration
   # Configure the e-mail address which will be shown in Devise::Mailer,

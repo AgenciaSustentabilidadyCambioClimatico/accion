@@ -2117,3 +2117,20 @@ table.table.table-home.dataTable.no-footer{
 .chosen-container .chosen-results li {
   text-transform: capitalize;
 }
+
+/* Corrección global para checkboxes en Bootstrap 5 / DataTables */
+table input[type="checkbox"],
+input[type="checkbox"].form-control,
+input[type="checkbox"].form-check-input {
+  width: 0.8rem !important;
+  height: 0.8rem !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* Para checkboxes fuera de tablas (en formularios normales) */
+form:not(table) input[type="checkbox"].form-control {
+  display: inline-block !important;
+}

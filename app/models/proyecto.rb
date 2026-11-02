@@ -1,5 +1,5 @@
 class Proyecto < ApplicationRecord
-	serialize :comentario_modificacion
+	serialize :comentario_modificacion, coder: YAML
 	mount_uploader :archivo_minuta_reunion, ArchivosProyectoUploader
 	mount_uploader :archivo_resolucion, ArchivosProyectoUploader
 	mount_uploader :archivo_contrato, ArchivosProyectoUploader
@@ -16,11 +16,11 @@ class Proyecto < ApplicationRecord
 	has_many :rendiciones, -> { includes :modalidad }, foreign_key: :proyecto_id
 
 	#RDO
-	serialize :sectores_economicos
-	serialize :territorios_regiones
-	serialize :territorios_provincias
-	serialize :territorios_comunas
-	serialize :instrumentos_relacionados_historico
+	serialize :sectores_economicos, coder: YAML
+	serialize :territorios_regiones, coder: YAML
+	serialize :territorios_provincias, coder: YAML
+	serialize :territorios_comunas, coder: YAML
+	serialize :instrumentos_relacionados_historico, coder: YAML
 
 	accepts_nested_attributes_for :rendiciones, :allow_destroy => true#, reject_if: :all_blank
 	accepts_nested_attributes_for :proyecto_actividad, :allow_destroy => true#, reject_if: :all_blank

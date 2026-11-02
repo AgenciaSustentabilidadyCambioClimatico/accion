@@ -1,8 +1,8 @@
 class DatosPublico < ApplicationRecord
 
-  serialize :visibilidad_documentos
-  serialize :visibilidad_empresas_adheridas
-  serialize :visibilidad_empresas_certificadas
+  serialize :visibilidad_documentos, coder: YAML
+  serialize :visibilidad_empresas_adheridas, coder: YAML
+  serialize :visibilidad_empresas_certificadas, coder: YAML
 
   enum extension_reporte: [:pdf, :docx]
 

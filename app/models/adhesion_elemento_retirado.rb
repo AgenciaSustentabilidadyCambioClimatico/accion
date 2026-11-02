@@ -14,7 +14,7 @@ class AdhesionElementoRetirado < ApplicationRecord
   has_many :dato_productivo_elemento_adheridos
   has_many :certificacion_adhesion_historicos, dependent: :destroy
 
-  serialize :fila
+  serialize :fila, coder: YAML
 
 	validates :archivo_retiro, presence: true
 

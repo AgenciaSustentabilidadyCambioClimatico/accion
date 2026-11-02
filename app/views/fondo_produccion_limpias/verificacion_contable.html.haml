@@ -93,8 +93,8 @@
     - base_presupuesto_apo[:gastos_operacion] = (c_obj.try(:aporte_propio_valorado_gasto_operacion).to_f + c_obj.try(:aporte_propio_liquido_gasto_operacion).to_f)
     - base_presupuesto_apo[:gastos_administracion] = (c_obj.try(:aporte_propio_valorado_gasto_administracion).to_f + c_obj.try(:aporte_propio_liquido_gasto_administracion).to_f)
 
-- rend_ids_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).pluck(:id)
-- todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_todas).to_a rescue []
+- rend_ids_finalizadas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id, estado: 5).pluck(:id)
+- todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_finalizadas).to_a rescue []
 
 - cat_key_map = { 'rrhh_propios' => :rrhh_propios, 'rrhh_externos' => :rrhh_externos, 'operaciones' => :gastos_operacion, 'gastos_operacion' => :gastos_operacion, 'administracion' => :gastos_administracion, 'gastos_administracion' => :gastos_administracion }
 

@@ -53,29 +53,28 @@ class ManifestacionDeInteres < ApplicationRecord
   has_many :auditoria_historicos, dependent: :destroy
   accepts_nested_attributes_for :auditoria_historicos, allow_destroy: true
 
-  serialize :secciones_observadas_admisibilidad
-  serialize :secciones_observadas_admisibilidad_juridica
-  serialize :secciones_observadas_pertinencia_factibilidad
-  serialize :sectores_economicos
-  serialize :territorios_regiones
-  serialize :territorios_provincias
-  serialize :territorios_comunas
-  serialize :coordernadas_territorios
-  serialize :mapa_de_actores_data
-  serialize :firmantes
-  serialize :comentarios_y_observaciones_actualizacion_mapa_de_actores
-  serialize :comentarios_y_observaciones_documento_diagnosticos
-  serialize :comentarios_y_observaciones_set_metas_acciones
-  serialize :informe
-  serialize :instrumentos_relacionados_historico
+  serialize :secciones_observadas_admisibilidad, coder: YAML
+  serialize :secciones_observadas_admisibilidad_juridica, coder: YAML
+  serialize :secciones_observadas_pertinencia_factibilidad, coder: YAML
+  serialize :sectores_economicos, coder: YAML
+  serialize :territorios_regiones, coder: YAML
+  serialize :territorios_provincias, coder: YAML
+  serialize :territorios_comunas, coder: YAML
+  serialize :coordernadas_territorios, coder: YAML
+  serialize :mapa_de_actores_data, coder: YAML
+  serialize :firmantes, coder: YAML
+  serialize :comentarios_y_observaciones_actualizacion_mapa_de_actores, coder: YAML
+  serialize :comentarios_y_observaciones_documento_diagnosticos, coder: YAML
+  serialize :comentarios_y_observaciones_set_metas_acciones, coder: YAML
+  serialize :informe, coder: YAML
+  serialize :instrumentos_relacionados_historico, coder: YAML
   # DOSSA 2019-09-30 14:39 se añade para ppp
-  serialize :programas_o_proyectos_relacionados_ids
+  serialize :programas_o_proyectos_relacionados_ids, coder: YAML
 
-  enum resultado_admisibilidad: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad
-  enum resultado_admisibilidad_juridica: [:aceptado,:rechazado,:en_observación], _prefix: :resultado_admisibilidad_juridica
-  enum resultado_pertinencia: [:aceptada,:solicita_condiciones,:realiza_observaciones,
-                              :solicita_condiciones_y_contiene_observaciones,:no_aceptada], _prefix: :resultado_pertinencia
-  enum respuesta_resultado_pertinencia: [:aceptada, :solicita_condiciones_o_información, :no_aceptada], _prefix: :respuesta_resultado_pertinencia
+  enum :resultado_admisibilidad, [:aceptado, :rechazado, :en_observación], prefix: :admisibilidad
+  enum :resultado_admisibilidad_juridica, [:aceptado, :rechazado, :en_observación], prefix: :admisibilidad_juridica
+  enum :resultado_pertinencia, [:aceptada, :solicita_condiciones, :realiza_observaciones, :solicita_condiciones_y_contiene_observaciones, :no_aceptada], prefix: :pertinencia
+  enum :respuesta_resultado_pertinencia, [:aceptada, :solicita_condiciones_o_información, :no_aceptada], prefix: :respuesta_pertinencia
 
   attr_accessor :revisor_tecnico_id, :revisor_juridico_id,:coordinador_subtipo_instrumento_id, :encargado_hitos_prensa_id, :fondo_produccion_limpia, :tipo_linea_seleccionada
   attr_accessor :accion_en_mapa_de_actores, :mapa_de_actores_correctamente_construido, :actores_con_observaciones
@@ -1086,14 +1085,23 @@ class ManifestacionDeInteres < ApplicationRecord
     require 'stringio'
 
     pdf = Prawn::Document.new
-    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
+
+    # 1. Registrar la familia de fuentes Open_Sans en Prawn
+    pdf.font_families.update("Open_Sans" => {
+      normal: Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf"),
+      bold:   Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+    })
+
+    # 2. Establecer Open_Sans como fuente por defecto del documento
+    pdf.font "Open_Sans"
     
     ## HEADER
     pdf.repeat :all do
-      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width  => pdf.bounds.width do
-        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
-        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width  => pdf.bounds.width do
-          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width => pdf.bounds.width do
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png").to_s, width: 119
+        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width => pdf.bounds.width do
+          # Usar Helvetica-Bold estándar para el header evita que Prawn rompa el subset en Acrobat
+          pdf.font "Helvetica", style: :bold do
             pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 10, color: "003DA6", align: :right
           end
         end
@@ -1112,7 +1120,7 @@ class ManifestacionDeInteres < ApplicationRecord
     # OPTIMIZACIÓN BD: Precargar el establecimiento antes de empezar a dibujar
     establecimiento_contribuyente = EstablecimientoContribuyente.unscoped.find_by(id: self.sucursal_ligada)
 
-    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width  => pdf.bounds.width do
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width => pdf.bounds.width do
       
       # PESTAÑA 1
       self.pdf_titulo_formato(pdf, I18n.t(:objetivo_acuerdo), "Motivación y fundamentos del acuerdo")
@@ -1130,7 +1138,7 @@ class ManifestacionDeInteres < ApplicationRecord
         pdf,
         :estandar_de_certificacion_id,
         (self.estandar_homologacion.nil? ? '' : self.estandar_homologacion.nombre),
-        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,estandar_id: self.estandar_de_certificacion_id),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self, estandar_id: self.estandar_de_certificacion_id),
         validaciones
       )
       self.pdf_separador(pdf, 11)
@@ -1140,7 +1148,7 @@ class ManifestacionDeInteres < ApplicationRecord
         pdf,
         :diagnostico_id,
         (self.antiguo.nil? ? '' : self.antiguo.nombre_acuerdo),
-        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,diagnostico_id: self.diagnostico_id),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self, diagnostico_id: self.diagnostico_id),
         validaciones
       )
       self.pdf_contenido_formato(pdf, :informe_de_acuerdo_anterior, validaciones)
@@ -1241,7 +1249,6 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato(pdf, :otros_estudios, validaciones)
     end
 
-    # Retornamos el objeto PDF directo a la memoria para que el controlador lo envíe al navegador.
     pdf
   end
 

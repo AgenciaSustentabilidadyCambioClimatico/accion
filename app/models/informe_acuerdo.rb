@@ -22,10 +22,16 @@ class InformeAcuerdo < ApplicationRecord
   # se agrega tarea 23 para no lanzar error al enviar sin tener archivos, ahora lo exige posterior al envio
   validates :archivos_anexos_posteriores_firmas, presence: true, unless: -> {[Tarea::COD_APL_018,Tarea::COD_APL_020,Tarea::COD_APL_023].include?(self.tarea_codigo)}, if: :updating_record?
 
-  enum tipo_acuerdo: [:desde_firma_acuerdo, :desde_aprobación_de_la_adhesión]
-  enum mecanismo_implementacion_palabras_claves: [:tipo_acuerdo, :plazo_maximo_adhesion, :plazo_finalizacion_implementacion]
-  enum mecanismo_evaluacion_palabras_claves: [:plazo_maximo, :plazo_maximo_neto, :adhesiones, :con_validacion]
-  enum vigencia_acuerdo_palabras_claves: [:plazo_vigencia_acuerdo]
+  # Reemplaza la sección actual por:
+  attribute :tipo_acuerdo, :string
+  attribute :mecanismo_implementacion_palabras_claves, :string
+  attribute :mecanismo_evaluacion_palabras_claves, :string
+  attribute :vigencia_acuerdo_palabras_claves, :string
+
+  enum :tipo_acuerdo, [:desde_firma_acuerdo, :desde_aprobación_de_la_adhesión]
+  enum :mecanismo_implementacion_palabras_claves, [:tipo_acuerdo, :plazo_maximo_adhesion, :plazo_finalizacion_implementacion]
+  enum :mecanismo_evaluacion_palabras_claves, [:plazo_maximo, :plazo_maximo_neto, :adhesiones, :con_validacion]
+  enum :vigencia_acuerdo_palabras_claves, [:plazo_vigencia_acuerdo]
 
   # DZC 2018-11-12 10:44:17 se agrega variable archivos_por_eliminar
   attr_accessor :fecha_firma, :fecha_vigencia_acuerdo, :fecha_plazo_maximo_adhesion, :fecha_plazo_finalizacion_implementacion, :fecha_plazo_maximo, :fecha_plazo_maximo_neto, :auditorias, :tarea_codigo, :archivos_por_eliminar, :accion

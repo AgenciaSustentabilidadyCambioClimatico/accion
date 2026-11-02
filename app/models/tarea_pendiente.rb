@@ -6,7 +6,7 @@ class TareaPendiente < ApplicationRecord
   belongs_to :persona, optional: true # DZC 2019-08-16 19:20:19 se agrega opcionalidad para permitir que el campo sea nil.
 
 
-  serialize :data
+  serialize :data, coder: YAML
 
   validates :tarea_id, presence: true
   #validates :user_id, presence: true

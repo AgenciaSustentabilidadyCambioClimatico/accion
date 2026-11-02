@@ -10,7 +10,7 @@ class DatoRecolectado < ApplicationRecord
   validates :unidad_base, presence: true
   validates :unidades_compatibles, presence: true
 
-  serialize :unidades_compatibles
+  serialize :unidades_compatibles, coder: YAML
 
   def self.unidades_extras
     [

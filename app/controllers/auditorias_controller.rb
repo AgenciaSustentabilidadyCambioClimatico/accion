@@ -197,37 +197,19 @@ class AuditoriasController < ApplicationController
 
   def descargar_compilado
     require 'zip'
-    require 'open-uri'
+
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       @auditoria_elementos.each do |auditoria_elemento|
-        adhesion = Adhesion.unscoped.where(id: auditoria_elemento.adhesion_elemento.adhesion_externa_id).first
-        archivo_evidencia = auditoria_elemento.archivo_evidencia
-        archivo_informe = auditoria_elemento.archivo_informe
-
-        unless archivo_evidencia.url.nil?
-          url = archivo_evidencia.url
-          nombre = File.basename(URI.parse(url).path)
-
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-        end
-
-        unless archivo_informe.url.nil?
-          url = archivo_informe.url
-          nombre = File.basename(URI.parse(url).path)
-
-          URI.open(url) do |file_data|
-            stream.put_next_entry(nombre)
-            stream.write file_data.read
-          end
-        end
+        # Inyectar archivo de evidencia
+        agregar_adjunto_al_zip(stream, auditoria_elemento.archivo_evidencia, prefijo: "evidencia_#{auditoria_elemento.id}_")
+        
+        # Inyectar archivo de informe
+        agregar_adjunto_al_zip(stream, auditoria_elemento.archivo_informe, prefijo: "informe_#{auditoria_elemento.id}_")
       end
     end
+
     archivo_zip.rewind
-    #enviamos el archivo para ser descargado
-    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+    send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'documentacion.zip'
   end
 
   private
@@ -387,4 +369,45 @@ class AuditoriasController < ApplicationController
       params.require(:auditoria).permit(auditoria_elementos_attributes: [:id, :validacion_observaciones, :validacion_aceptada])
     end
 
+    
+    def agregar_adjunto_al_zip(stream, uploader, prefijo: '')
+      return if uploader.blank?
+
+      # 1. Obtener el nombre del archivo
+      nombre_base = if uploader.respond_to?(:file) && uploader.file&.filename.present?
+                      uploader.file.filename
+                    elsif uploader.respond_to?(:url) && uploader.url.present?
+                      File.basename(URI.parse(uploader.url).path)
+                    elsif uploader.is_a?(String)
+                      File.basename(uploader)
+                    end
+
+      return if nombre_base.blank?
+
+      nombre_en_zip = "#{prefijo}#{nombre_base}"
+
+      # 2. Obtener el contenido binario (Azure Blob Storage o Local)
+      contenido = nil
+
+      if uploader.respond_to?(:read) # CarrierWave (Azure Blob / Local)
+        begin
+          contenido = uploader.read
+        rescue StandardError => e
+          Rails.logger.error "Error leyendo adjunto para ZIP (Azure/Local): #{e.message}"
+        end
+      elsif uploader.is_a?(String) # Manejo de rutas locales directas
+        ruta_relativa = uploader.sub(%r{^/?(accion/)?public/}, '')
+        path_absoluto = Rails.root.join('public', ruta_relativa).to_s
+
+        if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+          contenido = File.binread(path_absoluto)
+        end
+      end
+
+      # 3. Escribir la entrada en el ZIP si existe contenido
+      if contenido.present?
+        stream.put_next_entry(nombre_en_zip)
+        stream.write contenido
+      end
+    end
 end

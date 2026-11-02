@@ -72,7 +72,7 @@
   function loadScript() {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&callback=initMap";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.credentials.google_api_key || ENV['GOOGLE_API_KEY']}&language=es&callback=initMap";
     document.body.appendChild(script);
   }
 

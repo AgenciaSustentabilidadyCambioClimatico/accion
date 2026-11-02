@@ -1,6 +1,6 @@
 development:
   name: ascc2
-  key: <%= Rails.application.secrets.secret_key_base %>
+  key: <%= Rails.application.credentials.scout_key || ENV['SCOUT_KEY'] %>
   log_level: info
   monitor: true
   dev_trace: true

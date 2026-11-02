@@ -16,7 +16,7 @@ class ArchivosController < ApplicationController
     archivo = objeto.send(campo) rescue nil
 
     if archivo.present? && (archivo.file.present? rescue false)
-      nombre_archivo = (archivo.file.filename rescue nil) || (archivo.path.split('/').last rescue "documento.pdf")
+      nombre_archivo = archivo.file&.filename || (File.basename(archivo.path.to_s) if archivo.respond_to?(:path) && archivo.path.present?) || "documento.pdf"
 
       # 3. Descargamos el binario desde Azure y lo enviamos al navegador
       send_data archivo.read,

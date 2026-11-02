@@ -192,86 +192,134 @@ class ConvocatoriasController < ApplicationController
 		  	}
 	    end
 	  end
-  end
+  	end
 
 	#**descarga de archivos copiado desde rendicion_actividades_controler.descargar_tecnicas
 	def descargar_adjuntos
 		require 'zip'
 
 		archivos = []
-		archivos += @convocatoria.archivo_adjunto if !@convocatoria.archivo_adjunto.blank?
-		if !@convocatoria.minuta.nil?
-			archivos << @convocatoria.minuta.lista_asistencia if !@convocatoria.minuta.lista_asistencia.blank?
-			archivos << @convocatoria.minuta.acta if !@convocatoria.minuta.acta.blank?
-		end
-    archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      archivos.each do |archivo|
-        if archivo.is_a?(String)
-          archivo_path = "#{Rails.root}/public#{archivo}"
-          if File.exists?(archivo_path)
-            split = archivo_path.split('/')
-            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-            # rename the file
-            stream.put_next_entry(nombre)
-            # add file to zip
-            stream.write IO.read(archivo_path)
-          end
-        else
-          unless archivo.url.nil?
-            url = archivo.url
-            nombre = File.basename(URI.parse(url).path)
+		archivos.concat(Array(@convocatoria.archivo_adjunto)) if @convocatoria.archivo_adjunto.present?
 
-            URI.open(url) do |file_data|
-              stream.put_next_entry(nombre)
-              stream.write file_data.read
-            end
-          end
-        end
-      end
-    end
-    archivo_zip.rewind
-		send_data(archivo_zip.sysread, type: 'application/zip',filename: "archivos_adjuntos.zip")
-	end
+		if @convocatoria.minuta.present?
+			archivos << @convocatoria.minuta.lista_asistencia if @convocatoria.minuta.lista_asistencia.present?
+			archivos << @convocatoria.minuta.acta if @convocatoria.minuta.acta.present?
+		end
+
+		archivo_zip = Zip::OutputStream.write_buffer do |stream|
+			archivos.each do |archivo|
+			next if archivo.blank?
+
+			# 1. Determinar el nombre del archivo
+			nombre_archivo = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+								archivo.file.filename
+							elsif archivo.respond_to?(:url) && archivo.url.present?
+								File.basename(URI.parse(archivo.url).path)
+							elsif archivo.is_a?(String)
+								File.basename(archivo)
+							end
+
+			next if nombre_archivo.blank?
+
+			# 2. Obtener el contenido del archivo (Azure o Local)
+			contenido = nil
+
+			if archivo.respond_to?(:read) # CarrierWave Uploader (Azure o Local)
+				begin
+				contenido = archivo.read
+				rescue StandardError => e
+				Rails.logger.error "Error al leer archivo remoto/local: #{e.message}"
+				end
+			elsif archivo.is_a?(String) # Ruta local o URL directa
+				path_local = archivo.sub(%r{^/?(accion/)?public/}, '')
+				path_absoluto = Rails.root.join('public', path_local).to_s
+
+				if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+				contenido = File.binread(path_absoluto)
+				end
+			end
+
+			# 3. Escribir en el ZIP si se obtuvo contenido
+			if contenido.present?
+				stream.put_next_entry(nombre_archivo)
+				stream.write contenido
+			end
+			end
+		end
+
+		archivo_zip.rewind
+		send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'archivos_adjuntos.zip'
+		end
 
 	# Descarga compilado de todos los adjuntos tarea APL-016
 	def descargar_compilado_adjuntos
 		require 'zip'
-    require 'open-uri'
-		if params[:codigo] == "016"
-			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-016").all
-		elsif params[:codigo] == "030"
-			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-030").all
-		elsif params[:codigo] == "011"
-			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-011").all
+
+		if params[:codigo].present?
+			codigo_tarea = "APL-#{params[:codigo]}"
+			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id, tarea_codigo: codigo_tarea)
 		end
 
-		if !@convocatorias_apl.nil?
+		if @convocatorias_apl.present?
 			archivo_zip = Zip::OutputStream.write_buffer do |stream|
-				@convocatorias_apl.each do |convocatoria|
-					archivos = []
-					archivos += convocatoria.archivo_adjunto if !convocatoria.archivo_adjunto.blank?
-					if !convocatoria.minuta.nil?
-						archivos << convocatoria.minuta.lista_asistencia if !convocatoria.minuta.lista_asistencia.blank?
-						archivos << convocatoria.minuta.acta if !convocatoria.minuta.acta.blank?
+			@convocatorias_apl.each do |convocatoria|
+				archivos = []
+				archivos.concat(Array(convocatoria.archivo_adjunto)) if convocatoria.archivo_adjunto.present?
+
+				if convocatoria.minuta.present?
+				archivos << convocatoria.minuta.lista_asistencia if convocatoria.minuta.lista_asistencia.present?
+				archivos << convocatoria.minuta.acta if convocatoria.minuta.acta.present?
+				end
+
+				# Nombre de la carpeta para organizar la convocatoria dentro del ZIP
+				carpeta = convocatoria.nombre.to_s.parameterize.underscore
+
+				archivos.each do |archivo|
+				next if archivo.blank?
+
+				# 1. Obtener el nombre del archivo
+				nombre_archivo = if archivo.respond_to?(:file) && archivo.file&.filename.present?
+									archivo.file.filename
+								elsif archivo.respond_to?(:url) && archivo.url.present?
+									File.basename(URI.parse(archivo.url).path)
+								elsif archivo.is_a?(String)
+									File.basename(archivo)
+								end
+
+				next if nombre_archivo.blank?
+
+				# 2. Obtener los binarios (Azure Blob o Local)
+				contenido = nil
+
+				if archivo.respond_to?(:read) # Uploader CarrierWave (Azure / Local)
+					begin
+					contenido = archivo.read
+					rescue StandardError => e
+					Rails.logger.error "Error leyendo adjunto para ZIP (ID Convocatoria: #{convocatoria.id}): #{e.message}"
 					end
-					nombre = convocatoria.nombre
-					stream.put_next_entry("#{nombre}/")
+				elsif archivo.is_a?(String) # Caso de ruta física manual
+					path_local = archivo.sub(%r{^/?(accion/)?public/}, '')
+					path_absoluto = Rails.root.join('public', path_local).to_s
 
-					archivos.each do |archivo|
-            unless archivo.url.nil?
-              url = archivo.url
-              nombre = File.basename(URI.parse(url).path)
-
-              URI.open(url) do |file_data|
-                stream.put_next_entry(nombre)
-                stream.write file_data.read
-              end
-            end
+					if File.exist?(path_absoluto) && !File.directory?(path_absoluto)
+					contenido = File.binread(path_absoluto)
 					end
 				end
+
+				# 3. Escribir dentro de la subcarpeta en el ZIP
+				if contenido.present?
+					entry_path = "#{carpeta}/#{nombre_archivo}"
+					stream.put_next_entry(entry_path)
+					stream.write contenido
+				end
+				end
 			end
+			end
+
 			archivo_zip.rewind
-			send_data(archivo_zip.sysread, type: 'application/zip',filename: "archivos_adjuntos_compilados.zip")
+			send_data archivo_zip.sysread, type: 'application/zip', charset: 'iso-8859-1', filename: 'archivos_adjuntos_compilados.zip'
+		else
+			redirect_back fallback_location: root_path, alert: 'No se encontraron convocatorias o archivos para descargar.'
 		end
 	end
 

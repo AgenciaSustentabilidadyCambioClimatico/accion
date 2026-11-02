@@ -12,7 +12,7 @@
           - if o.new_record?
             - if o.archivo?
               %i.fa.fa-check-circle.text-success
-              = o.archivo.path.split("/").last
+              = File.basename(o.archivo.path.to_s) if o.archivo.present?
             - else 
               %i.fa.fa-cloud-upload.text-secondary
             = a.input :archivo, as: :file, label: false, wrapper_html: { class: 'mb-0'}
