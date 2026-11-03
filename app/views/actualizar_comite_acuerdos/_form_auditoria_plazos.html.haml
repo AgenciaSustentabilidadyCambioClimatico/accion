@@ -297,14 +297,14 @@
                 %table.table.table-striped.table-bordered#tabla_auditoria
                   %thead
                     %tr
-                      %th=t(:orden)
-                      %th=t(:auditoría)
-                      %th.text-center=t(:plazo_apertura_meses)
-                      %th.text-center=t(:plazo_cierre_meses)
-                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:certificable_si_no)
-                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:con_validación)
-                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:final)
-                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:mantención)
+                      %th{style: "vertical-align: middle;"}=t(:orden)
+                      %th{style: "vertical-align: middle;"}=t(:auditoría)
+                      %th.text-center{style: "width: 120px; min-width: 120px; max-width: 120px; vertical-align: middle;"}=t(:plazo_apertura_meses)
+                      %th.text-center{style: "width: 120px; min-width: 120px; max-width: 120px; vertical-align: middle;"}=t(:plazo_cierre_meses)
+                      %th.text-center{style: "width: 135px; min-width: 135px; max-width: 135px; vertical-align: middle;"}=t(:certificable_si_no)
+                      %th.text-center{style: "width: 135px; min-width: 135px; max-width: 135px; vertical-align: middle;"}=t(:con_validación)
+                      %th.text-center{style: "width: 135px; min-width: 135px; max-width: 135px; vertical-align: middle;"}=t(:final)
+                      %th.text-center{style: "width: 135px; min-width: 135px; max-width: 135px; vertical-align: middle;"}=t(:mantención)
                   %tbody
                     - @auditorias.order(created_at: :asc).each do |aud|
                       -puede_editar = true
