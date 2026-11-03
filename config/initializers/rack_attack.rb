@@ -1,7 +1,8 @@
 class Rack::Attack
   # 1. Utilizar Redis si existe REDIS_URL para compartir contadores entre procesos
   if ENV["REDIS_URL"].present?
-    redis_client = Redis.new(url: ENV["REDIS_URL"])
+    require "redis"
+    redis_client = ::Redis.new(url: ENV["REDIS_URL"])
     Rack::Attack.cache.store = Rack::Attack::StoreProxy::RedisStoreProxy.new(redis_client)
   else
     Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
