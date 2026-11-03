@@ -17,6 +17,9 @@ module Ascc
     config.active_job.queue_adapter = :sidekiq
     config.active_record.use_yaml_unsafe_load = true
 
+    # Solo volcar esquemas definidos en database.yml (omite esquemas huérfanos locales como 'accion')
+    config.active_record.dump_schemas = :schema_search_path
+
     config.middleware.insert_before(Rack::Sendfile, Rack::Deflater)
     # config.web_console.whitelisted_ips = '190.215.33.10'
     # Rails.application.configure do
