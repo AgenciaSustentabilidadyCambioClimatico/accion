@@ -1332,8 +1332,8 @@ es:
   actualizar_listado_de_actores_set_metas_y_acciones_auditorías_y_plazos: Actualizar listado de actores, set de metas y acciones, auditorías y plazos
   metas_acciones_definidas_posterioridad_firma_parentesis: Metas y acciones definidas con posterioridad a la firma (Solo si el Acuerdo establece un mecanismo para ello)
   acta_de_reunión: Acta de reunión
-  desde_firma_acuerdo_apl_023: Firma Acuerdo
-  desde_aprobación_de_la_adhesión_apl_023: Aprobación Adhesión
+  desde_firma_acuerdo_apl_023: Desde resolución ASCC que aprueba APL
+  desde_aprobacion_de_la_adhesion_apl_023: Desde Aprobación de la Adhesión
   vigencia_acuerdo: Vigencia Acuerdo
   vigencia_acuerdo_anios: Vigencia Acuerdo (años)
   plazos_de_implementación_y_certificación_se_miden_desde: Plazos de implementación y certificación se miden desde
