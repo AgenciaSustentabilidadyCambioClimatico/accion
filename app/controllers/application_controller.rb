@@ -22,47 +22,22 @@ class ApplicationController < ActionController::Base
 
   #permite descargar zips, independiente de la clase, objeto y atributo donde se almacenan los archivos a comprimir
   def desacarga_zip
-    # 1. Sesión obligatoria
-    authenticate_user!
-
-    clase_solicitada   = params[:clase].to_s
-    atributo_solicitado = params[:atributo].to_s
-    registro_id        = (params[:objeto_id] || params[:id]).to_i
-
-    # 2. Seguridad de Clase: Debe existir y ser un modelo ActiveRecord real
-    modelo_klass = clase_solicitada.safe_constantize
-    unless modelo_klass.present? && modelo_klass < ActiveRecord::Base
-      Rails.logger.warn "[SEGURIDAD B4] Intento de acceso a clase no válida: #{clase_solicitada}"
-      render plain: 'Clase no autorizada', status: :forbidden and return
+    # 
+    clase = params[:clase].to_s.constantize
+    objeto_id = params[:objeto_id]
+    objeto = clase.find(objeto_id)
+    if params[:atributo].is_a?(Array)
+      atributo = params[:atributo]
+    else
+      atributo = objeto.send(params[:atributo].to_sym)
     end
 
-    # 3. Seguridad de Atributo: Solo permitimos columnas declaradas en CarrierWave
-    # Esto impide tajantemente ejecutar métodos como destroy, update, delete, password, etc.
-    es_uploader_registrado = modelo_klass.respond_to?(:uploaders) && modelo_klass.uploaders.key?(atributo_solicitado.to_sym)
+    zip_data = objeto.genera_zip(atributo)
 
-    unless es_uploader_registrado
-      Rails.logger.warn "[SEGURIDAD B4] Intento de acceso a método no uploader: #{clase_solicitada}##{atributo_solicitado}"
-      render plain: 'Atributo no autorizado', status: :forbidden and return
-    end
-
-    # 4. Búsqueda del registro
-    registro = modelo_klass.find_by(id: registro_id)
-    if registro.blank?
-      render plain: 'Registro no encontrado', status: :not_found and return
-    end
-
-    # 5. Invocación segura del atributo de archivos (ya validado contra CarrierWave)
-    archivos = registro.public_send(atributo_solicitado)
-
-    if archivos.blank?
-      render plain: 'No hay archivos para comprimir', status: :not_found and return
-    end
-
-    # 6. Generar el ZIP utilizando el método existente en ApplicationHelper
-    contenido_zip = view_context.generar_zip(archivos)
-    nombre_zip = "#{clase_solicitada.underscore}_#{registro.id}_#{atributo_solicitado}.zip"
-
-    send_data contenido_zip, filename: nombre_zip, type: 'application/zip', disposition: 'attachment'
+    send_data zip_data, 
+              type: 'application/zip', 
+              disposition: 'attachment', 
+              filename: 'archivos_adjuntos.zip'
   end
   
   protected
