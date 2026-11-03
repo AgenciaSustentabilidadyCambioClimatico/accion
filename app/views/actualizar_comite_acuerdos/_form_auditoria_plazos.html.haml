@@ -261,12 +261,12 @@
                       .mr-1.texto-hasta Hasta:
                       = f.input :fecha_vigencia_acuerdo, as: :string, input_html: {value: @informe.fecha_vigencia_acuerdo.strftime("%d/%m/%Y")}, label: false, required: false, disabled: true, wrapper: false
                 .col-12.col-lg-5.desactivado_ta{style: "pointer-events: none; opacity: 0.85;"}
-                  = f.label t(:plazos_de_implementación_y_certificación_se_miden_desde), required: false, class: "d-block mb-1 font-weight-normal"
-                  .radios-inline-container{style: "display: flex; flex-direction: row; align-items: center; gap: 12px; font-size: 13px;"}
+                  = f.label t(:plazos_de_implementación_y_certificación_se_miden_desde), required: false, class: "d-block mb-1"
+                  .radios-inline-container.d-flex.flex-column.flex-xl-row{style: "gap: 8px 16px;"}
                     - InformeAcuerdo.tipo_acuerdos.keys.each do |clave|
-                      %label{style: "display: inline-flex; align-items: center; margin: 0; cursor: default; font-weight: normal; white-space: nowrap;"}
-                        = f.radio_button :tipo_acuerdo, clave, checked: (@informe.tipo_acuerdo.to_s == clave.to_s), class: "ta", style: "margin: 0 5px 0 0;"
-                        %span= t("#{clave}_apl_023")
+                      %label.d-flex.align-items-center.m-0{style: "cursor: default; font-weight: normal;"}
+                        = f.radio_button :tipo_acuerdo, clave, checked: (@informe.tipo_acuerdo.to_s == clave.to_s), class: "ta mr-2", style: "flex-shrink: 0; width: 16px; height: 16px; margin: 0;"
+                        %span{style: "line-height: 1.2;"}= t("#{clave}_apl_023")
               .row.mt-3
                 .col-12.col-lg-5
                   = f.label t(:plazo_máximo_adhesión_desde_firma_acuerdo_meses), class: "mb-1"
@@ -299,19 +299,15 @@
                     %tr
                       %th=t(:orden)
                       %th=t(:auditoría)
-                      %th=t(:plazo_apertura_meses)
-                      %th=t(:plazo_cierre_meses)
-                      %th=t(:certificable_si_no)
-                      %th=t(:con_validación)
-                      %th=t(:final)
-                      %th=t(:mantención)
+                      %th.text-center=t(:plazo_apertura_meses)
+                      %th.text-center=t(:plazo_cierre_meses)
+                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:certificable_si_no)
+                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:con_validación)
+                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:final)
+                      %th.text-center{style: "width: 110px; min-width: 110px; max-width: 110px;"}=t(:mantención)
                   %tbody
                     - @auditorias.order(created_at: :asc).each do |aud|
                       -puede_editar = true
-                      -#if @informe.tipo_acuerdo == "desde_firma_acuerdo"
-                        -puede_editar = Date.today <= (@informe.fecha_firma + aud.plazo_cierre.months)
-                      -#else
-                        -puede_editar = Date.today <= @informe.fecha_plazo_maximo_adhesion
                       %tr.auditoria-row{"data-id" => aud.id}
                         %td{style: "width:70px;min-width:70px;max-width:70px;"}
                           %input.form-control.auditoria-orden{type: :text, disabled: true}
@@ -326,18 +322,18 @@
                           = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_cierre]", aud.plazo_cierre, class: "form-control numero", readonly: !puede_editar, onkeyup: "actualiza_fecha_de_plazo_auditoria('plazo_cierre_fecha', this);"
                           -if @informe.tipo_acuerdo == "desde_firma_acuerdo"
                             .plazo_cierre_fecha.mt-2{style: "white-space: nowrap;"}=(@informe.calcula_fecha_firma + aud.plazo_cierre.to_i.months).strftime("%d/%m/%Y")
-                        %td
+                        %td.text-center{style: "vertical-align: middle; width: 110px;"}
                           = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", (!puede_editar && aud.con_certificacion?)
-                          = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", true, aud.con_certificacion?, class: "form-control con-certificacion", onclick: "certificacion_activa_validacion('#{aud.id}');", disabled: !puede_editar
-                        %td
+                          = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", true, aud.con_certificacion?, class: "con-certificacion d-inline-block", style: "width: 18px; height: 18px; margin: 0 auto;", onclick: "certificacion_activa_validacion('#{aud.id}');", disabled: !puede_editar
+                        %td.text-center{style: "vertical-align: middle; width: 110px;"}
                           = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", (!puede_editar && aud.con_validacion?)
-                          = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", true, aud.con_validacion?, class: "form-control con-validacion", disabled: (!aud.con_certificacion? || !puede_editar)
-                        %td
+                          = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", true, aud.con_validacion?, class: "con-validacion d-inline-block", style: "width: 18px; height: 18px; margin: 0 auto;", disabled: (!aud.con_certificacion? || !puede_editar)
+                        %td.text-center{style: "vertical-align: middle; width: 110px;"}
                           = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][final]", (!puede_editar && aud.final?)
-                          = radio_button_tag "informe_acuerdo[auditorias][#{aud.id}][final]", true, aud.final?, {class: "form-control auditoria-final", onclick: "solo_una_auditoria_final('#{aud.id}');", disabled: !puede_editar}
-                        %td
+                          = radio_button_tag "informe_acuerdo[auditorias][#{aud.id}][final]", true, aud.final?, {class: "auditoria-final d-inline-block", style: "width: 18px; height: 18px; margin: 0 auto;", onclick: "solo_una_auditoria_final('#{aud.id}');", disabled: !puede_editar}
+                        %td.text-center{style: "vertical-align: middle; width: 110px;"}
                           = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", (!puede_editar && aud.con_mantencion?)
-                          = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_mantencion]", true, aud.con_mantencion?, {class: "form-control auditoria-final con-mantencion", disabled: (!aud.final? || !puede_editar)}
+                          = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_mantencion]", true, aud.con_mantencion?, {class: "auditoria-final con-mantencion d-inline-block", style: "width: 18px; height: 18px; margin: 0 auto;", disabled: (!aud.final? || !puede_editar)}
         .col-12
           .card
             .card-header
