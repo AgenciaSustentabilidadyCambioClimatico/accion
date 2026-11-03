@@ -4318,11 +4318,19 @@ class FondoProduccionLimpiasController < ApplicationController
       mes_seleccionado = params[:mes_a_rendir].presence || 1
 
       ActiveRecord::Base.transaction do
+        id_postulante = @tarea_pendiente.user_id.presence || current_user&.id
+
         @rendicion = RendicionFpl.find_or_create_by!(
           flujo_id: @tarea_pendiente.flujo_id, 
           mes_a_rendir: mes_seleccionado
         ) do |r|
           r.estado = :borrador
+          r.postulante_id = id_postulante if r.respond_to?(:postulante_id=)
+        end
+
+        # Si el registro ya existía de antes sin postulante_id, se actualiza
+        if @rendicion.respond_to?(:postulante_id=) && @rendicion.postulante_id.blank?
+          @rendicion.postulante_id = id_postulante
         end
 
         # CONSTRUCCIÓN SEGURA SIN COLISIONES DE CLAVES (SEPARA ACTIVIDAD_ID DE PK)
