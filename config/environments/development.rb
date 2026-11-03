@@ -74,4 +74,7 @@ Rails.application.configure do
 
   config.active_support.disallowed_deprecation = :raise
   config.active_support.disallowed_deprecation_warnings = []
+
+  # Habilitar Rack::Attack en desarrollo
+  config.middleware.use Rack::Attack
 end
