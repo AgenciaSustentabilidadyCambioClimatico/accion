@@ -98,7 +98,12 @@ class ActualizarComiteAcuerdosController < ApplicationController
         end
 
         if informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].present?
-          informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].each do |archivo|
+          # Se limpian strings vacios generados por inputs files multiples
+          archivos_input = informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].reject(&:blank?)
+
+          archivos_input.each do |archivo|
+            next unless archivo.respond_to?(:original_filename) || archivo.respond_to?(:identifier)
+
             id = archivo.respond_to?(:identifier) ? archivo.identifier : archivo.original_filename
             unless (params[:por_eliminar].present? && params[:por_eliminar].include?(id))
               archivos_nuevos << archivo
@@ -151,11 +156,6 @@ class ActualizarComiteAcuerdosController < ApplicationController
 
   def guardar_comite
     @informe.assign_attributes(informe_params)
-
-    # Si en la BD era nil y el form no lo envió, asignar el valor exacto del enum
-    if @informe.tipo_acuerdo.blank?
-      @informe.tipo_acuerdo = 'desde_firma_acuerdo'
-    end
     respond_to do |format|
       r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
       @informe.auditorias = params[:informe_acuerdo][:auditorias].values rescue []

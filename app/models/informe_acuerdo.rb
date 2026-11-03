@@ -23,12 +23,16 @@ class InformeAcuerdo < ApplicationRecord
   validates :archivos_anexos_posteriores_firmas, presence: true, unless: -> {[Tarea::COD_APL_018,Tarea::COD_APL_020,Tarea::COD_APL_023].include?(self.tarea_codigo)}, if: :updating_record?
 
   # Reemplaza la sección actual por:
-  attribute :tipo_acuerdo, :string
+  attribute :tipo_acuerdo, :integer
   attribute :mecanismo_implementacion_palabras_claves, :string
   attribute :mecanismo_evaluacion_palabras_claves, :string
   attribute :vigencia_acuerdo_palabras_claves, :string
 
-  enum :tipo_acuerdo, [:desde_firma_acuerdo, :desde_aprobación_de_la_adhesión]
+  enum :tipo_acuerdo, {
+    desde_firma_acuerdo: 0,
+    desde_aprobacion_de_la_adhesion: 1
+  }
+
   enum :mecanismo_implementacion_palabras_claves, [:tipo_acuerdo, :plazo_maximo_adhesion, :plazo_finalizacion_implementacion]
   enum :mecanismo_evaluacion_palabras_claves, [:plazo_maximo, :plazo_maximo_neto, :adhesiones, :con_validacion]
   enum :vigencia_acuerdo_palabras_claves, [:plazo_vigencia_acuerdo]

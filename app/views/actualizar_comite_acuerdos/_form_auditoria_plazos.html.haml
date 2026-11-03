@@ -252,7 +252,7 @@
               .row
                 .col-12.col-lg-3
                   = f.input :fecha_firma, as: :string, input_html: {value: (@informe.calcula_fecha_firma.strftime("%d/%m/%Y"))}, label: t(:fecha_firma_acuerdo), required: false, disabled: true
-                .col-12.col-lg-5
+                .col-12.col-lg-4
                   = f.label t(:vigencia_acuerdo_anios), class: "mb-1"
                   .row
                     .col-12.col-lg-6.d-flex.align-items-center
@@ -260,12 +260,13 @@
                     .col-12.col-lg-6.d-flex.align-items-center
                       .mr-1.texto-hasta Hasta:
                       = f.input :fecha_vigencia_acuerdo, as: :string, input_html: {value: @informe.fecha_vigencia_acuerdo.strftime("%d/%m/%Y")}, label: false, required: false, disabled: true, wrapper: false
-                .col-12.col-lg-4.desactivado_ta
-                  = f.label t(:plazos_de_implementación_y_certificación_se_miden_desde), required: false
-                  - valor_tipo_acuerdo = @informe.tipo_acuerdo.presence || 'desde_firma_acuerdo'
-                  = f.hidden_field :tipo_acuerdo, value: valor_tipo_acuerdo
-                  = f.input :tipo_acuerdo, as: :radio_buttons, collection: InformeAcuerdo.tipo_acuerdos.keys.map { |w| [t(w+"_apl_023"), w] }, label: false, checked: valor_tipo_acuerdo, input_html: {class: 'ta mr-2'}, required: false, disabled: true
-                  
+                .col-12.col-lg-5.desactivado_ta{style: "pointer-events: none; opacity: 0.85;"}
+                  = f.label t(:plazos_de_implementación_y_certificación_se_miden_desde), required: false, class: "d-block mb-1 font-weight-normal"
+                  .radios-inline-container{style: "display: flex; flex-direction: row; align-items: center; gap: 12px; font-size: 13px;"}
+                    - InformeAcuerdo.tipo_acuerdos.keys.each do |clave|
+                      %label{style: "display: inline-flex; align-items: center; margin: 0; cursor: default; font-weight: normal; white-space: nowrap;"}
+                        = f.radio_button :tipo_acuerdo, clave, checked: (@informe.tipo_acuerdo.to_s == clave.to_s), class: "ta", style: "margin: 0 5px 0 0;"
+                        %span= t("#{clave}_apl_023")
               .row.mt-3
                 .col-12.col-lg-5
                   = f.label t(:plazo_máximo_adhesión_desde_firma_acuerdo_meses), class: "mb-1"
