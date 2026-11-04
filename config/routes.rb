@@ -1,3 +1,6 @@
+# Requerir interfaz web de Sidekiq si no está en otro inicializador
+require 'sidekiq/web'
+
 Rails.application.routes.draw do     
   health_check_routes
 # path_names = { sign_in: 'login', sign_out: 'logout' }
@@ -32,9 +35,11 @@ Rails.application.routes.draw do
     patch 'users' => 'admin/registrations#update', :as => 'user_registration'
     authenticated :user do
       root :to => "home#index", :as => "authenticated_user_home"
+    end
+    #Acceso exclusivo a Sidekiq solo para administradores
+    authenticate :user, ->(u) { u.is_admin? } do
       mount Sidekiq::Web => "/sidekiq"
     end
-    #root to: 'devise/sessions#new'
     root :to => "home#index"
   end
 
