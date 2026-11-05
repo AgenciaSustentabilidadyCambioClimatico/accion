@@ -85,6 +85,7 @@ gem "net-http-persistent", "~> 4.0"
 gem "rack-attack"
 gem "ffi", "< 1.17.0"
 gem 'uri', '>= 0.13.3'
+gem 'redis'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'
