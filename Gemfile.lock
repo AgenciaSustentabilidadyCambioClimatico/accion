@@ -468,7 +468,9 @@ GEM
       rbs (>= 4.0.0)
       tsort
     recaptcha (5.21.1)
-    redis-client (0.24.0)
+    redis (6.0.0)
+      redis-client (= 0.30.1)
+    redis-client (0.30.1)
       connection_pool
     reline (0.6.3)
       io-console (~> 0.5)
@@ -691,6 +693,7 @@ DEPENDENCIES
   rails (~> 7.2.3.2)
   rails-erd
   recaptcha
+  redis
   rexml (>= 3.4.2)
   rollbar
   roo
