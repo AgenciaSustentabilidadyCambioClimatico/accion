@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_10_16_130906) do
+ActiveRecord::Schema[7.2].define(version: 2026_11_02_195240) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "unaccent"
@@ -1943,6 +1943,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_10_16_130906) do
     t.text "informacion_adicional"
     t.text "conclusion"
     t.boolean "sin_movimientos"
+    t.integer "postulante_id"
     t.index ["flujo_id"], name: "index_rendiciones_fpl_on_flujo_id"
   end
 
