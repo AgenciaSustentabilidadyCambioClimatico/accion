@@ -2500,7 +2500,7 @@ class FondoProduccionLimpia < ApplicationRecord
     cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
     titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
 
-    postulante = User.find_by(id: (fpl.try(:usuario_entregables_id)))
+    postulante = User.find_by(id: (rendicion&.postulante_id.to_i))
     nombre_postulante = postulante.try(:nombre_completo)
     rut_postulante = postulante.try(:rut)
     
