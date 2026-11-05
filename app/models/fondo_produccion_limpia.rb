@@ -2379,20 +2379,20 @@ class FondoProduccionLimpia < ApplicationRecord
       ancho_firma = 220
       posicion_x = pdf.bounds.width - ancho_firma
 
-      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 65) do
+      pdf.bounding_box([posicion_x, pdf.cursor], width: ancho_firma, height: 80) do
         logo_firma_path = Rails.root.join("app/assets/images/logo_ascc_firma.png")
         
         if File.exist?(logo_firma_path)
           y_inicio = pdf.cursor
           pdf.transparent(0.25) do
-            pdf.image logo_firma_path, width: 70, at: [(ancho_firma - 70) / 2, y_inicio]
+            pdf.image logo_firma_path, width: 75, at: [(ancho_firma - 75) / 2, y_inicio]
           end
         end
 
-        pdf.move_down 25
+        pdf.move_down 35
         pdf.stroke_color '333333'
         pdf.line_width 0.8
-        pdf.stroke_horizontal_rule
+        #pdf.stroke_horizontal_rule
 
         pdf.move_down 3
 
@@ -3163,7 +3163,6 @@ class FondoProduccionLimpia < ApplicationRecord
       end
 
       pdf.move_down 35
-
       pdf.stroke_color '333333'
       pdf.line_width 0.8
       #pdf.stroke_horizontal_rule

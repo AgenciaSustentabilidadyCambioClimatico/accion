@@ -92,3 +92,4 @@ class Rack::Attack
     [429, headers, [body]]
   end
 end
+end
