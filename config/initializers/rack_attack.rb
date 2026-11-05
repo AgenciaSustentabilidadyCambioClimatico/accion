@@ -62,8 +62,20 @@ class Rack::Attack
     end
   end
 
-  # Respuesta HTTP 429 personalizada
-  self.throttled_response = lambda do |env|
+  # ============================================================================
+  # Regla B7: Mitigación de DoS en generación dinámica de ZIPs al vuelo
+  # Limita a 3 descargas por minuto por dirección IP
+  # ============================================================================
+  throttle('req/ip/descargas_zip_publicas', limit: 3, period: 1.minute) do |req|
+    if req.get? && req.path.include?('descargar_documentos_proveedores_filtrados')
+      req.ip
+    end
+  end
+
+  # ============================================================================
+  # Manejador de respuesta HTTP 429 (sin deprecación throttled_response)
+  # ============================================================================
+  self.throttled_responder = lambda do |env|
     match_data = env["rack.attack.match_data"]
     retry_after = match_data ? match_data[:period] - (match_data[:epoch_time] % match_data[:period]) : 60
 
@@ -79,4 +91,5 @@ class Rack::Attack
 
     [429, headers, [body]]
   end
+end
 end
