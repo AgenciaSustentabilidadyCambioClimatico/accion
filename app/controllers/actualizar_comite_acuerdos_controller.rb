@@ -98,7 +98,12 @@ class ActualizarComiteAcuerdosController < ApplicationController
         end
 
         if informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].present?
-          informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].each do |archivo|
+          # Se limpian strings vacios generados por inputs files multiples
+          archivos_input = informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].reject(&:blank?)
+
+          archivos_input.each do |archivo|
+            next unless archivo.respond_to?(:original_filename) || archivo.respond_to?(:identifier)
+
             id = archivo.respond_to?(:identifier) ? archivo.identifier : archivo.original_filename
             unless (params[:por_eliminar].present? && params[:por_eliminar].include?(id))
               archivos_nuevos << archivo
@@ -328,6 +333,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
         :plazo_maximo_adhesion, :plazo_finalizacion_implementacion,
         :plazo_maximo, :plazo_maximo_neto,
         :vigencia_certificacion_final,
+        :tipo_acuerdo,
         :archivos_anexos_cache,
         archivos_anexos: [],
       )
