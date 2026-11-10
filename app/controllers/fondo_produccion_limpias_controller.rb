@@ -2649,6 +2649,8 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+
+      get_historial_cambios(Tarea::COD_FPL_03)
     end
 
     def revisar_admisibilidad  #TAREA FPL-003
@@ -2703,6 +2705,20 @@ class FondoProduccionLimpiasController < ApplicationController
           @cuestionario_fpl.save
         end
       end
+
+      
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+           flujo_id: params['flujo_id'],
+           user_id: @tarea_pendiente.user_id,
+           tarea_id: tarea_fondo_fpl_03.id
+        }
+      }
+ 
+      comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+      comentario.save
 
       #consulta si FPL_04 existe en estado enviada
       tarea_fondo_fpl_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
@@ -2781,6 +2797,8 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+
+      get_historial_cambios(Tarea::COD_FPL_04)
     end
 
     def revisar_admisibilidad_tecnica  #TAREA FPL-004
@@ -2835,6 +2853,19 @@ class FondoProduccionLimpiasController < ApplicationController
           @cuestionario_fpl.save
         end        
       end
+
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+           flujo_id: params['flujo_id'],
+           user_id: @tarea_pendiente.user_id,
+           tarea_id: tarea_fondo_fpl_04.id
+        }
+      }
+
+      comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+      comentario.save
 
       #consulta si FPL_03 existe en estado enviada
       tarea_fondo_fpl_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
@@ -2915,6 +2946,8 @@ class FondoProduccionLimpiasController < ApplicationController
       set_plan_actividades
       set_costos 
       set_descargables
+
+      get_historial_cambios(Tarea::COD_FPL_05)
     end
   
     def revisar_admisibilidad_juridica  #TAREA FPL-05
@@ -2984,6 +3017,19 @@ class FondoProduccionLimpiasController < ApplicationController
         end  
         
       end
+
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+           flujo_id: params['flujo_id'],
+           user_id: @tarea_pendiente.user_id,
+           tarea_id: tarea_fondo_fpl_05.id
+        }
+      }
+
+      comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+      comentario.save
 
       #CONSULTA SI EXISTE ALGUN CUESTIONARIO RECHAZADO O CON OBSERVACIONES
       #EL CODIGO 1 REPRESENTA APROBADO
@@ -3115,8 +3161,9 @@ class FondoProduccionLimpiasController < ApplicationController
       set_equipo_trabajo
       set_actividades_x_linea
       set_plan_actividades
-      set_costos 
-      set_comentarios
+      set_costos
+    
+      get_historial_cambios(Tarea::COD_FPL_06)
     end
 
     def revisar_pertinencia_factibilidad
@@ -3439,7 +3486,8 @@ class FondoProduccionLimpiasController < ApplicationController
         comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id, tarea_id: tarea_fondo.id)
         
         pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
+                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios,
+                                                   @tarea_pendiente)
         
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
@@ -4038,6 +4086,8 @@ class FondoProduccionLimpiasController < ApplicationController
       set_plan_actividades
       set_costos 
       set_descargables
+
+      get_historial_cambios(Tarea::COD_FPL_06)
     end
 
     def enviar_evaluacion_general
@@ -5637,77 +5687,87 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_pdf
       t_inicio = Time.now
       Rails.logger.info "=== [RADAR 1] INICIANDO STREAMER (t=0s) ==="
-      
+
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
       revision = params[:revision].presence || "1"
-      nombre_archivo = "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{revision}.pdf"
-      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/pdf/#{nombre_archivo}"
+      nombre_archivo = "fondo_produccion_limpia_#{@fondo_produccion_limpia.id}_#{revision}.pdf"
 
       begin
-        # 1. Verificación local
-        rutas_locales = [
-          Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', nombre_archivo),
-          Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'pdf', nombre_archivo)
-        ]
-
-        rutas_locales.each do |ruta|
-          if File.exist?(ruta)
-            return send_data File.read(ruta), type: "application/pdf", disposition: "attachment", filename: nombre_archivo
-          end
-        end
-
-        # 2. Obtener URL via CarrierWave SIN carpetas extra
-        Rails.logger.info "=== [RADAR 2] PIDIENDO URL VIA CARRIERWAVE ==="
-        
-        # Creamos un Uploader al vuelo que no agregue 'uploads/' al inicio
+        # 1. Instanciamos el uploader con el store_dir idéntico al generador
         uploader_class = Class.new(CarrierWave::Uploader::Base) do
           def store_dir
-            nil # Le decimos estrictamente que la ruta es exacta, sin prefijos
+            "accion/public/uploads/fondo_produccion_limpia/pdf"
           end
         end
-        
+
         uploader = uploader_class.new
-        uploader.retrieve_from_store!(pdf_file_name)
-        url_firmada = uploader.url
-        
-        Rails.logger.info "=== [RADAR URL] #{url_firmada} ==="
+        uploader.retrieve_from_store!(nombre_archivo)
 
-        # 3. Cabeceras
-        response.headers['Content-Type'] = "application/pdf"
-        response.headers['Content-Disposition'] = "attachment; filename=\"#{nombre_archivo}\""
-        response.headers['X-Accel-Buffering'] = 'no'
-        response.headers['Cache-Control'] = 'no-cache'
+        # 2. CASO DESARROLLO (Almacenamiento Local / File System)
+        ruta_en_disco = uploader.file&.path || uploader.path
 
-        # 4. El Streamer inteligente
-        Rails.logger.info "=== [RADAR 3] ABRIENDO CONEXIÓN DIRECTA ==="
-        uri = URI(url_firmada)
-        
-        self.response_body = Enumerator.new do |yielder|
-          require 'net/http'
-          Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
-            http.read_timeout = 600
-            request = Net::HTTP::Get.new(uri.request_uri) 
-            
-            http.request(request) do |azure_response|
-              if azure_response.code.to_i == 200
-                Rails.logger.info "=== [RADAR 4] CODIGO 200 OK. ENVIANDO PDF ==="
-                azure_response.read_body do |chunk|
-                  yielder << chunk
+        rutas_candidatas = [
+          ruta_en_disco,
+          Rails.root.join("public", "accion", "public", "uploads", "fondo_produccion_limpia", "pdf", nombre_archivo),
+          Rails.root.join("accion", "public", "uploads", "fondo_produccion_limpia", "pdf", nombre_archivo),
+          Rails.root.join("public", "uploads", "fondo_produccion_limpia", "pdf", nombre_archivo)
+        ].compact
+
+        archivo_encontrado = rutas_candidatas.find { |ruta| File.exist?(ruta) }
+
+        if archivo_encontrado
+          Rails.logger.info "=== [RADAR LOCAL] ARCHIVO ENCONTRADO EN DISCO: #{archivo_encontrado} ==="
+          return send_file archivo_encontrado,
+                          type: "application/pdf",
+                          disposition: "attachment",
+                          filename: nombre_archivo
+        end
+
+        # 3. CASO PRODUCCIÓN / AZURE (Storage Remoto)
+        url_firmada = uploader.url.to_s
+        Rails.logger.info "=== [RADAR URL REMOTA] #{url_firmada} ==="
+
+        if url_firmada.start_with?("http://", "https://")
+          uri = URI.parse(url_firmada)
+
+          response.headers['Content-Type'] = "application/pdf"
+          response.headers['Content-Disposition'] = "attachment; filename=\"#{nombre_archivo}\""
+          response.headers['X-Accel-Buffering'] = 'no'
+          response.headers['Cache-Control'] = 'no-cache'
+
+          Rails.logger.info "=== [RADAR 3] ABRIENDO CONEXIÓN DIRECTA REMOTA ==="
+          self.response_body = Enumerator.new do |yielder|
+            require 'net/http'
+            Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+              http.read_timeout = 600
+              request = Net::HTTP::Get.new(uri.request_uri)
+
+              http.request(request) do |azure_response|
+                if azure_response.code.to_i == 200
+                  Rails.logger.info "=== [RADAR 4] CODIGO 200 OK. ENVIANDO PDF ==="
+                  azure_response.read_body do |chunk|
+                    yielder << chunk
+                  end
+                else
+                  error_xml = azure_response.read_body
+                  Rails.logger.error "=== [ERROR AZURE #{azure_response.code}] #{error_xml} ==="
+                  yielder << "Error de Azure: #{azure_response.code}. Verifica los logs."
                 end
-              else
-                error_xml = azure_response.read_body
-                Rails.logger.error "=== [ERROR AZURE #{azure_response.code}] #{error_xml} ==="
-                yielder << "Error de Azure: #{azure_response.code}. Verifica los logs."
               end
             end
           end
+          return
         end
 
+        # 4. En caso de que no exista ni en local ni en URL remota
+        flash[:alert] = "El archivo PDF no fue encontrado ni localmente ni en Azure."
+        redirect_to(request.referer || root_path)
+
       rescue StandardError => e
-        Rails.logger.error "=== [ERROR] #{e.class} - #{e.message} ==="
-        flash[:alert] = "Error: #{e.message}"
+        Rails.logger.error "=== [ERROR] #{e.class}: #{e.message} ==="
+        flash[:alert] = "Error al descargar PDF: #{e.message}"
         redirect_to(request.referer || root_path)
       end
     end
@@ -5961,72 +6021,86 @@ class FondoProduccionLimpiasController < ApplicationController
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
       revision = params[:revision].presence || "1"
-      nombre_archivo = "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{revision}.pdf"
-      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{nombre_archivo}"
+      nombre_archivo = "admisibilidad_juridica_#{@fondo_produccion_limpia.id}_#{revision}.pdf"
+      pdf_relative_path = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{nombre_archivo}"
 
       begin
-        # 1. Verificación local
-        rutas_locales = [
-          Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', nombre_archivo),
-          Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', nombre_archivo)
-        ]
-
-        rutas_locales.each do |ruta|
-          if File.exist?(ruta)
-            return send_data File.read(ruta), type: "application/pdf", disposition: "attachment", filename: nombre_archivo
-          end
-        end
-
-        # 2. Obtener URL via CarrierWave SIN carpetas extra
-        Rails.logger.info "=== [RADAR 2] PIDIENDO URL VIA CARRIERWAVE ==="
-        
-        # Creamos un Uploader al vuelo que no agregue 'uploads/' al inicio
+        # 1. Instanciamos el uploader con la MISMA configuración con la que se guardó
         uploader_class = Class.new(CarrierWave::Uploader::Base) do
           def store_dir
-            nil # Le decimos estrictamente que la ruta es exacta, sin prefijos
+            "accion/public/uploads/fondo_produccion_limpia/admisibilidad"
           end
         end
-        
+
         uploader = uploader_class.new
-        uploader.retrieve_from_store!(pdf_file_name)
-        url_firmada = uploader.url
-        
-        Rails.logger.info "=== [RADAR URL] #{url_firmada} ==="
+        # Recuperamos el archivo por su nombre simple (ya que store_dir tiene la carpeta)
+        uploader.retrieve_from_store!(nombre_archivo)
 
-        # 3. Cabeceras
-        response.headers['Content-Type'] = "application/pdf"
-        response.headers['Content-Disposition'] = "attachment; filename=\"#{nombre_archivo}\""
-        response.headers['X-Accel-Buffering'] = 'no'
-        response.headers['Cache-Control'] = 'no-cache'
+        # 2. CASO DESARROLLO (Almacenamiento Local / File System)
+        # CarrierWave provee uploader.file.path o uploader.path con la ruta real en disco
+        ruta_en_disco = uploader.file&.path || uploader.path
 
-        # 4. El Streamer inteligente
-        Rails.logger.info "=== [RADAR 3] ABRIENDO CONEXIÓN DIRECTA ==="
-        uri = URI(url_firmada)
-        
-        self.response_body = Enumerator.new do |yielder|
-          require 'net/http'
-          Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
-            http.read_timeout = 600
-            request = Net::HTTP::Get.new(uri.request_uri) 
-            
-            http.request(request) do |azure_response|
-              if azure_response.code.to_i == 200
-                Rails.logger.info "=== [RADAR 4] CODIGO 200 OK. ENVIANDO PDF ==="
-                azure_response.read_body do |chunk|
-                  yielder << chunk
+        # Lista de posibles rutas locales por si existe en alguna de las carpetas conocidas
+        rutas_candidatas = [
+          ruta_en_disco,
+          Rails.root.join("public", "accion", "public", "uploads", "fondo_produccion_limpia", "admisibilidad", nombre_archivo),
+          Rails.root.join("accion", "public", "uploads", "fondo_produccion_limpia", "admisibilidad", nombre_archivo),
+          Rails.root.join("public", "uploads", "fondo_produccion_limpia", "admisibilidad", nombre_archivo)
+        ].compact
+
+        archivo_encontrado = rutas_candidatas.find { |ruta| File.exist?(ruta) }
+
+        if archivo_encontrado
+          Rails.logger.info "=== [RADAR LOCAL] ARCHIVO ENCONTRADO EN DISCO: #{archivo_encontrado} ==="
+          return send_file archivo_encontrado,
+                          type: "application/pdf",
+                          disposition: "attachment",
+                          filename: nombre_archivo
+        end
+
+        # 3. CASO PRODUCCIÓN / AZURE (Storage Remoto)
+        url_firmada = uploader.url.to_s
+        Rails.logger.info "=== [RADAR URL REMOTA] #{url_firmada} ==="
+
+        if url_firmada.start_with?("http://", "https://")
+          uri = URI.parse(url_firmada)
+
+          response.headers['Content-Type'] = "application/pdf"
+          response.headers['Content-Disposition'] = "attachment; filename=\"#{nombre_archivo}\""
+          response.headers['X-Accel-Buffering'] = 'no'
+          response.headers['Cache-Control'] = 'no-cache'
+
+          Rails.logger.info "=== [RADAR 3] ABRIENDO CONEXIÓN DIRECTA REMOTA ==="
+          self.response_body = Enumerator.new do |yielder|
+            require 'net/http'
+            Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+              http.read_timeout = 600
+              request = Net::HTTP::Get.new(uri.request_uri)
+              
+              http.request(request) do |azure_response|
+                if azure_response.code.to_i == 200
+                  Rails.logger.info "=== [RADAR 4] CODIGO 200 OK. ENVIANDO PDF ==="
+                  azure_response.read_body do |chunk|
+                    yielder << chunk
+                  end
+                else
+                  error_xml = azure_response.read_body
+                  Rails.logger.error "=== [ERROR AZURE #{azure_response.code}] #{error_xml} ==="
+                  yielder << "Error de Azure: #{azure_response.code}. Verifica los logs."
                 end
-              else
-                error_xml = azure_response.read_body
-                Rails.logger.error "=== [ERROR AZURE #{azure_response.code}] #{error_xml} ==="
-                yielder << "Error de Azure: #{azure_response.code}. Verifica los logs."
               end
             end
           end
+          return
         end
 
+        # 4. Si no está en disco ni en URL remota
+        flash[:alert] = "El archivo PDF no fue encontrado ni localmente ni en Azure."
+        redirect_to(request.referer || root_path)
+
       rescue StandardError => e
-        Rails.logger.error "=== [ERROR] #{e.class} - #{e.message} ==="
-        flash[:alert] = "Error: #{e.message}"
+        Rails.logger.error "=== [ERROR] #{e.class}: #{e.message} ==="
+        flash[:alert] = "Error al descargar PDF: #{e.message}"
         redirect_to(request.referer || root_path)
       end
     end
@@ -7253,8 +7327,8 @@ class FondoProduccionLimpiasController < ApplicationController
         @regiones = Region.order(id: :asc).all
       end
 
-      def set_comentarios
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      def get_historial_cambios(tarea)
+        tarea_fondo = Tarea.find_by_codigo(tarea)
         @comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id, tarea_id: tarea_fondo.id)   
       end
 
