@@ -1,22 +1,30 @@
 - comentarios = @comentarios.blank? ? [] : @comentarios
 - unless comentarios.blank?
-  - mostrar_usuario = comentarios.any? { @tarea_pendiente.tarea.codigo == Tarea::COD_FPL_10 }
+  - codigo_actual = @tarea_pendiente.try(:tarea)&.codigo
+  - mostrar_usuario = [Tarea::COD_FPL_06, Tarea::COD_FPL_10].include?(codigo_actual)
+
   .form-group
     %label.string
       Observaciones y comentarios anteriores
+
   %table.table.table-striped
     %thead
       %tr
-        %th=t(:fecha_y_hora)
+        %th= t(:fecha_y_hora)
         - if mostrar_usuario
-          %th=t(:usuario)
-        -#%th=t(:tarea)
-        %th=t(:comentario)
+          %th= t(:usuario)
+        -#%th= t(:tarea)
+        %th= t(:comentario)
     %tbody
       - comentarios.each do |c|
         %tr
-          %td=l c[:created_at], format: '%d-%m-%Y %H:%M:%S'
+          - fecha = c.is_a?(Hash) ? c[:created_at] : c.try(:created_at)
+          %td= fecha.present? ? l(fecha, format: '%d-%m-%Y %H:%M:%S') : '-'
+
           - if mostrar_usuario
-            %td= @tarea_pendiente.tarea.codigo == Tarea::COD_FPL_10 ? c.user&.nombre_completo : '-'
-          -#%td=c.tarea.codigo
-          %td=c[:comentario]
+            - usuario_obj = c.is_a?(Hash) ? (c[:user] || User.find_by(id: c[:user_id])) : c.try(:user)
+            %td= usuario_obj&.nombre_completo.presence || '-'
+
+          -#%td= c.is_a?(Hash) ? c[:tarea] : c.try(:tarea)&.codigo
+          - texto_comentario = c.is_a?(Hash) ? (c[:comentario] || c[:observacion]) : (c.try(:comentario) || c.try(:observacion))
+          %td= texto_comentario
