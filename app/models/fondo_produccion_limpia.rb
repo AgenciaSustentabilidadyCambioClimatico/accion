@@ -104,7 +104,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
   def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
                 costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil,
-                comentarios = nil)
+                comentarios = nil, tarea_pendiente = nil)
     t_inicio = Time.now
     Rails.logger.info "=== [PDF FPL FORMULARIO] INICIANDO GENERACIÓN ==="
 
@@ -254,17 +254,10 @@ class FondoProduccionLimpia < ApplicationRecord
     # =========================================================================
     # BLOQUE DE FIRMA DEL REVISOR SEGURO
     # =========================================================================
-    flujo_id_target = fpl.try(:flujo_id) || self.try(:flujo_id)
-    tarea = Tarea.find_by(codigo: Tarea::COD_FPL_06)
-
     # 1. Intentar obtener el usuario de la tarea pendiente (priorizando estado 1, o la última registrada)
-    usuario_tp = if tarea.present? && flujo_id_target.present?
-                   TareaPendiente.where(tarea_id: tarea.id, flujo_id: flujo_id_target, estado_tarea_pendiente_id: 1).last ||
-                   TareaPendiente.where(tarea_id: tarea.id, flujo_id: flujo_id_target).last
-                 end
-
+    user_id_revisor = tarea_pendiente&.user_id
+    
     # 2. Respaldo si no hay TareaPendiente: buscar directo en el modelo fpl
-    user_id_revisor = usuario_tp&.user_id || fpl.try(:revisor_financiero_id) || fpl.try(:revisor_tecnico_id)
     revisor = User.find_by(id: user_id_revisor) if user_id_revisor.present?
 
     nombre_revisor = revisor&.nombre_completo.presence || "REVISOR ASIGNADO"
@@ -441,10 +434,22 @@ class FondoProduccionLimpia < ApplicationRecord
     # =========================================================================
     # BLOQUE DE FIRMA DEL REVISOR
     # =========================================================================
-    revisor = User.find_by(id: fondo_produccion_limpia.try(:revisor_financiero_id))
-    nombre_revisor = revisor.try(:nombre_completo)
-    rut_revisor = revisor.try(:rut)
-    fecha_firma = Time.current.strftime("%d-%m-%Y")
+    flujo_id_target = flujo_id || fondo_produccion_limpia.try(:flujo_id) || self.try(:flujo_id)
+    tarea = Tarea.find_by(codigo: Tarea::COD_FPL_05)
+
+    # 1. Intentar obtener el usuario de la tarea pendiente (priorizando estado 1, o la última registrada)
+    usuario_tp = if tarea.present? && flujo_id_target.present?
+                   TareaPendiente.where(tarea_id: tarea.id, flujo_id: flujo_id_target, estado_tarea_pendiente_id: 1).last ||
+                   TareaPendiente.where(tarea_id: tarea.id, flujo_id: flujo_id_target).last
+                 end
+
+    # 2. Respaldo si no hay TareaPendiente: buscar directo en el modelo
+    user_id_revisor = usuario_tp&.user_id
+    revisor = User.find_by(id: user_id_revisor) if user_id_revisor.present?
+
+    nombre_revisor = revisor&.nombre_completo.presence || "REVISOR ASIGNADO"
+    rut_revisor    = revisor&.rut.presence || "--"
+    fecha_firma    = Time.current.strftime("%d-%m-%Y")
 
     ancho_firma = 190
     posicion_x = pdf.bounds.width - ancho_firma
