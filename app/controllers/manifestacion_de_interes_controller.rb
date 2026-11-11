@@ -1413,72 +1413,63 @@ class ManifestacionDeInteresController < ApplicationController
                 rol_id: Rol::COORDINADOR,
                 persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
               })
-              #MapaDeActor.find_or_create_by({
-              #  flujo_id: @tarea_pendiente.flujo_id,
-              #  rol_id: Rol::PRENSA,
-              #  persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
-              #})
 
-              #paso los temporales de contribuyente y responsable te tarea apl-001 a definitivos
+              # Paso los temporales a definitivos
               @manifestacion_de_interes.confirmar_temporales_a_definitivos
 
               actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
               MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
 
-              @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-              #Cargar set de metas si se adherio a estandar o diagnostico.-
-              if @manifestacion_de_interes.estandar_de_certificacion_id.present?
-                @flujo.set_metas_acciones_by_estandar @manifestacion_de_interes.estandar_de_certificacion_id
-              elsif @manifestacion_de_interes.diagnostico_id.present?
-                set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
-              end
+              # =========================================================================
+              # FPL-00 - CREACIÓN DEL FLUJO FPL ANTES DE AVANZAR LA TAREA
+              # =========================================================================
+              es_fondo = ActiveModel::Type::Boolean.new.cast(manifestacion_pertinencia_params[:fondo_produccion_limpia])
 
-              #FPL-00 - SE CREA NUEVO FLUJO FPL PARA EL DIAGNOSTICO 
-              if manifestacion_pertinencia_params[:fondo_produccion_limpia] == "true"
-                #obtengo el user_id del postulante de la manifestacion de interes
+              if es_fondo
                 tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
                 postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
 
                 flujo = Flujo.new({
                   contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
-                  tipo_instrumento_id: manifestacion_pertinencia_params[:tipo_linea_seleccionada] #params[:manifestacion_de_interes][:tipo_instrumento_id] 
+                  tipo_instrumento_id: manifestacion_pertinencia_params[:tipo_linea_seleccionada]
                 })
+
                 if flujo.save
                   persona_by_user = Persona.where(user_id: postulante.user_id).first
 
-                  #Se inserta en el mapa de actores al postulante
-                  mapa = MapaDeActor.find_or_create_by({
+                  MapaDeActor.find_or_create_by({
                     flujo_id: flujo.id,
                     rol_id: Rol::PROPONENTE, 
                     persona_id: persona_by_user.id 
                   })
 
-                  #SE ENVIAR EL MAIL AL RESPONSABLE  
-                  mdi = @manifestacion_de_interes
-                  
-                  #Inicia el flujo con el nombre Sin nombre
                   codigo_proyecto = "Proyecto DyAPL"
 
-                  fpl = FondoProduccionLimpia.new({
-                    flujo_id: flujo.id,
-                    flujo_apl_id: @tarea_pendiente.flujo_id,
-                    codigo_proyecto: codigo_proyecto
-                  })
-                  fpl.save 
+                  fpl = FondoProduccionLimpia.find_or_initialize_by(flujo_apl_id: @tarea_pendiente.flujo_id)
+                  fpl.flujo_id = flujo.id
+                  fpl.codigo_proyecto = codigo_proyecto
+                  fpl.save!
 
-                    #guarda el fpl id en la tabla flujo
-                    flujo.fondo_produccion_limpia_id = fpl.id
-                    flujo.save
+                  flujo.update(fondo_produccion_limpia_id: fpl.id)
 
-                    #envio de correo
-                    @tarea_pendiente.pasar_a_siguiente_tarea 'D'
-                    
-                  success = 'Flujo fondo de producción limpia creado correctamente.'
+                  # Avanzar flujo FPL si corresponde
+                  @tarea_pendiente.pasar_a_siguiente_tarea 'D'
                 else
-                  warning = 'Usted NO puede iniciar Flujo FPL.'
+                  Rails.logger.error "Error al crear flujo FPL: #{flujo.errors.full_messages.to_sentence}"
                 end
               end
-              
+
+              # =========================================================================
+              # AVANCE DE TAREA APL (Ahora que FPL ya existe si correspondía)
+              # =========================================================================
+              @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+
+              # Cargar set de metas si se adhirió a estándar o diagnóstico
+              if @manifestacion_de_interes.estandar_de_certificacion_id.present?
+                @flujo.set_metas_acciones_by_estandar @manifestacion_de_interes.estandar_de_certificacion_id
+              elsif @manifestacion_de_interes.diagnostico_id.present?
+                set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
+              end
             when "solicita_condiciones", "realiza_observaciones", "solicita_condiciones_y_contiene_observaciones"
               @tarea_pendiente.pasar_a_siguiente_tarea 'B'
             when "no_aceptada"
