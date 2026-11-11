@@ -2,7 +2,7 @@
   "name": "ascc",
   "private": true,
   "engines": {
-    "node": "10.x"
+    "node": "20.x"
   },
   "dependencies": {
     "jquery.csrf": "^0.1.2"
