@@ -144,15 +144,15 @@ class ManifestacionDeInteres < ApplicationRecord
 
   #validates :porcentaje_exportaciones, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   #validates :principales_mercados, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
-  validates :cadena_de_valor, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :cadena_de_valor, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
   # DZC 2019-06-25 16:20:35 se agrega para manejar monto máximo a ingresar
   validates :numero_trabajadores, presence: true, if: -> { (self.numero_trabajadores.present? && temporal.to_s != "true") && :updating_record? }
 
-  validates :vulnerabilidad_al_cambio_climatico_del_sector, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :vulnerabilidad_al_cambio_climatico_del_sector, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   #validates :principales_impactos_socioambientales_del_sector, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
-  validates :principales_problemas_y_desafios, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
-  validates :principales_conflictos, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :principales_problemas_y_desafios, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :principales_conflictos, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   #Validaciones datos del proyecto
 
   #validates :nombre_proyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
