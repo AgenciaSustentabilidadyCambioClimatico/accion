@@ -1437,12 +1437,14 @@ class ManifestacionDeInteresController < ApplicationController
                 if flujo.save
                   persona_by_user = Persona.where(user_id: postulante.user_id).first
 
-                  MapaDeActor.find_or_create_by({
-                    flujo_id: flujo.id,
-                    rol_id: Rol::PROPONENTE, 
-                    persona_id: persona_by_user.id 
-                  })
-
+                  postulante = MapaDeActor.where(flujo_id: flujo.id, rol_id: Rol::PROPONENTE).count
+                  if postulante == 0
+                    MapaDeActor.find_or_create_by({
+                      flujo_id: flujo.id,
+                      rol_id: Rol::PROPONENTE, 
+                      persona_id: persona_by_user.id 
+                    })
+                  end
                   codigo_proyecto = "Proyecto DyAPL"
 
                   fpl = FondoProduccionLimpia.find_or_initialize_by(flujo_apl_id: @tarea_pendiente.flujo_id)

@@ -415,11 +415,16 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendientes.save 
         
         #Se inserta en el mapa de actores al nuevo postulante
-        mapa = MapaDeActor.find_or_create_by({
-          flujo_id: @flujo.id,
-          rol_id: Rol::PROPONENTE, 
-          persona_id: pers.id
-        })
+        if @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::NO_INICIADA
+          postulante = MapaDeActor.where(flujo_id: @flujo.id, rol_id: Rol::PROPONENTE).count
+          if postulante == 0
+            mapa = MapaDeActor.find_or_create_by({
+              flujo_id: @flujo.id,
+              rol_id: Rol::PROPONENTE, 
+              persona_id: pers.id
+            })
+          end
+        end
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
