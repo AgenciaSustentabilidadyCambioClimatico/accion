@@ -415,8 +415,8 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendientes.save 
         
         #Se inserta en el mapa de actores al nuevo postulante
-        postulante = MapaDeActor.where(flujo_id: @flujo.id, rol_id: Rol::PROPONENTE).count
-        if postulante == 0
+        postulante_user = MapaDeActor.where(flujo_id: @flujo.id, rol_id: Rol::PROPONENTE).count
+        if postulante_user == 0
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @flujo.id,
             rol_id: Rol::PROPONENTE, 
