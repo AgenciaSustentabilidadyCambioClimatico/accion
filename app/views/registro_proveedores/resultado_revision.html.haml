@@ -209,40 +209,45 @@
     const archivoInput = document.getElementById("adhesion_archivo");
 
     if (!archivoInput || archivoInput.files.length === 0) {
-        console.log("No se seleccionó archivo");
-        return;
+      console.log("No se seleccionó archivo");
+      return;
     }
 
     const archivo = archivoInput.files[0];
 
-    // 1. obtener el id del registro seleccionado en la tabla
-    const seleccionado = document.querySelector('.seleccionar-elemento-adhesion:checked');
-    if (!seleccionado) {
-        alert("Seleccione un registro antes de subir el archivo");
-        return;
+    // 1. Obtener TODOS los registros seleccionados en la tabla
+    const seleccionados = document.querySelectorAll('.seleccionar-elemento-adhesion:checked');
+    if (seleccionados.length === 0) {
+      alert("Seleccione al menos un registro antes de subir el archivo");
+      return;
     }
 
-    const registroId = seleccionado.value;
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfInput = document.querySelector('input[name="authenticity_token"]');
+    const csrfToken = csrfMeta ? csrfMeta.content : (csrfInput ? csrfInput.value : '');
 
-    // 2. Construir FormData
-    const formData = new FormData();
-    formData.append("id", registroId);
-    formData.append("nombre_campo", "archivo_aprobado_directiva");
-    formData.append("archivo", archivo);
+    // 2. Iterar por cada registro seleccionado y enviar su archivo
+    seleccionados.forEach((seleccionado) => {
+      const registroId = seleccionado.value;
 
-    // 3. Enviar por fetch
-    fetch('/subir_documento_registro_proveedores', {
+      const formData = new FormData();
+      formData.append("id", registroId);
+      formData.append("nombre_campo", "archivo_aprobado_directiva");
+      formData.append("archivo", archivo);
+
+      fetch('/subir_documento_registro_proveedores', {
         method: 'POST',
         headers: {
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          'X-CSRF-Token': csrfToken
         },
         body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Archivo subido correctamente:", data);
-    })
-    .catch(error => {
-        console.error("Error al subir archivo:", error);
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(`Archivo subido correctamente para registro ${registroId}:`, data);
+      })
+      .catch(error => {
+        console.error(`Error al subir archivo para registro ${registroId}:`, error);
+      });
     });
   }
