@@ -1,17 +1,9 @@
 class ApplicationMailer < ActionMailer::Base
-  queue_as :mailers
+  self.deliver_later_queue_name = :mailers
   default from: ENV["MAILER_DEFAULT_OPTIONS_FROM"]
   layout 'mailer'
 
   after_action :interceptor
-
-  # Reintenta automáticamente hasta 5 veces si el servidor SMTP tarda en responder o corta la conexión
-  retry_on Net::ReadTimeout, Net::OpenTimeout, Errno::ECONNRESET, wait: :polynomially_longer, attempts: 5 do |job, exception|
-    Rails.logger.error "=== ERROR TIMEOUT SMTP DEFINITIVO (tras 5 intentos) ==="
-    Rails.logger.error "Job: #{job.class.name} | Args: #{job.arguments.inspect}"
-    Rails.logger.error "Error: #{exception.class} - #{exception.message}"
-    Rails.logger.error "======================================================"
-  end
 
   # Captura errores propios del protocolo SMTP (respuestas 4xx / 5xx del servidor)
   rescue_from Net::SMTPError, Net::SMTPServerBusy, Net::SMTPUnknownError do |exception|
