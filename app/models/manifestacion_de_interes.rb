@@ -1841,4 +1841,41 @@ class ManifestacionDeInteres < ApplicationRecord
   ensure
     File.delete(ruta_temporal) if defined?(ruta_temporal) && ruta_temporal && File.exist?(ruta_temporal)
   end
+
+  def pdf_inicial_existe?
+    nombre_archivo = "manifestacion_de_interes_inicial_#{self.id}.pdf"
+
+    uploader_class = Class.new(CarrierWave::Uploader::Base) do
+      storage :file if Rails.env.development?
+
+      def store_dir
+        "accion/public/uploads/manifestacion_de_interes/pdf_inicial"
+      end
+    end
+
+    uploader = uploader_class.new
+    uploader.retrieve_from_store!(nombre_archivo)
+
+    # 1. Verificación local en disco
+    ruta_en_disco = uploader.file&.path || uploader.path
+    rutas_candidatas = [
+      ruta_en_disco,
+      Rails.root.join("public", "accion", "public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo),
+      Rails.root.join("accion", "public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo),
+      Rails.root.join("public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo)
+    ].compact
+
+    return true if rutas_candidatas.any? { |ruta| File.exist?(ruta) }
+
+    # 2. Verificación remota en Azure (solo si la URL es http/https)
+    url_remota = uploader.url.to_s
+    if url_remota.start_with?("http://", "https://")
+      return uploader.file&.exists? || false
+    end
+
+    false
+  rescue StandardError => e
+    Rails.logger.error "Error verificando existencia de PDF inicial (ID #{self.id}): #{e.message}"
+    false
+  end
 end
