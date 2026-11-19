@@ -1662,7 +1662,28 @@ class ManifestacionDeInteres < ApplicationRecord
     # OPTIMIZACIÓN BD: Precargar el establecimiento antes de empezar a dibujar
     establecimiento_contribuyente = EstablecimientoContribuyente.unscoped.find_by(id: self.sucursal_ligada)
 
+    # Resolver responsable del documento (desde tarea APL-001 del flujo o representante/usuario asociado)
+    flujo_asociado = self.try(:flujo) || Flujo.find_by(manifestacion_de_interes_id: self.id)
+    tarea_inicial = TareaPendiente.joins(:tarea)
+                                  .where(flujo_id: flujo_asociado&.id, tareas: { codigo: Tarea::COD_APL_001 })
+                                  .order(id: :asc)
+                                  .first
+    usuario_responsable = tarea_inicial&.user || self.try(:user)
+
+    nombre_responsable = usuario_responsable&.nombre_completo.presence ||
+                         self.nombre_representante_para_acuerdo.presence ||
+                         "No especificado"
+    fecha_creacion_doc = (self.updated_at || Time.current).strftime("%d-%m-%Y %H:%M")
+
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width => pdf.bounds.width do
+
+      ## DATOS DE RESPONSABLE Y FECHA (DESPUÉS DEL ENCABEZADO)
+      pdf.font "Helvetica", size: 9, color: "333333" do
+        pdf.text "<b>Creador del documento:</b> #{nombre_responsable}", inline_format: true
+        pdf.move_down 3
+        pdf.text "<b>Fecha de creación:</b> #{fecha_creacion_doc}", inline_format: true
+      end
+      self.pdf_separador(pdf, 15)
       
       # PESTAÑA 1
       self.pdf_titulo_formato(pdf, I18n.t(:objetivo_acuerdo), "Motivación y fundamentos del acuerdo")
