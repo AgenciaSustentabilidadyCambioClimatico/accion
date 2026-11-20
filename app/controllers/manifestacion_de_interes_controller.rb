@@ -1055,6 +1055,18 @@ class ManifestacionDeInteresController < ApplicationController
           #DZC corrige continuación el en flujo por cumplimiento de condición 'A'
           if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
             if manifestacion_obs_admisibilidad_params.key?(:update_obs_admisibilidad) && manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
+
+              ## Graba comentarios en tabla comentario_flujos
+              custom_params_comentarios = {
+                cuestionario_flujos: {
+                  flujo_id: @flujo.id,
+                  user_id: @tarea_pendiente.user_id,
+                  tarea_id: @tarea&.id
+                }
+              }
+              comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+              comentario.save
+
               @tarea_pendiente.pasar_a_siguiente_tarea 'A' if manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
 
               format.js { 
@@ -1291,6 +1303,18 @@ class ManifestacionDeInteresController < ApplicationController
           #DZC corrige continuación el en flujo por cumplimiento de condición 'A'
           if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
             if manifestacion_obs_admisibilidad_juridica_params.key?(:update_obs_admisibilidad_juridica)
+
+              ## Graba comentarios en tabla comentario_flujos
+              custom_params_comentarios = {
+                cuestionario_flujos: {
+                  flujo_id: @flujo.id,
+                  user_id: @tarea_pendiente.user_id,
+                  tarea_id: @tarea&.id
+                }
+              }
+              comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+              comentario.save
+              
               @tarea_pendiente.pasar_a_siguiente_tarea 'A' if manifestacion_obs_admisibilidad_juridica_params[:update_obs_admisibilidad_juridica] == "true"
             end
             format.js { 
