@@ -1081,7 +1081,7 @@ class ManifestacionDeInteres < ApplicationRecord
     [['ton','toneladas'], ['kg', 'kilogramos']]
   end
 
-  def generar_pdf(mapa_territorio, mapa_area_influencia, mapa_alternativas)
+  def generar_pdf(mapa_territorio, mapa_area_influencia, mapa_alternativas, comentarios = nil)
     require 'stringio'
 
     pdf = Prawn::Document.new
@@ -1121,6 +1121,12 @@ class ManifestacionDeInteres < ApplicationRecord
     establecimiento_contribuyente = EstablecimientoContribuyente.unscoped.find_by(id: self.sucursal_ligada)
 
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width => pdf.bounds.width do
+
+      if comentarios.present?
+        self.pdf_titulo_formato(pdf, I18n.t(:observaciones), "Observaciones y comentarios anteriores")
+        self.pdf_tabla_observaciones(pdf, comentarios)
+        self.pdf_separador(pdf, 10)
+      end
       
       # PESTAÑA 1
       self.pdf_titulo_formato(pdf, I18n.t(:objetivo_acuerdo), "Motivación y fundamentos del acuerdo")
@@ -1620,6 +1626,36 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   elementos_certificados
+  end
+
+  def pdf_tabla_observaciones(pdf, comentarios)
+     begin
+      # Encabezados de la tabla
+      headers = ["Descripción", "Fecha y Hora", "Tarea", "Responsable"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      comentarios.each do |resp|
+        fila = [
+          resp[:comentario],
+          resp[:created_at].strftime('%d-%m-%Y %H:%M:%S'), 
+          resp.tarea.codigo,
+          resp.user.nombre_completo
+        ]
+        data << fila
+      end
+      pdf.table(data, header: true, column_widths: [127, 127, 127, 127], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
+
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
   end
 
 end
