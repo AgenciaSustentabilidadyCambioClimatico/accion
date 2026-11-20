@@ -1081,7 +1081,7 @@ class ManifestacionDeInteres < ApplicationRecord
     [['ton','toneladas'], ['kg', 'kilogramos']]
   end
 
-  def generar_pdf(mapa_territorio, mapa_area_influencia, mapa_alternativas)
+  def generar_pdf(mapa_territorio, mapa_area_influencia, mapa_alternativas, comentarios = nil)
     require 'stringio'
 
     pdf = Prawn::Document.new
@@ -1121,6 +1121,12 @@ class ManifestacionDeInteres < ApplicationRecord
     establecimiento_contribuyente = EstablecimientoContribuyente.unscoped.find_by(id: self.sucursal_ligada)
 
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width => pdf.bounds.width do
+
+      if comentarios.present?
+        self.pdf_titulo_formato(pdf, I18n.t(:observaciones), "Observaciones y comentarios anteriores")
+        self.pdf_tabla_observaciones(pdf, comentarios)
+        self.pdf_separador(pdf, 10)
+      end
       
       # PESTAÑA 1
       self.pdf_titulo_formato(pdf, I18n.t(:objetivo_acuerdo), "Motivación y fundamentos del acuerdo")
@@ -1622,4 +1628,290 @@ class ManifestacionDeInteres < ApplicationRecord
   elementos_certificados
   end
 
+  def generar_pdf_inicial(mapa_territorio, mapa_area_influencia, mapa_alternativas)
+    require 'stringio'
+    Rails.logger.info "=== [PDF MANIFESTACIÓN INICIAL] INICIANDO GENERACIÓN (ID: #{self.id}) ==="
+
+    pdf = Prawn::Document.new
+
+    # 1. Registrar la familia de fuentes Open_Sans en Prawn
+    pdf.font_families.update("Open_Sans" => {
+      normal: Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf"),
+      bold:   Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+    })
+
+    # 2. Establecer Open_Sans como fuente por defecto del documento
+    pdf.font "Open_Sans"
+    
+    ## HEADER
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width => pdf.bounds.width do
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png").to_s, width: 119
+        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width => pdf.bounds.width do
+          # Usar Helvetica-Bold estándar para el header evita que Prawn rompa el subset en Acrobat
+          pdf.font "Helvetica", style: :bold do
+            pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 10, color: "003DA6", align: :right
+          end
+        end
+        pdf.move_down 8
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 3
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    ## CONTENIDO
+    validaciones = self.get_campos_validaciones
+    
+    # OPTIMIZACIÓN BD: Precargar el establecimiento antes de empezar a dibujar
+    establecimiento_contribuyente = EstablecimientoContribuyente.unscoped.find_by(id: self.sucursal_ligada)
+
+    # Resolver responsable del documento (desde tarea APL-001 del flujo o representante/usuario asociado)
+    flujo_asociado = self.try(:flujo) || Flujo.find_by(manifestacion_de_interes_id: self.id)
+    tarea_inicial = TareaPendiente.joins(:tarea)
+                                  .where(flujo_id: flujo_asociado&.id, tareas: { codigo: Tarea::COD_APL_001 })
+                                  .order(id: :asc)
+                                  .first
+    usuario_responsable = tarea_inicial&.user || self.try(:user)
+
+    nombre_responsable = usuario_responsable&.nombre_completo.presence ||
+                         self.nombre_representante_para_acuerdo.presence ||
+                         "No especificado"
+    fecha_creacion_doc = (self.updated_at || Time.current).strftime("%d-%m-%Y %H:%M")
+
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width => pdf.bounds.width do
+
+      ## DATOS DE RESPONSABLE Y FECHA (DESPUÉS DEL ENCABEZADO)
+      pdf.font "Helvetica", size: 9, color: "333333" do
+        pdf.text "<b>Creador del documento:</b> #{nombre_responsable}", inline_format: true
+        pdf.move_down 3
+        pdf.text "<b>Fecha de creación:</b> #{fecha_creacion_doc}", inline_format: true
+      end
+      self.pdf_separador(pdf, 15)
+      
+      # PESTAÑA 1
+      self.pdf_titulo_formato(pdf, I18n.t(:objetivo_acuerdo), "Motivación y fundamentos del acuerdo")
+      self.pdf_contenido_formato(pdf, :nombre_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :motivacion_y_objetivos, validaciones)
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato(pdf, :relacion_de_politicas, validaciones)
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato(pdf, :fuente_de_fondos, validaciones)
+      self.pdf_contenido_formato(pdf, :justificacion_de_estimacion_de_fondos_requeridos, validaciones)
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato(pdf, :nombre_de_estandar_certificable, validaciones)
+      self.pdf_contenido_formato(pdf, :estandar_certificable, validaciones)
+      self.pdf_contenido_formato_select(
+        pdf,
+        :estandar_de_certificacion_id,
+        (self.estandar_homologacion.nil? ? '' : self.estandar_homologacion.nombre),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self, estandar_id: self.estandar_de_certificacion_id),
+        validaciones
+      )
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato(pdf, :diagnostico_de_acuerdo_propuesto, validaciones)
+      self.pdf_contenido_formato(pdf, :diagnostico_de_acuerdo_anterior, validaciones)
+      self.pdf_contenido_formato_select(
+        pdf,
+        :diagnostico_id,
+        (self.antiguo.nil? ? '' : self.antiguo.nombre_acuerdo),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self, diagnostico_id: self.diagnostico_id),
+        validaciones
+      )
+      self.pdf_contenido_formato(pdf, :informe_de_acuerdo_anterior, validaciones)
+      self.pdf_contenido_formato(pdf, :acuerdo_previo_con_informe_id, validaciones)
+      self.pdf_separador(pdf, 20)
+
+      # PESTAÑA 2
+      self.pdf_titulo_formato(pdf, I18n.t(:contexto_sector), "Contexto Sector y/o Territorio Involucrado")
+      self.pdf_contenido_formato_checks(pdf, :actividad_economicas_ids, self.actividades_economicas_beauty_tree_selector, validaciones)
+      self.pdf_contenido_formato(pdf, :numero_empresas, validaciones)
+      self.pdf_contenido_formato(pdf, :produccion, validaciones)
+      self.pdf_contenido_formato_custom(pdf, :ventas, ActionController::Base.helpers.number_to_currency(self.ventas), validaciones)
+      self.pdf_contenido_formato(pdf, :numero_trabajadores, validaciones)
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato(pdf, :cadena_de_valor, validaciones)
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato_custom(pdf, :acuerdo_de_alcance_nacional, (self.acuerdo_de_alcance_nacional ? "Si" : "No"), validaciones, true)
+      self.pdf_contenido_formato_checks(pdf, :comunas_ids, self.comunas_beauty_tree_selector, validaciones)
+      
+      datos_territorio = splitBase64(mapa_territorio)
+      if datos_territorio.present? && datos_territorio[:data].present?
+        pdf.image StringIO.new(Base64.decode64(datos_territorio[:data])), fit: [pdf.bounds.width, 400]
+      end
+
+      pdf.move_down 11
+      self.pdf_contenido_formato_checks(pdf, :cuencas_ids, self.cuencas_beauty_tree_selector, validaciones)
+      self.pdf_contenido_formato(pdf, :caracterizacion_sector_territorio, validaciones)
+      self.pdf_contenido_formato(pdf, :vulnerabilidad_al_cambio_climatico_del_sector, validaciones)
+      self.pdf_contenido_formato(pdf, :principales_problemas_y_desafios, validaciones)
+      self.pdf_contenido_formato(pdf, :principales_conflictos, validaciones)
+      self.pdf_contenido_formato(pdf, :otro_contexto_sector, validaciones)
+      self.pdf_contenido_formato(pdf, :estudios_sectoriales_territoriales_relevantes, validaciones)
+      self.pdf_separador(pdf, 20)
+
+      # PESTAÑA 3
+      self.pdf_titulo_formato(pdf, I18n.t(:actores_y_partes_interesadas), "Identificación de actores relevantes para el Acuerdo.")
+      self.pdf_contenido_formato(pdf, :principales_actores, validaciones)
+      self.pdf_contenido_formato(pdf, :carta_de_apoyo_y_compromiso, validaciones)
+      self.pdf_separador(pdf, 20)
+
+      # PESTAÑA 4
+      self.pdf_titulo_formato(pdf, I18n.t(:datos_institucion), "Datos Institución Gestora Acuerdo que actuará como contraparte de los organismos públicos firmantes")
+      self.pdf_contenido_formato(pdf, :proponente, validaciones)
+      self.pdf_contenido_formato_custom(pdf, :proponente_institucion_id, (self.proponente_institucion.blank? || self.proponente_institucion.razon_social.blank? ? "Sin razón social." : self.proponente_institucion.razon_social), validaciones, true)
+      self.pdf_contenido_formato(pdf, :institucion_gestora_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :rut_institucion_gestora_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :fecha_creacion_institucion, validaciones)
+      self.pdf_contenido_formato(pdf, :numero_de_socios_institucion_gestora, validaciones)
+      self.pdf_contenido_formato(pdf, :direccion_institucion_gestora_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :ubicacion_exacta, validaciones)
+      self.pdf_contenido_formato(pdf, :tipo_contribuyente_de_institucion_gestora, validaciones)
+      
+      self.pdf_contenido_formato_custom(pdf, :sucursal_ligada, (establecimiento_contribuyente.nil? ? '' : establecimiento_contribuyente.nombre_and_direccion), validaciones)
+      
+      self.pdf_contenido_formato(pdf, :justificacion_de_seleccion, validaciones)
+      self.pdf_contenido_formato(pdf, :registro_en_linea, validaciones)
+      self.pdf_contenido_formato(pdf, :equipo_de_trabajo_comprometido, validaciones)
+      self.pdf_contenido_formato(pdf, :experiencia_en_gestion_de_proyectos, validaciones)
+      self.pdf_contenido_formato(pdf, :nombre_representante_para_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :rut_representante_para_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :email_representante_para_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :telefono_representante_para_acuerdo, validaciones)
+      self.pdf_contenido_formato(pdf, :carta_de_interes_institucion_gestora_firmada, validaciones)
+      self.pdf_separador(pdf, 20)
+
+      # PESTAÑA 5
+      self.pdf_titulo_formato(pdf, I18n.t(:datos_proyecto), "Solo Aplica a Acuerdos Voluntarios de Participación Temprana.")
+      self.pdf_contenido_formato(pdf, :nombre_proyecto, validaciones)
+      self.pdf_contenido_formato(pdf, :descripcion_proyecto, validaciones)
+      self.pdf_contenido_formato(pdf, :justificacion_proyecto, validaciones)
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato(pdf, :detalle_de_localizacion, validaciones)
+      
+      datos_influencia = splitBase64(mapa_area_influencia)
+      if datos_influencia.present? && datos_influencia[:data].present?
+        pdf.image StringIO.new(Base64.decode64(datos_influencia[:data])), fit: [pdf.bounds.width, 400]
+      end
+
+      pdf.move_down 11
+      self.pdf_contenido_formato(pdf, :area_influencia_proyecto_archivo, validaciones)
+      
+      datos_alternativas = splitBase64(mapa_alternativas)
+      if datos_alternativas.present? && datos_alternativas[:data].present?
+        pdf.image StringIO.new(Base64.decode64(datos_alternativas[:data])), fit: [pdf.bounds.width, 400]
+      end
+
+      pdf.move_down 11
+      self.pdf_separador(pdf, 11)
+      self.pdf_contenido_formato(pdf, :estado_proyecto, validaciones)
+      self.pdf_contenido_formato(pdf, :tecnologia, validaciones)
+      self.pdf_contenido_formato(pdf, :operador, validaciones)
+      self.pdf_contenido_formato_custom(pdf, :monto_inversion, ActionController::Base.helpers.number_to_currency(self.monto_inversion), validaciones)
+      self.pdf_contenido_formato(pdf, :otros_proyectos_en_territorios_cercanos, validaciones)
+      self.pdf_contenido_formato(pdf, :otro_datos_proyecto, validaciones)
+      self.pdf_contenido_formato(pdf, :gantt_proyecto, validaciones)
+      self.pdf_contenido_formato(pdf, :estudio_de_mercado, validaciones)
+      self.pdf_contenido_formato(pdf, :anteproyecto, validaciones)
+      self.pdf_contenido_formato(pdf, :otros_estudios, validaciones)
+    end
+
+    # =========================================================================
+    # SUBIDA Y ALMACENAMIENTO EN EL SERVIDOR
+    # =========================================================================
+    pdf_string = pdf.render
+    pdf_file_name = "manifestacion_de_interes_inicial_#{self.id}.pdf"
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+
+    File.binwrite(ruta_temporal, pdf_string)
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        storage :file if Rails.env.development?
+
+        def store_dir
+          "accion/public/uploads/manifestacion_de_interes/pdf_inicial"
+        end
+      end
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+      Rails.logger.info "=== [PDF MANIFESTACIÓN INICIAL] GUARDADO EN: #{uploader.file&.path || uploader.url} ==="
+    end
+
+    pdf
+  rescue StandardError => e
+    Rails.logger.error "Error generando PDF Manifestación Inicial: #{e.class} - #{e.message}"
+    Rails.logger.error e.backtrace.first(5).join("\n")
+    nil
+  ensure
+    File.delete(ruta_temporal) if defined?(ruta_temporal) && ruta_temporal && File.exist?(ruta_temporal)
+  end
+
+  def pdf_inicial_existe?
+    nombre_archivo = "manifestacion_de_interes_inicial_#{self.id}.pdf"
+
+    uploader_class = Class.new(CarrierWave::Uploader::Base) do
+      storage :file if Rails.env.development?
+
+      def store_dir
+        "accion/public/uploads/manifestacion_de_interes/pdf_inicial"
+      end
+    end
+
+    uploader = uploader_class.new
+    uploader.retrieve_from_store!(nombre_archivo)
+
+    # 1. Verificación local en disco
+    ruta_en_disco = uploader.file&.path || uploader.path
+    rutas_candidatas = [
+      ruta_en_disco,
+      Rails.root.join("public", "accion", "public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo),
+      Rails.root.join("accion", "public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo),
+      Rails.root.join("public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo)
+    ].compact
+
+    return true if rutas_candidatas.any? { |ruta| File.exist?(ruta) }
+
+    # 2. Verificación remota en Azure (solo si la URL es http/https)
+    url_remota = uploader.url.to_s
+    if url_remota.start_with?("http://", "https://")
+      return uploader.file&.exists? || false
+    end
+
+    false
+  rescue StandardError => e
+    Rails.logger.error "Error verificando existencia de PDF inicial (ID #{self.id}): #{e.message}"
+    false
+  end
+
+  def pdf_tabla_observaciones(pdf, comentarios)
+     begin
+      # Encabezados de la tabla
+      headers = ["Descripción", "Fecha y Hora", "Tarea", "Responsable"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      comentarios.each do |resp|
+        fila = [
+          resp[:comentario],
+          resp[:created_at].strftime('%d-%m-%Y %H:%M:%S'), 
+          resp.tarea.codigo,
+          resp.user.nombre_completo
+        ]
+        data << fila
+      end
+      pdf.table(data, header: true, column_widths: [127, 127, 127, 127], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
+
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
 end
