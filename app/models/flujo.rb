@@ -448,7 +448,11 @@ class Flujo < ApplicationRecord
         instancia = ["Única"]
       end
       # Documentos asociados funcionará como arreglo de diferentes documentos con sus datos
-      if t.tarea.codigo == Tarea::COD_APL_005
+      if t.tarea.codigo == Tarea::COD_APL_001
+        if self.manifestacion_de_interes&.pdf_inicial_existe?
+          documentos_asociados = [{nombre: "Manifestación de Interés Postulada", url: 'descargar_manifestacion_de_interes_inicial_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
+        end
+      elsif t.tarea.codigo == Tarea::COD_APL_005
         documentos_asociados = [{nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_archivo_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
       elsif t.tarea.codigo == Tarea::COD_APL_011
         documentos_asociados = []

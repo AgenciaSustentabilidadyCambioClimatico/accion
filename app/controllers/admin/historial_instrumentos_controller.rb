@@ -130,6 +130,94 @@ class Admin::HistorialInstrumentosController < ApplicationController
     send_data excel.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "observaciones_informe_metas_acciones.xlsx"
   end
 
+  def descargar_manifestacion_de_interes_inicial_pdf
+    t_inicio = Time.now
+    Rails.logger.info "=== [RADAR 1] INICIANDO STREAMER (t=0s) ==="
+    
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+    nombre_archivo = "manifestacion_de_interes_inicial_#{@manifestacion_de_interes.id}.pdf"
+    pdf_relative_path = "accion/public/uploads/manifestacion_de_interes/pdf_inicial/#{nombre_archivo}"
+
+    begin
+      # 1. Instanciamos el uploader con la MISMA configuración con la que se guardó
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/manifestacion_de_interes/pdf_inicial"
+        end
+      end
+
+      uploader = uploader_class.new
+      # Recuperamos el archivo por su nombre simple (ya que store_dir tiene la carpeta)
+      uploader.retrieve_from_store!(nombre_archivo)
+
+      # 2. CASO DESARROLLO (Almacenamiento Local / File System)
+      # CarrierWave provee uploader.file.path o uploader.path con la ruta real en disco
+      ruta_en_disco = uploader.file&.path || uploader.path
+
+      # Lista de posibles rutas locales por si existe en alguna de las carpetas conocidas
+      rutas_candidatas = [
+        ruta_en_disco,
+        Rails.root.join("public", "accion", "public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo),
+        Rails.root.join("accion", "public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo),
+        Rails.root.join("public", "uploads", "manifestacion_de_interes", "pdf_inicial", nombre_archivo)
+      ].compact
+
+      archivo_encontrado = rutas_candidatas.find { |ruta| File.exist?(ruta) }
+      if archivo_encontrado
+        Rails.logger.info "=== [RADAR LOCAL] ARCHIVO ENCONTRADO EN DISCO: #{archivo_encontrado} ==="
+        return send_file archivo_encontrado,
+                        type: "application/pdf",
+                        disposition: "attachment",
+                        filename: nombre_archivo
+      end
+
+      # 3. CASO PRODUCCIÓN / AZURE (Storage Remoto)
+      url_firmada = uploader.url.to_s
+      Rails.logger.info "=== [RADAR URL REMOTA] #{url_firmada} ==="
+
+      if url_firmada.start_with?("http://", "https://")
+        uri = URI.parse(url_firmada)
+
+        response.headers['Content-Type'] = "application/pdf"
+        response.headers['Content-Disposition'] = "attachment; filename=\"#{nombre_archivo}\""
+        response.headers['X-Accel-Buffering'] = 'no'
+        response.headers['Cache-Control'] = 'no-cache'
+
+        Rails.logger.info "=== [RADAR 3] ABRIENDO CONEXIÓN DIRECTA REMOTA ==="
+        self.response_body = Enumerator.new do |yielder|
+          require 'net/http'
+          Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+            http.read_timeout = 600
+            request = Net::HTTP::Get.new(uri.request_uri)
+            
+            http.request(request) do |azure_response|
+              if azure_response.code.to_i == 200
+                Rails.logger.info "=== [RADAR 4] CODIGO 200 OK. ENVIANDO PDF ==="
+                azure_response.read_body do |chunk|
+                  yielder << chunk
+                end
+              else
+                error_xml = azure_response.read_body
+                Rails.logger.error "=== [ERROR AZURE #{azure_response.code}] #{error_xml} ==="
+                yielder << "Error de Azure: #{azure_response.code}. Verifica los logs."
+              end
+            end
+          end
+        end
+        return
+      end
+
+      # 4. Si no está en disco ni en URL remota
+      flash[:alert] = "El archivo PDF no fue encontrado ni localmente ni en Azure."
+      redirect_to(request.referer || root_path)
+
+    rescue StandardError => e
+      Rails.logger.error "=== [ERROR] #{e.class}: #{e.message} ==="
+      flash[:alert] = "Error al descargar PDF: #{e.message}"
+      redirect_to(request.referer || root_path)
+    end
+  end
+
 
   #def ejecutada
   #  require 'open-uri'

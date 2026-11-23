@@ -23,13 +23,15 @@ Rails.application.configure do
   config.action_mailer.asset_host = email['asset_host']
   config.action_mailer.smtp_settings = {
     :address              => email['smtp_settings_address'],
-    :port                 => ENV['MAILER_SMTP_SETTINGS_PORT'] || email['smtp_settings_port'],
+    :port                 => (ENV['MAILER_SMTP_SETTINGS_PORT'] || email['smtp_settings_port']).to_i,
     :domain               => email['smtp_settings_domain'],
     :user_name            => email['smtp_settings_user_name'],
     :password             => ENV['MAILER_SMTP_SETTINGS_PASSWORD'] || email['smtp_settings_password'],
-    :authentication       => email['smtp_settings_authentication'],
+    :authentication       => email['smtp_settings_authentication']&.to_sym,
     :enable_starttls_auto => ENV.key?('MAILER_SMTP_SETTINGS_ENABLE_STARTTLS_AUTO') ? ENV['MAILER_SMTP_SETTINGS_ENABLE_STARTTLS_AUTO'] == 'true' : email['smtp_settings_enable_starttls_auto'],
-    :tls                  => ENV['MAILER_SMTP_SETTINGS_TLS'] == 'true'
+    :tls                  => ENV['MAILER_SMTP_SETTINGS_TLS'] == 'true',
+    :open_timeout         => 15,
+    :read_timeout         => 60
   }
 
   config.action_mailer.perform_caching = false

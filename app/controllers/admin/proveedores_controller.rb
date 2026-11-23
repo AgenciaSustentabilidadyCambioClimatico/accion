@@ -97,21 +97,24 @@ class Admin::ProveedoresController < ApplicationController
   end
 
   def get_apls_registro
+    @registro = RegistroProveedor.find(params[:id])
+    @registro_proveedor = @registro
+
+    @cv = if @registro.tipo_proveedor_id == 1
+            DocumentoRegistroProveedor.find_by(registro_proveedor_id: @registro.id, description: "Curriculum Vitae") if current_user
+          else
+            DocumentoRegistroProveedor.find_by(registro_proveedor_id: @registro.id, description: "Curriculum Vitae")
+          end
+
+    @experiencias = CertificadoProveedor.where(registro_proveedor_id: @registro.id)
+    @resolucion = @registro.archivo_aprobado_directiva
+    @apls = @registro.get_apl
+
     respond_to do |format|
-      @registro_proveedor = RegistroProveedor.find(params[:id])
-      @registro = RegistroProveedor.find(params[:id])
-      if @registro.tipo_proveedor_id == 1
-         @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: @registro.id, description: "Curriculum Vitae").first if current_user
-      else
-        @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: @registro.id, description: "Curriculum Vitae").first
-      end
-      @experiencias = CertificadoProveedor.where(registro_proveedor_id: @registro.id)
-      @resolucion = @registro.archivo_aprobado_directiva
-      @apls = @registro.get_apl
-      format.js {}
-      format.json { render :json => @apls }
-      format.html { render :json => @apls } 
-      format.any { render :json => @apls } 
+      format.html { render json: @apls }
+      format.json { render json: @apls }
+      format.js   { head :not_acceptable unless request.xhr? }
+      format.any  { render json: @apls }
     end
   end
 
