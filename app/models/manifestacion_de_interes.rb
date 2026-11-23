@@ -1888,7 +1888,7 @@ class ManifestacionDeInteres < ApplicationRecord
   def pdf_tabla_observaciones(pdf, comentarios)
      begin
       # Encabezados de la tabla
-      headers = ["Descripción", "Fecha y Hora", "Tarea", "Responsable"]
+      headers = ["Descripción", "Fecha y Hora", "Responsable"]
 
       # Datos de la tabla
       data = [headers] # Comienza con los encabezados
@@ -1898,12 +1898,11 @@ class ManifestacionDeInteres < ApplicationRecord
         fila = [
           resp[:comentario],
           resp[:created_at].strftime('%d-%m-%Y %H:%M:%S'), 
-          resp.tarea.codigo,
           resp.user.nombre_completo
         ]
         data << fila
       end
-      pdf.table(data, header: true, column_widths: [127, 127, 127, 127], cell_style: { size: 9, padding: [4, 8] }) do |table|
+      pdf.table(data, header: true, column_widths: [170, 170, 170], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
 
