@@ -354,6 +354,7 @@ class ManifestacionDeInteresController < ApplicationController
             carga_de_representantes
             insertar_mapa_de_actores
             if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
+              pdf = @manifestacion_de_interes.generar_pdf_inicial(manifestacion_params[:url_territorio], manifestacion_params[:url_area_influencia], manifestacion_params[:url_alternativas])
               ## Graba comentarios en tabla comentario_flujos
               custom_params_comentarios = {
                 cuestionario_flujos: {
