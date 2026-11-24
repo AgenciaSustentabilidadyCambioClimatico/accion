@@ -1056,6 +1056,36 @@ class ManifestacionDeInteresController < ApplicationController
           #DZC corrige continuación el en flujo por cumplimiento de condición 'A'
           if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
             if manifestacion_obs_admisibilidad_params.key?(:update_obs_admisibilidad) && manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
+
+              ## Graba comentarios en tabla comentario_flujos
+              correlativo = ComentarioFlujo.where(flujo_id: @flujo.id, tarea_id: @tarea&.id).count + 1
+
+              ordinales = {
+                1 => "1era.",
+                2 => "2da.",
+                3 => "3era.",
+                4 => "4ta.",
+                5 => "5ta.",
+                6 => "6ta.",
+                7 => "7ma.",
+                8 => "8va.",
+                9 => "9na.",
+                10 => "10ma."
+              }
+              prefijo_ordinal = ordinales[correlativo] || "#{correlativo}ta."
+
+              custom_params_comentarios = {
+                cuestionario_flujos: {
+                  flujo_id: @flujo.id,
+                  user_id: @tarea_pendiente.user_id,
+                  tarea_id: @tarea&.id,
+                  comentario: "#{prefijo_ordinal} Modificación Observaciones Técnicas"
+                }
+              }
+
+              comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+              comentario.save
+
               @tarea_pendiente.pasar_a_siguiente_tarea 'A' if manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
 
               format.js { 
@@ -1292,6 +1322,36 @@ class ManifestacionDeInteresController < ApplicationController
           #DZC corrige continuación el en flujo por cumplimiento de condición 'A'
           if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
             if manifestacion_obs_admisibilidad_juridica_params.key?(:update_obs_admisibilidad_juridica)
+
+              ## Graba comentarios en tabla comentario_flujos
+              correlativo = ComentarioFlujo.where(flujo_id: @flujo.id, tarea_id: @tarea&.id).count + 1
+
+              ordinales = {
+                1 => "1era.",
+                2 => "2da.",
+                3 => "3era.",
+                4 => "4ta.",
+                5 => "5ta.",
+                6 => "6ta.",
+                7 => "7ma.",
+                8 => "8va.",
+                9 => "9na.",
+                10 => "10ma."
+              }
+              prefijo_ordinal = ordinales[correlativo] || "#{correlativo}ta."
+
+              custom_params_comentarios = {
+                cuestionario_flujos: {
+                  flujo_id: @flujo.id,
+                  user_id: @tarea_pendiente.user_id,
+                  tarea_id: @tarea&.id,
+                  comentario: "#{prefijo_ordinal} Modificación Observaciones Jurídica"
+                }
+              }
+
+              comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+              comentario.save
+
               @tarea_pendiente.pasar_a_siguiente_tarea 'A' if manifestacion_obs_admisibilidad_juridica_params[:update_obs_admisibilidad_juridica] == "true"
             end
             format.js { 
@@ -1438,12 +1498,14 @@ class ManifestacionDeInteresController < ApplicationController
                 if flujo.save
                   persona_by_user = Persona.where(user_id: postulante.user_id).first
 
-                  MapaDeActor.find_or_create_by({
-                    flujo_id: flujo.id,
-                    rol_id: Rol::PROPONENTE, 
-                    persona_id: persona_by_user.id 
-                  })
-
+                  postulante = MapaDeActor.where(flujo_id: flujo.id, rol_id: Rol::PROPONENTE).count
+                  if postulante == 0
+                    MapaDeActor.find_or_create_by({
+                      flujo_id: flujo.id,
+                      rol_id: Rol::PROPONENTE, 
+                      persona_id: persona_by_user.id 
+                    })
+                  end
                   codigo_proyecto = "Proyecto DyAPL"
 
                   fpl = FondoProduccionLimpia.find_or_initialize_by(flujo_apl_id: @tarea_pendiente.flujo_id)
@@ -1733,6 +1795,36 @@ class ManifestacionDeInteresController < ApplicationController
 
           if manifestacion_responder_pertinencia_params.key?(:update_respuesta_pertinencia)
             if @tarea_pendiente.save && manifestacion_responder_pertinencia_params[:update_respuesta_pertinencia] == "true" && @manifestacion_de_interes.temporal != "true"
+              
+              ## Graba comentarios en tabla comentario_flujos
+              correlativo = ComentarioFlujo.where(flujo_id: @flujo.id, tarea_id: @tarea&.id).count + 1
+
+              ordinales = {
+                1 => "1era.",
+                2 => "2da.",
+                3 => "3era.",
+                4 => "4ta.",
+                5 => "5ta.",
+                6 => "6ta.",
+                7 => "7ma.",
+                8 => "8va.",
+                9 => "9na.",
+                10 => "10ma."
+              }
+              prefijo_ordinal = ordinales[correlativo] || "#{correlativo}ta."
+
+              custom_params_comentarios = {
+                cuestionario_flujos: {
+                  flujo_id: @flujo.id,
+                  user_id: @tarea_pendiente.user_id,
+                  tarea_id: @tarea&.id,
+                  comentario: "#{prefijo_ordinal} Modificación a Observaciones Pertinencia y Factibilidad"
+                }
+              }
+
+              comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+              comentario.save
+              
               if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
                 case @manifestacion_de_interes.acepta_condiciones_pertinencia
                 when true

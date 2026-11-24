@@ -4,11 +4,11 @@ development:
   timeout: 5000
   pool: 5
   host: localhost
-  username: cazambra
-  password: postgres
+  username: jvillena
+  password: root
   template: template0
   schema_search_path: "public, admin"
-  database: bd_accion
+  database: bd_accion_2
 
 test:
   adapter: postgresql
@@ -36,7 +36,7 @@ production:
   adapter: postgresql
   encoding: unicode
   timeout: 5000
-  pool: 5
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   host: localhost
   username: guillo10
   template: template0

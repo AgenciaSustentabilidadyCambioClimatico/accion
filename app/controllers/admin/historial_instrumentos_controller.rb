@@ -16,9 +16,12 @@ class Admin::HistorialInstrumentosController < ApplicationController
 
   def descargar_manifestacion_pdf_archivo
     @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
-    
+
+    # Se rescatan del log los usuarios involucrados en la actualizacion de las tareas APL-004.1 y APL-004.2 
+    comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @manifestacion_de_interes.flujo.id)
+
     # 1. Generamos el PDF en memoria
-    pdf = @manifestacion_de_interes.generar_pdf(params[:url_territorio], params[:url_area_influencia], params[:url_alternativas])
+    pdf = @manifestacion_de_interes.generar_pdf(params[:url_territorio], params[:url_area_influencia], params[:url_alternativas], comentarios)
     
     # 2. Cabeceras anti-timeout para Nginx
     response.headers['X-Accel-Buffering'] = 'no'
