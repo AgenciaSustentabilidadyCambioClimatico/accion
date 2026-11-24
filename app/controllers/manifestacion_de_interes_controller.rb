@@ -354,6 +354,19 @@ class ManifestacionDeInteresController < ApplicationController
             carga_de_representantes
             insertar_mapa_de_actores
             if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
+              ## Graba comentarios en tabla comentario_flujos
+              custom_params_comentarios = {
+                cuestionario_flujos: {
+                  flujo_id: @flujo.id,
+                  user_id: @tarea_pendiente.user_id,
+                  tarea_id: @tarea&.id,
+                  comentario: "Creación"
+                }
+              }
+
+              comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+              comentario.save
+              
               @tarea_pendiente.pasar_a_siguiente_tarea 'A'
               # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
               #revisar para optimizar con método de Adan en modelo tarea_pendiente
