@@ -2257,7 +2257,7 @@ class FondoProduccionLimpiasController < ApplicationController
           
           if params[:comunasIds].present?
             # Eliminar todas las entradas para el flujo actual
-            ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
+            ComunasFlujo.where(flujo_id: @flujo.id).delete_all
             
             # Recorre el array de comunas
             comunas = JSON.parse(params[:comunasIds]) # Asegúrate de parsear el JSON aquí
@@ -2310,7 +2310,7 @@ class FondoProduccionLimpiasController < ApplicationController
             end
           else
             # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
-            ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
+            ComunasFlujo.where(flujo_id: @flujo.id).delete_all 
             puts "No se seleccionó ninguna comuna"
           end
           
@@ -3671,7 +3671,7 @@ class FondoProduccionLimpiasController < ApplicationController
       
       if params[:comunasIds].present?
         # Eliminar todas las entradas para el flujo actual
-        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
+        ComunasFlujo.where(flujo_id: @flujo.id).delete_all
         
         # Recorre el array de comunas
         comunas = JSON.parse(params[:comunasIds]) # Asegúrate de parsear el JSON aquí
@@ -3724,7 +3724,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       else
         # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
-        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
+        ComunasFlujo.where(flujo_id: @flujo.id).delete_all 
         puts "No se seleccionó ninguna comuna"
       end
 
@@ -3865,7 +3865,7 @@ class FondoProduccionLimpiasController < ApplicationController
       
       if params[:comunasIds].present?
         # Eliminar todas las entradas para el flujo actual
-        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
+        ComunasFlujo.where(flujo_id: @flujo.id).delete_all
         
         # Recorre el array de comunas
         comunas = JSON.parse(params[:comunasIds]) # Asegúrate de parsear el JSON aquí
@@ -3918,7 +3918,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       else
         # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
-        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
+        ComunasFlujo.where(flujo_id: @flujo.id).delete_all 
         puts "No se seleccionó ninguna comuna"
       end
       
