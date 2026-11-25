@@ -10,20 +10,21 @@ class ActividadEconomica < ApplicationRecord
 	alias_attribute :nombre, :descripcion
 
 	def get_children
-		codigo_ciu = "nada"
-		codigo_ciu = self.codigo_ciiuv4 if !self.codigo_ciiuv4.blank?
-		ActividadEconomica.where("codigo_ciiuv4 LIKE '"+codigo_ciu+"%'").where.not(id: self.id)
+		return ActividadEconomica.none if self.codigo_ciiuv4.blank?
+
+		ActividadEconomica.where("codigo_ciiuv4 LIKE ?", "#{self.codigo_ciiuv4}%")
+						.where.not(id: self.id)
 	end
 
-  def get_parents
-    #dependiendo de mi nivel traigo mi padre y/o abuelo, o nada
-    parents = []
-    if self.codigo_ciiuv4.length > 2
-      parents << ActividadEconomica.find_by(codigo_ciiuv4: self.codigo_ciiuv4[0,2])
-      parents << ActividadEconomica.find_by(codigo_ciiuv4: self.codigo_ciiuv4[0,3]) if self.codigo_ciiuv4.length == 6
-    end
-    parents
-  end
+	def get_parents
+		return [] if self.codigo_ciiuv4.blank? || self.codigo_ciiuv4.length <= 2
+
+		codigos = [self.codigo_ciiuv4[0, 2]]
+		codigos << self.codigo_ciiuv4[0, 3] if self.codigo_ciiuv4.length == 6
+
+		ActividadEconomica.where(codigo_ciiuv4: codigos)
+						.sort_by { |ae| ae.codigo_ciiuv4.length }
+	end
 
 	def self.__select_arbol(lowest_only=true)
 
