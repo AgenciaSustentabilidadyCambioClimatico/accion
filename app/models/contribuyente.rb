@@ -218,56 +218,71 @@ class Contribuyente < ApplicationRecord
   end
 
   def confirmar_temporal
-  	if(self.contribuyente_id.nil?)
-  		#Es nuevo
-  		contribuyente_final = self
-  		contribuyente_final.temporal = false
-  		contribuyente_final.flujo_id = nil
-  		contribuyente_final.save
-  	else
-  		#Se edito uno existente
-	  	contribuyente_final = Contribuyente.find(self.contribuyente_id)
+    if self.contribuyente_id.nil?
+      # Es nuevo
+      contribuyente_final = self
+      contribuyente_final.temporal = false
+      contribuyente_final.flujo_id = nil
+      contribuyente_final.save
+    else
+      # Se editó uno existente
+      contribuyente_final = Contribuyente.find(self.contribuyente_id)
 
-	  	#Primero los valores del padre
-	  	contribuyente_final.razon_social = self.razon_social
-	  	contribuyente_final.save(validate: false)
+      # Primero los valores del padre
+      contribuyente_final.razon_social = self.razon_social
+      contribuyente_final.save(validate: false)
 
-	  	#Despues los hijos
-	  	#actividades economicas se reemplaza completo
-	  	aec = contribuyente_final.actividad_economica_contribuyentes.destroy_all
-	  	self.actividad_economica_contribuyentes.each{|r| 
-	      rc = r.dup
-	      rc.contribuyente_id = self.contribuyente_id
-	      rc.save
-	    }
+      # Después los hijos
+      # Actividades económicas se reemplazan completo
+      contribuyente_final.actividad_economica_contribuyentes.delete_all
+      self.actividad_economica_contribuyentes.each do |r|
+        rc = r.dup
+        rc.contribuyente_id = self.contribuyente_id
+        rc.save
+      end
 
-	  	#establecimientos se reemplazan los datos de originales
-	  	#primero elimino los que en temporal se eliminaron
-	  	establecimientos_ids = self.establecimiento_contribuyentes.pluck(:establecimiento_contribuyente_id)
-		contribuyente_final.establecimiento_contribuyentes.where(contribuyente_id: self.contribuyente_id).where.not(id: establecimientos_ids).destroy_all
+      # Establecimientos se reemplazan los datos de originales
+      # Primero elimino los que en temporal se eliminaron, protegiendo los referenciados en adhesion_elementos
+      establecimientos_ids = self.establecimiento_contribuyentes.pluck(:establecimiento_contribuyente_id).compact
 
-	  	#despues actualizo los valoresde los originales
-	  	self.establecimiento_contribuyentes.each do |ect|
-	  		if ect.establecimiento_contribuyente_id.nil?
-	  			#Si es nulo es porque es nuevo
-	  			ect.contribuyente_id = self.contribuyente_id
-	  			ect.save
-	  		else
-	  			#Si no es nulo se actualiza el original
-	  			ec = EstablecimientoContribuyente.find(ect.establecimiento_contribuyente_id)
-	  			ec.casa_matriz = ect.casa_matriz
-	  			ec.direccion = ect.direccion
-	  			ec.ciudad = ect.ciudad
-	  			ec.pais_id = ect.pais_id
-	  			ec.region_id = ect.region_id
-	  			ec.comuna_id = ect.comuna_id
-	  			ec.save
-	  		end
-	  	end
-	  	contribuyente_final.reload
-	  end
+      candidatos_a_eliminar = contribuyente_final.establecimiento_contribuyentes
+                                                 .where(contribuyente_id: self.contribuyente_id)
+      candidatos_a_eliminar = candidatos_a_eliminar.where.not(id: establecimientos_ids) if establecimientos_ids.any?
 
-  	contribuyente_final
+      ids_con_adhesiones = AdhesionElemento.where(
+        establecimiento_contribuyente_id: candidatos_a_eliminar.select(:id)
+      ).distinct.pluck(:establecimiento_contribuyente_id)
+
+      candidatos_a_eliminar.where.not(id: ids_con_adhesiones).destroy_all
+
+      # Precargar establecimientos originales en memoria para evitar N+1
+      originales_por_id = EstablecimientoContribuyente.where(id: establecimientos_ids).index_by(&:id)
+
+      # Después actualizo los valores de los originales o reasigno los nuevos
+      self.establecimiento_contribuyentes.each do |ect|
+        if ect.establecimiento_contribuyente_id.nil?
+          # Si es nulo es porque es nuevo
+          ect.contribuyente_id = self.contribuyente_id
+          ect.save
+        else
+          # Si no es nulo se actualiza el original
+          ec = originales_por_id[ect.establecimiento_contribuyente_id]
+          next unless ec
+
+          ec.casa_matriz = ect.casa_matriz
+          ec.direccion = ect.direccion
+          ec.ciudad = ect.ciudad
+          ec.pais_id = ect.pais_id
+          ec.region_id = ect.region_id
+          ec.comuna_id = ect.comuna_id
+          ec.save
+        end
+      end
+
+      contribuyente_final.reload
+    end
+
+    contribuyente_final
   end
 
   def elementos_certificados
