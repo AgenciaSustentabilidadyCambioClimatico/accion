@@ -303,6 +303,8 @@ class FlujoTarea < ApplicationRecord
 			end
 		else	
 			roles_ids = self.rol_destinatarios
+			flujo = Flujo.find_by(id: flujo_id) || self.flujo
+
 			MapaDeActor.where(flujo_id: flujo_id).where(rol_id: roles_ids).each do |actor|
 				unless actor.nil?	
 					rgc = RegistroAperturaCorreo.create(user_id: actor.persona.user.id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)				
