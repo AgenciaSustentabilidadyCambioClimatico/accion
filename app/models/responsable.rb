@@ -244,58 +244,63 @@ class Responsable < ApplicationRecord
   end
 
   def self.__personas_responsables_v3(rol_id, instrumento_id, contribuyente_id = nil, actividad_economica_id = nil, tipo_contribuyente_id = nil)
-    # Usamos un Set para evitar duplicados
     personas = Set.new
     all_personas = []
-    
-    # Obtenemos el instrumento y sus instrumentos relacionados
+
     instrumento = TipoInstrumento.find_by(id: instrumento_id)
     instrumentos_id = [instrumento_id]
-    
-    if instrumento && instrumento.tipo_instrumento_id.present?
-      instrumentos_id << instrumento.tipo_instrumento_id
-    end
-    
-    instrumentos_id.uniq!  # Eliminamos duplicados
-    
-    # Realizamos la consulta inicial para obtener los responsables
-    responsables = self.where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
-   
-    responsables.find_each do |r|  # Usamos find_each para evitar cargar todo en memoria
+    instrumentos_id << instrumento.tipo_instrumento_id if instrumento&.tipo_instrumento_id.present?
+    instrumentos_id.uniq!
+
+    # 1. Pre-caché en memoria para árboles jerárquicos y PersonaCargo
+    ae_children_cache = {}
+    tc_children_cache = {}
+
+    todos_persona_cargos = PersonaCargo.includes(:persona).to_a
+    persona_cargos_por_cargo = todos_persona_cargos.group_by(&:cargo_id)
+
+    # 2. Precargar asociaciones directas en Responsable
+    responsables = self.includes(:actividad_economica, :tipo_contribuyente)
+                       .where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
+
+    responsables.find_each do |r|
       ctid = r.contribuyente_id
-      aeid = r.actividad_economica_id.present? ? [r.actividad_economica_id] + r.actividad_economica.get_children.pluck(:id) : []
-      tcid = r.tipo_contribuyente_id.present? ? [r.tipo_contribuyente_id] + r.tipo_contribuyente.get_children_id : []
-    
-      # Obtener cargos asociados
-      if r.cargo_id.present?
-        # Usamos `find_each` para cargar los registros de personas por cargo de manera más eficiente
-        PersonaCargo.includes(:persona).where(cargo_id: r.cargo_id).find_each do |pc|
-          all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
-        end
-      else
-        # Si no tiene cargo_id, buscamos todas las personas asociadas a todos los cargos
-        PersonaCargo.includes(:persona).find_each do |pc|
-          all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
-        end
-      end 
+
+      aeid = if r.actividad_economica_id.present?
+               ae_children_cache[r.actividad_economica_id] ||= r.actividad_economica.get_children.map(&:id)
+               [r.actividad_economica_id] + ae_children_cache[r.actividad_economica_id]
+             else
+               []
+             end
+
+      tcid = if r.tipo_contribuyente_id.present?
+               tc_children_cache[r.tipo_contribuyente_id] ||= r.tipo_contribuyente.get_children_id
+               [r.tipo_contribuyente_id] + tc_children_cache[r.tipo_contribuyente_id]
+             else
+               []
+             end
+
+      pcs = r.cargo_id.present? ? (persona_cargos_por_cargo[r.cargo_id] || []) : todos_persona_cargos
+      pcs.each do |pc|
+        next unless pc.persona
+        all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
+      end
     end
-    
-    # OPTIMIZACIÓN: Hacer un solo includes para todos los contribuyentes
+
+    # 3. Carga masiva de contribuyentes con sus relaciones en memoria
     contribuyente_ids = all_personas.map { |p| p[:persona].contribuyente_id }.compact.uniq
     contribuyentes_loaded = Contribuyente.includes(
       :actividad_economica_contribuyentes,
       :dato_anual_contribuyentes
     ).where(id: contribuyente_ids).index_by(&:id)
-    
-    # Ahora procesar con datos ya cargados
+
     all_personas.each do |p|
       contribuyente = contribuyentes_loaded[p[:persona].contribuyente_id]
       if contribuyente && self.__info_contribuyente_optimized(contribuyente, p[:ctid], p[:aeid], p[:tcid], contribuyente_id, actividad_economica_id, tipo_contribuyente_id)
         personas.add(p[:persona])
       end
     end
-    
-    # Devolvemos los resultados como un array
+
     personas.to_a
   end
     
@@ -320,76 +325,42 @@ class Responsable < ApplicationRecord
     coincide
   end
    
-  def self.__info_contribuyente(cpo,ctid,aeid,tcid,c_extra=nil,ae_extra=nil,tc_extra=nil)
-    coincide = true
-    unless ctid.blank?
-      coincide = !coincide ? coincide : ( ctid.to_i == cpo.id.to_i )
-    end
-    if !aeid.blank? && coincide
-      coincide = !(cpo.actividad_economica_contribuyentes.pluck(:actividad_economica_id) & aeid).blank?
-      #coincide = !coincide ? coincide : (cpo.actividad_economica_contribuyentes.map{|aec|aec.actividad_economica_id.to_i}.include?(aeid.to_i))
-    end
-    if !tcid.blank? && coincide
-      # datos_contribuyente = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id}
-      # DZC 2018-10-03 16:44:07 Se corrige error, permitiendo ahora la obtención del tipo_contribuyente_id para el caso de que el atributo :periodo sea nil
-      
-      # v2
-      #datos_contribuyente = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
-      # datos_contribuyente = []
-      # nulos = cpo.dato_anual_contribuyentes.where(periodo: nil).map{|dac|dac.tipo_contribuyente_id if dac.periodo.blank?}
-      # datos_contribuyente += nulos
-      # unico = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id if dac.periodo.present?}.compact.first
-      # datos_contribuyente += [unico]
-      #coincide = !coincide ? coincide : (datos_contribuyente.include?(tcid.to_i))
-      #v3
-      coincide = !(cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id) & tcid).blank?
-
-    end
-    if !c_extra.blank? && coincide
-      coincide = ( c_extra.to_i == cpo.id.to_i )
-    end
-    if !ae_extra.blank? && coincide
-      coincide = cpo.actividad_economica_contribuyentes.pluck(:actividad_economica_id).include?(ae_extra.to_i)
-    end
-    if !tc_extra.blank? && coincide
-      coincide = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id).include?(tc_extra.to_i)
-    end
-    coincide
+  def self.__info_contribuyente(cpo, ctid, aeid, tcid, c_extra = nil, ae_extra = nil, tc_extra = nil)
+    self.__info_contribuyente_optimized(cpo, ctid, aeid, tcid, c_extra, ae_extra, tc_extra)
   end
+
   # Método optimizado que usa datos ya cargados
-  def self.__info_contribuyente_optimized(cpo, ctid, aeid, tcid, c_extra=nil, ae_extra=nil, tc_extra=nil)
+  def self.__info_contribuyente_optimized(cpo, ctid, aeid, tcid, c_extra = nil, ae_extra = nil, tc_extra = nil)
     coincide = true
-    
+
     unless ctid.blank?
-      coincide = !coincide ? coincide : (ctid.to_i == cpo.id.to_i)
+      coincide = (ctid.to_i == cpo.id.to_i)
     end
-    
+
     if !aeid.blank? && coincide
-      # Usar datos ya cargados en memoria
       ae_ids = cpo.actividad_economica_contribuyentes.map(&:actividad_economica_id)
       coincide = !(ae_ids & aeid).blank?
     end
-    
+
     if !tcid.blank? && coincide
-      # Usar datos ya cargados en memoria
       tc_ids = cpo.dato_anual_contribuyentes.map(&:tipo_contribuyente_id)
       coincide = !(tc_ids & tcid).blank?
     end
-    
+
     if !c_extra.blank? && coincide
       coincide = (c_extra.to_i == cpo.id.to_i)
     end
-    
+
     if !ae_extra.blank? && coincide
       ae_ids = cpo.actividad_economica_contribuyentes.map(&:actividad_economica_id)
       coincide = ae_ids.include?(ae_extra.to_i)
     end
-    
+
     if !tc_extra.blank? && coincide
       tc_ids = cpo.dato_anual_contribuyentes.map(&:tipo_contribuyente_id)
       coincide = tc_ids.include?(tc_extra.to_i)
     end
-    
+
     coincide
   end
 
