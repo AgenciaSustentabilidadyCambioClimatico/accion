@@ -5,11 +5,23 @@ class TipoContribuyente < ApplicationRecord
   #validates :descripción, presence: true
 
   def get_children_id
+    hijos_por_padre = TipoContribuyente.pluck(:id, :tipo_contribuyente_id)
+                                       .group_by(&:last)
+                                       .transform_values { |pares| pares.map(&:first) }
     tcs = []
-    TipoContribuyente.where(tipo_contribuyente_id: self.id).each do |tc|
-      tcs << tc.id
-      tcs += tc.get_children_id
+    visitados = {}
+    pendientes = hijos_por_padre[self.id]&.dup || []
+
+    until pendientes.empty?
+      actual = pendientes.shift
+      next if visitados[actual]
+
+      visitados[actual] = true
+      tcs << actual
+      hijos = hijos_por_padre[actual]
+      pendientes.unshift(*hijos) if hijos
     end
+
     tcs
   end
 
