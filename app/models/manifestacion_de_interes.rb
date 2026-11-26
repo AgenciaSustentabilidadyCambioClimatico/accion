@@ -1086,30 +1086,38 @@ class ManifestacionDeInteres < ApplicationRecord
 
     pdf = Prawn::Document.new
 
-    # 1. Registrar la familia de fuentes Open_Sans en Prawn
-    pdf.font_families.update("Open_Sans" => {
-      normal: Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf"),
-      bold:   Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
-    })
+    # =========================================================================
+    # CONFIGURACIÓN DE FUENTES INSTITUCIONALES (OpenSans - UTF-8 sano para Acrobat)
+    # =========================================================================
+    font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf").to_s
+    font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf").to_s
 
-    # 2. Establecer Open_Sans como fuente por defecto del documento
-    pdf.font "Open_Sans"
+    pdf.font_families.update("OpenSans" => {
+      normal: font_path_regular,
+      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+    })
+    pdf.font "OpenSans"
     
     ## HEADER
     pdf.repeat :all do
-      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width => pdf.bounds.width do
-        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png").to_s, width: 119
-        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width => pdf.bounds.width do
-          # Usar Helvetica-Bold estándar para el header evita que Prawn rompa el subset en Acrobat
-          pdf.font "Helvetica", style: :bold do
-            pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 10, color: "003DA6", align: :right
+      pdf.canvas do
+        ancho_util = pdf.bounds.width - 72
+        pdf.bounding_box [36, pdf.bounds.top - 20], width: ancho_util, height: 55 do
+          logo_header = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
+          pdf.image logo_header.to_s, width: 110 if File.exist?(logo_header)
+
+          pdf.bounding_box [0, 18], width: ancho_util do
+            pdf.font "OpenSans", style: :bold do
+              pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 9, color: "003DA6", align: :right
+            end
           end
-        end
-        pdf.move_down 8
-        pdf.stroke do
-          pdf.stroke_color '003DA6'
-          pdf.line_width 3
-          pdf.stroke_horizontal_rule
+
+          pdf.move_down 6
+          pdf.stroke do
+            pdf.stroke_color '003DA6'
+            pdf.line_width 2.5
+            pdf.stroke_horizontal_rule
+          end
         end
       end
     end
@@ -1634,30 +1642,38 @@ class ManifestacionDeInteres < ApplicationRecord
 
     pdf = Prawn::Document.new
 
-    # 1. Registrar la familia de fuentes Open_Sans en Prawn
-    pdf.font_families.update("Open_Sans" => {
-      normal: Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf"),
-      bold:   Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
-    })
+    # =========================================================================
+    # CONFIGURACIÓN DE FUENTES INSTITUCIONALES (OpenSans - UTF-8 sano para Acrobat)
+    # =========================================================================
+    font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf").to_s
+    font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf").to_s
 
-    # 2. Establecer Open_Sans como fuente por defecto del documento
-    pdf.font "Open_Sans"
+    pdf.font_families.update("OpenSans" => {
+      normal: font_path_regular,
+      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+    })
+    pdf.font "OpenSans"
     
     ## HEADER
     pdf.repeat :all do
-      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width => pdf.bounds.width do
-        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png").to_s, width: 119
-        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width => pdf.bounds.width do
-          # Usar Helvetica-Bold estándar para el header evita que Prawn rompa el subset en Acrobat
-          pdf.font "Helvetica", style: :bold do
-            pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 10, color: "003DA6", align: :right
+      pdf.canvas do
+        ancho_util = pdf.bounds.width - 72
+        pdf.bounding_box [36, pdf.bounds.top - 20], width: ancho_util, height: 55 do
+          logo_header = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
+          pdf.image logo_header.to_s, width: 110 if File.exist?(logo_header)
+
+          pdf.bounding_box [0, 18], width: ancho_util do
+            pdf.font "OpenSans", style: :bold do
+              pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 9, color: "003DA6", align: :right
+            end
           end
-        end
-        pdf.move_down 8
-        pdf.stroke do
-          pdf.stroke_color '003DA6'
-          pdf.line_width 3
-          pdf.stroke_horizontal_rule
+
+          pdf.move_down 6
+          pdf.stroke do
+            pdf.stroke_color '003DA6'
+            pdf.line_width 2.5
+            pdf.stroke_horizontal_rule
+          end
         end
       end
     end
