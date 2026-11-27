@@ -377,91 +377,64 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def guardar_usuario_entregables #FPL-00
       respond_to do |format|
-        #SE CREA FPL-01
-        institucion_postulante = ""
-        postulante = ""
-        institucion_receptora = ""
- 
         contribuyente = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-         
+
         if params[:manifestacion_de_interes][:nombre_acuerdo] == "opcion_1"
-          institucion_postulante =  contribuyente.id
+          institucion_postulante = contribuyente.id
           postulante = @tarea_pendiente.user_id
         else
           institucion_postulante = params[:manifestacion_de_interes][:institucion_entregables_id]
           postulante = params[:manifestacion_de_interes][:usuario_entregables_id]
-        end  
- 
-        if params[:manifestacion_de_interes][:proponente] == ""
-          institucion_receptora = contribuyente.id
-        else
-          institucion_receptora = params[:manifestacion_de_interes][:proponente]
-        end  
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
-        pers = Persona.where(user_id: postulante).first
-        
-        custom_params_tarea_pendiente = {
-          tarea_pendientes: {
-            flujo_id: @flujo.id,
-            tarea_id: tarea_fondo.id,
-            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id:  postulante,
-            persona_id: pers.id,
-            data: { }
-          }
-        }
-
-        @tarea_pendientes = TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes])
-        @tarea_pendientes.save 
-        
-        #Se inserta en el mapa de actores al nuevo postulante
-        postulante_user = MapaDeActor.where(flujo_id: @flujo.id, rol_id: Rol::PROPONENTE).count
-        if postulante_user == 0
-          mapa = MapaDeActor.find_or_create_by({
-            flujo_id: @flujo.id,
-            rol_id: Rol::PROPONENTE, 
-            persona_id: pers.id
-          })
         end
-        
-        #SE ENVIAR EL MAIL AL RESPONSABLE
-        mdi = @manifestacion_de_interes
+
+        institucion_receptora = if params[:manifestacion_de_interes][:proponente].blank?
+                                  contribuyente.id
+                                else
+                                  params[:manifestacion_de_interes][:proponente]
+                                end
+
+        # Buscar la Persona asociada tanto al user_id como al contribuyente postulante
+        pers = Persona.find_by(user_id: postulante, contribuyente_id: institucion_postulante) ||
+              Persona.find_by(user_id: postulante)
+
+        # Asegurar que el proponente en MapaDeActor del flujo sea la persona elegida
+        mapa_proponente = MapaDeActor.find_or_initialize_by(flujo_id: @flujo.id, rol_id: Rol::PROPONENTE)
+        mapa_proponente.persona_id = pers.id
+        mapa_proponente.save!
+
+        # pasar_a_siguiente_tarea 'A' crea automáticamente FPL-01 para el proponente del mapa de actores y envía el correo
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
-        #SE CAMBIA EL ESTADO DEL FPL-00 A 2
-        tarea_fondo_FPL_00 = Tarea.find_by_codigo(Tarea::COD_FPL_00)
-        tarea_pendiente_FPL_00 = TareaPendiente.find_by(tarea_id: tarea_fondo_FPL_00.id, flujo_id: @flujo.id)
+        # Se asigna duración en meses según tipo de instrumento
+        meses = case @flujo.tipo_instrumento_id
+                when TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_LINEA_5_1
+                  FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
+                when TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_LINEA_1_2_2
+                  FondoProduccionLimpia::DURACION_FPL_LINEA_1_2
+                when TipoInstrumento::FPL_LINEA_1_3
+                  FondoProduccionLimpia::DURACION_FPL_LINEA_1_3
+                when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO,
+                    TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO,
+                    TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2,
+                    TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+                  FondoProduccionLimpia::DURACION_FPL_EXTRAPRESUPUESTARIO
+                else
+                  FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
+                end
 
-        tarea_pendiente_FPL_00.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-        tarea_pendiente_FPL_00.save 
-        
-        #Se asigna duracion en meses segun tipo de instrumento
-        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
-          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
-        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 
-          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_2
-        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3
-          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_3
-        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
-          meses = FondoProduccionLimpia::DURACION_FPL_EXTRAPRESUPUESTARIO
-        else
-          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
-        end
-
-        custom_params = {
-          fondo_produccion_limpia: {
-            institucion_entregables_id: institucion_postulante,
-            usuario_entregables_id: postulante,
-            institucion_receptor_cof_fpl_id: institucion_receptora,
-            duracion: meses
-          }
-        }
-        @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+        @fondo_produccion_limpia.update(
+          institucion_entregables_id: institucion_postulante,
+          usuario_entregables_id: postulante,
+          institucion_receptor_cof_fpl_id: institucion_receptora,
+          duracion: meses
+        )
 
         msj = 'Asignacion postulante y encargado de financiamiento guardado correctamente'
-        format.js { flash.now[:success] = msj
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: msj }}
+        format.js {
+          flash.now[:success] = msj
+          render js: "window.location='#{root_path}'"
+        }
+        format.html { redirect_to root_path, flash: { notice: msj } }
       end
     end
 
