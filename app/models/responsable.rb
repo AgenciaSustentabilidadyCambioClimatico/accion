@@ -2,7 +2,7 @@ class Responsable < ApplicationRecord
   belongs_to :tipo_instrumento
   belongs_to :rol
   belongs_to :cargo
-  belongs_to :contribuyente, -> { includes [:actividad_economica_contribuyentes,:dato_anual_contribuyentes] }, optional: true
+  belongs_to :contribuyente, -> { includes [:actividad_economica_contribuyentes, :dato_anual_contribuyentes] }, optional: true
   belongs_to :actividad_economica, optional: true
   belongs_to :tipo_contribuyente, optional: true
 
@@ -14,280 +14,232 @@ class Responsable < ApplicationRecord
   validates_presence_of :actividad_economica_id, unless: proc { self.cargo_id.present? || self.contribuyente.present? || self.tipo_contribuyente_id.present? }
   validates_presence_of :tipo_contribuyente_id, unless: proc { self.cargo_id.present? || self.contribuyente.present? || self.actividad_economica_id.present? }
 
+  # =========================================================================
+  # HELPERS INTERNOS DE MEMOIZACIÓN DE ÁRBOLES Y INSTRUMENTOS
+  # =========================================================================
+  def self.instrumentos_relacionados(instrumento_id)
+    instrumento = TipoInstrumento.find_by(id: instrumento_id)
+    [instrumento_id, instrumento&.tipo_instrumento_id].compact.uniq
+  end
+
+  def self.resolver_ae_ids(responsable, cache)
+    return [] if responsable.actividad_economica_id.blank?
+
+    cache[responsable.actividad_economica_id] ||= (
+      [responsable.actividad_economica_id] + responsable.actividad_economica.get_children.pluck(:id)
+    )
+  end
+
+  def self.resolver_tc_ids(responsable, cache)
+    return [] if responsable.tipo_contribuyente_id.blank?
+
+    cache[responsable.tipo_contribuyente_id] ||= (
+      [responsable.tipo_contribuyente_id] + responsable.tipo_contribuyente.get_children_id
+    )
+  end
+
+  # =========================================================================
+  # VERIFICACIÓN DIRECTA DE ROL PARA EL USUARIO ACTUAL (O(1) / ~10ms)
+  # =========================================================================
+  def self.personas_tienen_rol?(rol_id, instrumento_id, personas_ids)
+    return false if personas_ids.blank?
+
+    instrumentos_id = instrumentos_relacionados(instrumento_id)
+
+    cargos_por_persona = PersonaCargo.where(persona_id: personas_ids)
+                                     .pluck(:persona_id, :cargo_id)
+                                     .group_by(&:first)
+                                     .transform_values { |pares| pares.map(&:last) }
+    todos_los_cargos = cargos_por_persona.values.flatten.uniq
+
+    responsables = includes(:actividad_economica, :tipo_contribuyente)
+                     .where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
+                     .where("cargo_id IS NULL OR cargo_id IN (?)", todos_los_cargos.presence || [-1])
+    return false if responsables.empty?
+
+    personas = Persona.includes(contribuyente: [:actividad_economica_contribuyentes, :dato_anual_contribuyentes])
+                      .where(id: personas_ids)
+
+    ae_cache = {}
+    tc_cache = {}
+
+    responsables.any? do |r|
+      aeid = resolver_ae_ids(r, ae_cache)
+      tcid = resolver_tc_ids(r, tc_cache)
+
+      personas.any? do |p|
+        next false unless p.contribuyente
+        next false if r.cargo_id.present? && !(cargos_por_persona[p.id] || []).include?(r.cargo_id)
+
+        __info_contribuyente_optimized(p.contribuyente, r.contribuyente_id, aeid, tcid)
+      end
+    end
+  end
+
+  # =========================================================================
+  # MÉTODOS DE CONSULTA OPTIMIZADOS
+  # =========================================================================
   def self.intituciones_de_los_cogestores
-    self.includes([:contribuyente]).where("rol_id = #{Rol::COGESTOR} AND contribuyente_id IS NOT NULL").all.uniq{|m|m.contribuyente_id}.map{|m|m.contribuyente}
+    includes(:contribuyente)
+      .where(rol_id: Rol::COGESTOR)
+      .where.not(contribuyente_id: nil)
+      .uniq(&:contribuyente_id)
+      .map(&:contribuyente)
   end
 
   def self.responsables_solo_rol_fast(roles_id)
-    personas=[]
-    tipo_instrumentos_ids = TipoInstrumento.all.map{|ti| ti.tipo_instrumento_id || ti.id }
-    self.where(rol_id: roles_id)
-      .where(tipo_instrumento_id: tipo_instrumentos_ids).each do |r|  
-      cgid = r.cargo_id
-      ctid = r.contribuyente_id
-      aeid = []
-      if !r.actividad_economica_id.blank?
-        aeid = [r.actividad_economica_id]
-        aeid += r.actividad_economica.get_children.pluck(:id)
-      end
-      tcid = []
-      if !r.tipo_contribuyente_id.blank?
-        tcid = [r.tipo_contribuyente_id]
-        tcid += r.tipo_contribuyente.get_children_id
-      end
+    personas = []
+    tipo_instrumentos_ids = TipoInstrumento.all.map { |ti| ti.tipo_instrumento_id || ti.id }.uniq
 
-      personas_cargos = PersonaCargo.includes([:persona])
-      personas_cargos = personas_cargos.where(cargo_id: r.cargo_id) unless r.cargo_id.blank?
-      personas_cargos.each do |pc|
-        if __info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid)
-          personas << pc.persona
+    ae_cache = {}
+    tc_cache = {}
+    todos_pcs = PersonaCargo.includes(persona: { contribuyente: [:actividad_economica_contribuyentes, :dato_anual_contribuyentes] }).to_a
+    pcs_por_cargo = todos_pcs.group_by(&:cargo_id)
+
+    includes(:actividad_economica, :tipo_contribuyente)
+      .where(rol_id: roles_id, tipo_instrumento_id: tipo_instrumentos_ids)
+      .each do |r|
+        ctid = r.contribuyente_id
+        aeid = resolver_ae_ids(r, ae_cache)
+        tcid = resolver_tc_ids(r, tc_cache)
+
+        pcs = r.cargo_id.present? ? (pcs_por_cargo[r.cargo_id] || []) : todos_pcs
+        pcs.each do |pc|
+          next unless pc.persona&.contribuyente
+
+          if __info_contribuyente_optimized(pc.persona.contribuyente, ctid, aeid, tcid)
+            personas << pc.persona
+          end
         end
       end
 
-    end
     personas.uniq
   end
-# DZC 2018-10-10 13:06:02 obtiene el array de personas proponentes de determinada institución
-  def self.responsables_por_rol(roles_id, contribuyente_id=nil, tipo_instrumento_id=nil, user=nil)
-    personas=[]
-    # roles_id = [roles_id] if !roles_id.is_a?(Array)
+
+  # DZC 2018-10-10 13:06:02 obtiene el array de personas proponentes de determinada institución
+  def self.responsables_por_rol(roles_id, contribuyente_id = nil, tipo_instrumento_id = nil, user = nil)
+    personas = []
     if tipo_instrumento_id.nil?
       TipoInstrumento.pluck(:id).each do |ti|
-        # roles_id.each do |rol_id|
-        
-          personas += Responsable.__personas_responsables(roles_id, ti, nil, nil, nil, user)
-        # end
+        personas += Responsable.__personas_responsables(roles_id, ti, nil, nil, nil, user)
       end
     else
-      tipo_instrumento_id = [tipo_instrumento_id] if !tipo_instrumento_id.is_a?(Array)
+      tipo_instrumento_id = [tipo_instrumento_id] unless tipo_instrumento_id.is_a?(Array)
       tipo_instrumento_id.each do |ti|
-        
         personas += Responsable.__personas_responsables(roles_id, ti, nil, nil, nil, user)
-        
       end
     end
 
     personas = personas.uniq.sort
-    # DZC 2018-10-10 15:31:26 filtra personas por contribuyente o contribuyentes, si no viene nulo
     unless contribuyente_id.nil?
-      contribuyente_id = [contribuyente_id] if !contribuyente_id.is_a?(Array)
-      personas.select do |p|  
-        
-        contribuyente_id.include?(p.contribuyente_id)
-      end
+      contribuyente_id = [contribuyente_id] unless contribuyente_id.is_a?(Array)
+      personas.select { |p| contribuyente_id.include?(p.contribuyente_id) }
     end
     personas
   end
 
-  def self.__personas_responsables(rol_id, instrumento_id, contribuyente_id=nil, actividad_economica_id=nil, tipo_contribuyente_id=nil, user=nil)
+  def self.__personas_responsables(rol_id, instrumento_id, contribuyente_id = nil, actividad_economica_id = nil, tipo_contribuyente_id = nil, user = nil)
     personas = []
-    instrumentos_id =[]
-    instrumentos_id << instrumento_id
-    
+    instrumentos_id = instrumentos_relacionados(instrumento_id)
 
-    instrumentos_id << TipoInstrumento.where(id: instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: instrumento_id).tipo_instrumento_id.blank? #DZC agrega instrumento_id padre, en caso de que instrumento_id sea hijo
-    
-    
-    # instrumentos_id += TipoInstrumento.where(tipo_instrumento_id: instrumento_id).all.pluck(:id) if TipoInstrumento.find_by(id: instrumento_id).tipo_instrumento_id.blank? #DZC agrega todos los instrumentos hijos
-    
-    instrumentos_id.uniq #DZC elimina repetidos
-    
-    
-    #DZC TODO: Se debe modificar para contemplar todas las combinaciones de reglas posibles segun valores de tabla responsables
-    #DZC TODO: Se debe leer el tipo de instrumento desde la instancia del proceso (manifestación, ppf, ppp) y no desde la tarea 
-    
-    responsables = self.where(rol_id: rol_id).where(tipo_instrumento_id: instrumentos_id)
-    
-    responsables = responsables.where(contribuyente_id: contribuyente_id) if(!contribuyente_id.nil?)
-    
-    responsables = responsables.where(actividad_economica_id: actividad_economica_id) if(!actividad_economica_id.nil?)
-    
-    responsables = responsables.where(tipo_contribuyente_id: tipo_contribuyente_id) if(!tipo_contribuyente_id.nil?)
+    responsables = includes(:actividad_economica, :tipo_contribuyente)
+                     .where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
+    responsables = responsables.where(contribuyente_id: contribuyente_id) unless contribuyente_id.nil?
+    responsables = responsables.where(actividad_economica_id: actividad_economica_id) unless actividad_economica_id.nil?
+    responsables = responsables.where(tipo_contribuyente_id: tipo_contribuyente_id) unless tipo_contribuyente_id.nil?
 
-    if (user.present?)
-      user_personas = user.present? ? (user.session[:personas] || []) : []
-      user_personas_cargos = user_personas.map{ |p| PersonaCargo.includes([:persona]).where(persona_id: p[:id]).pluck(:cargo_id) }.flatten
-      respon = responsables.filter{ |r| user_personas_cargos.include?(r.cargo_id) }
-      all_user_personas = []
+    ae_cache = {}
+    tc_cache = {}
+
+    if user.present?
+      user_personas_raw = [user.session[:personas] || []].flatten
+      user_persona_ids = user_personas_raw.map { |p| p[:id] }.compact.uniq
+      return [] if user_persona_ids.empty?
+
+      user_personas_cargos = PersonaCargo.where(persona_id: user_persona_ids).pluck(:cargo_id).uniq
+      respon = responsables.select { |r| user_personas_cargos.include?(r.cargo_id) }
+      return [] if respon.empty?
+
+      personas_loaded = Persona.includes(
+        contribuyente: [:actividad_economica_contribuyentes, :dato_anual_contribuyentes]
+      ).where(id: user_persona_ids).to_a
+
       respon.each do |r|
-        cgid = r.cargo_id
-      
         ctid = r.contribuyente_id
-        
-        aeid = []
-        if !r.actividad_economica_id.blank?
-          aeid = [r.actividad_economica_id]
-          aeid += r.actividad_economica.get_children.pluck(:id)
-        end
-        tcid = []
-        if !r.tipo_contribuyente_id.blank?
-          tcid = [r.tipo_contribuyente_id]
-          tcid += r.tipo_contribuyente.get_children_id
-        end
-        user_personas = [user.session[:personas] || []].flatten
-        user_personas.each do |p|
-              persona = Persona.includes([:contribuyente]).find(p[:id])
-              all_user_personas << { persona: persona, ctid: ctid, aeid: aeid, tcid: tcid }
-         end
-        end
-         
-      # OPTIMIZACIÓN: Hacer un solo includes para todos los contribuyentes
-      contribuyente_ids = all_user_personas.map { |p| p[:persona].contribuyente_id }.compact.uniq
-      contribuyentes_loaded = Contribuyente.includes(
-        :actividad_economica_contribuyentes,
-        :dato_anual_contribuyentes
-      ).where(id: contribuyente_ids).index_by(&:id)
-      
-      # Ahora procesar con datos ya cargados
-      all_user_personas.each do |p|
-        contribuyente = contribuyentes_loaded[p[:persona].contribuyente_id]
-        if contribuyente && self.__info_contribuyente_optimized(contribuyente, p[:ctid], p[:aeid], p[:tcid])
-          personas << p[:persona]
+        aeid = resolver_ae_ids(r, ae_cache)
+        tcid = resolver_tc_ids(r, tc_cache)
+
+        personas_loaded.each do |persona|
+          if persona.contribuyente && __info_contribuyente_optimized(persona.contribuyente, ctid, aeid, tcid)
+            personas << persona
+          end
         end
       end
     else
       all_personas = []
-    # self.where(rol_id: rol_id)
-    #   .where("cargo_id IS NOT NULL")
+      todos_pcs = PersonaCargo.includes(:persona).to_a
+      pcs_por_cargo = todos_pcs.group_by(&:cargo_id)
 
-      responsables.each do |r|  
-        cgid = r.cargo_id
-        
+      responsables.each do |r|
         ctid = r.contribuyente_id
-        
-        aeid = []
-        if !r.actividad_economica_id.blank?
-          aeid = [r.actividad_economica_id]
-          aeid += r.actividad_economica.get_children.pluck(:id)
-        end
-        tcid = []
-        if !r.tipo_contribuyente_id.blank?
-          tcid = [r.tipo_contribuyente_id]
-          tcid += r.tipo_contribuyente.get_children_id
-        end
-        if r.cargo_id.blank? == false       
-          PersonaCargo.includes([:persona]).where(cargo_id: r.cargo_id).each do |pc|
-            all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
-          end
-        else
-          PersonaCargo.includes([:persona]).each do |pc|
-            all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
-          end
+        aeid = resolver_ae_ids(r, ae_cache)
+        tcid = resolver_tc_ids(r, tc_cache)
+
+        pcs = r.cargo_id.present? ? (pcs_por_cargo[r.cargo_id] || []) : todos_pcs
+        pcs.each do |pc|
+          next unless pc.persona
+
+          all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
         end
       end
-      
-      # OPTIMIZACIÓN: Hacer un solo includes para todos los contribuyentes
+
       contribuyente_ids = all_personas.map { |p| p[:persona].contribuyente_id }.compact.uniq
       contribuyentes_loaded = Contribuyente.includes(
         :actividad_economica_contribuyentes,
         :dato_anual_contribuyentes
       ).where(id: contribuyente_ids).index_by(&:id)
-      
-      # Ahora procesar con datos ya cargados
+
       all_personas.each do |p|
         contribuyente = contribuyentes_loaded[p[:persona].contribuyente_id]
-        if contribuyente && self.__info_contribuyente_optimized(contribuyente, p[:ctid], p[:aeid], p[:tcid])
+        if contribuyente && __info_contribuyente_optimized(contribuyente, p[:ctid], p[:aeid], p[:tcid])
           personas << p[:persona]
         end
       end
     end
+
     personas.uniq
   end
 
-  def self.__personas_responsables_v2(rol_id, instrumento_id, contribuyente_id=nil, actividad_economica_id=nil, tipo_contribuyente_id=nil)
-    personas = []
-    instrumentos_id =[]
-    instrumentos_id << instrumento_id
-    
-    instrumentos_id << TipoInstrumento.where(id: instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: instrumento_id).tipo_instrumento_id.blank? #DZC agrega instrumento_id padre, en caso de que instrumento_id sea hijo
-    
-    
-    # instrumentos_id += TipoInstrumento.where(tipo_instrumento_id: instrumento_id).all.pluck(:id) if TipoInstrumento.find_by(id: instrumento_id).tipo_instrumento_id.blank? #DZC agrega todos los instrumentos hijos
-    
-    instrumentos_id.uniq #DZC elimina repetidos
-    
-    #DZC TODO: Se debe modificar para contemplar todas las combinaciones de reglas posibles segun valores de tabla responsables
-    #DZC TODO: Se debe leer el tipo de instrumento desde la instancia del proceso (manifestación, ppf, ppp) y no desde la tarea 
-    
-    responsables = self.where(rol_id: rol_id).where(tipo_instrumento_id: instrumentos_id)
-    # self.where(rol_id: rol_id)
-    #   .where("cargo_id IS NOT NULL")
-    responsables.each do |r|  
-      cgid = r.cargo_id
-      ctid = r.contribuyente_id
-      aeid = []
-      if !r.actividad_economica_id.blank?
-        aeid = [r.actividad_economica_id]
-        aeid += r.actividad_economica.get_children.pluck(:id)
-      end
-      tcid = []
-      if !r.tipo_contribuyente_id.blank?
-        tcid = [r.tipo_contribuyente_id]
-        tcid += r.tipo_contribuyente.get_children_id
-      end
-      if r.cargo_id.blank? == false
-        PersonaCargo.includes([:persona]).where(cargo_id: r.cargo_id).each do |pc|
-          if self.__info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid,contribuyente_id,actividad_economica_id,tipo_contribuyente_id)
-            personas << pc.persona
-          end
-        end
-      else #DZC busca todas las personas asociadas a todos los cargos del contribuyente, para el caso de que no se indique cargo
-        
-        personas = PersonaCargo.includes([:persona]).each do |pc|
-          if __info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid,contribuyente_id,actividad_economica_id,tipo_contribuyente_id)
-            personas << pc.persona
-          end
-        end
-      end
-    end
-    personas.uniq
+  def self.__personas_responsables_v2(rol_id, instrumento_id, contribuyente_id = nil, actividad_economica_id = nil, tipo_contribuyente_id = nil)
+    __personas_responsables_v3(rol_id, instrumento_id, contribuyente_id, actividad_economica_id, tipo_contribuyente_id)
   end
 
   def self.__personas_responsables_v3(rol_id, instrumento_id, contribuyente_id = nil, actividad_economica_id = nil, tipo_contribuyente_id = nil)
     personas = Set.new
     all_personas = []
+    instrumentos_id = instrumentos_relacionados(instrumento_id)
 
-    instrumento = TipoInstrumento.find_by(id: instrumento_id)
-    instrumentos_id = [instrumento_id]
-    instrumentos_id << instrumento.tipo_instrumento_id if instrumento&.tipo_instrumento_id.present?
-    instrumentos_id.uniq!
+    ae_cache = {}
+    tc_cache = {}
+    todos_pcs = PersonaCargo.includes(:persona).to_a
+    pcs_por_cargo = todos_pcs.group_by(&:cargo_id)
 
-    # 1. Pre-caché en memoria para árboles jerárquicos y PersonaCargo
-    ae_children_cache = {}
-    tc_children_cache = {}
-
-    todos_persona_cargos = PersonaCargo.includes(:persona).to_a
-    persona_cargos_por_cargo = todos_persona_cargos.group_by(&:cargo_id)
-
-    # 2. Precargar asociaciones directas en Responsable
-    responsables = self.includes(:actividad_economica, :tipo_contribuyente)
-                       .where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
+    responsables = includes(:actividad_economica, :tipo_contribuyente)
+                     .where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
 
     responsables.find_each do |r|
       ctid = r.contribuyente_id
+      aeid = resolver_ae_ids(r, ae_cache)
+      tcid = resolver_tc_ids(r, tc_cache)
 
-      aeid = if r.actividad_economica_id.present?
-               ae_children_cache[r.actividad_economica_id] ||= r.actividad_economica.get_children.map(&:id)
-               [r.actividad_economica_id] + ae_children_cache[r.actividad_economica_id]
-             else
-               []
-             end
-
-      tcid = if r.tipo_contribuyente_id.present?
-               tc_children_cache[r.tipo_contribuyente_id] ||= r.tipo_contribuyente.get_children_id
-               [r.tipo_contribuyente_id] + tc_children_cache[r.tipo_contribuyente_id]
-             else
-               []
-             end
-
-      pcs = r.cargo_id.present? ? (persona_cargos_por_cargo[r.cargo_id] || []) : todos_persona_cargos
+      pcs = r.cargo_id.present? ? (pcs_por_cargo[r.cargo_id] || []) : todos_pcs
       pcs.each do |pc|
         next unless pc.persona
+
         all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
       end
     end
 
-    # 3. Carga masiva de contribuyentes con sus relaciones en memoria
     contribuyente_ids = all_personas.map { |p| p[:persona].contribuyente_id }.compact.uniq
     contribuyentes_loaded = Contribuyente.includes(
       :actividad_economica_contribuyentes,
@@ -296,40 +248,22 @@ class Responsable < ApplicationRecord
 
     all_personas.each do |p|
       contribuyente = contribuyentes_loaded[p[:persona].contribuyente_id]
-      if contribuyente && self.__info_contribuyente_optimized(contribuyente, p[:ctid], p[:aeid], p[:tcid], contribuyente_id, actividad_economica_id, tipo_contribuyente_id)
+      if contribuyente && __info_contribuyente_optimized(contribuyente, p[:ctid], p[:aeid], p[:tcid], contribuyente_id, actividad_economica_id, tipo_contribuyente_id)
         personas.add(p[:persona])
       end
     end
 
     personas.to_a
   end
-    
+
   def self.__info_contribuyente_v2(cpo, ctid, aeid, tcid)
-    coincide = true
-  
-    # Optimizar validaciones solo si es necesario
-    coincide &= ctid.blank? || ctid.to_i == cpo.id.to_i
-  
-    # Obtener actividad económica ids solo si aeid está presente
-    if aeid.present?
-      ae_ids = cpo.actividad_economica_contribuyentes.pluck(:actividad_economica_id)
-      coincide &= (ae_ids & aeid).any?
-    end
-  
-    # Obtener tipo contribuyente ids solo si tcid está presente
-    if tcid.present?
-      tc_ids = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
-      coincide &= (tc_ids & tcid).any?
-    end
-  
-    coincide
-  end
-   
-  def self.__info_contribuyente(cpo, ctid, aeid, tcid, c_extra = nil, ae_extra = nil, tc_extra = nil)
-    self.__info_contribuyente_optimized(cpo, ctid, aeid, tcid, c_extra, ae_extra, tc_extra)
+    __info_contribuyente_optimized(cpo, ctid, aeid, tcid)
   end
 
-  # Método optimizado que usa datos ya cargados
+  def self.__info_contribuyente(cpo, ctid, aeid, tcid, c_extra = nil, ae_extra = nil, tc_extra = nil)
+    __info_contribuyente_optimized(cpo, ctid, aeid, tcid, c_extra, ae_extra, tc_extra)
+  end
+
   def self.__info_contribuyente_optimized(cpo, ctid, aeid, tcid, c_extra = nil, ae_extra = nil, tc_extra = nil)
     coincide = true
 
@@ -365,147 +299,153 @@ class Responsable < ApplicationRecord
   end
 
   def self.__personas_responsables_por_instrumento(rol_id, instrumento_id, institucion)
-    #Se obtienen todos los cargos asociados a este rol
-    cargos = Responsable.where(rol_id: rol_id).where(tipo_instrumento_id: instrumento_id).select('cargo_id')
+    cargos = Responsable.where(rol_id: rol_id, tipo_instrumento_id: instrumento_id).select('cargo_id')
     personas_cargos = PersonaCargo.where(cargo_id: cargos).select('persona_id')
-    personas = Persona.where(id: personas_cargos).select('user_id').distinct
+    Persona.where(id: personas_cargos).select('user_id').distinct
   end
 
   def self.__instituciones_con_rol(rol_id, tipo_instrumento_id, contribuyente_id)
     posee_rol = false
-    contribuyente = Contribuyente.find(contribuyente_id)
-    contribuyentes = []
-    instrumentos_id = []
-    instrumentos_id << tipo_instrumento_id    
-    instrumentos_id << TipoInstrumento.where(id: tipo_instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: tipo_instrumento_id).tipo_instrumento_id.blank? 
-    responsables = Responsable.where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
-    responsables.each do |r|
-      if !posee_rol
-        ct_id = r.contribuyente_id
-        aeid = []
-        if !r.actividad_economica_id.blank?
-          aeid = [r.actividad_economica_id]
-          aeid += r.actividad_economica.get_children.pluck(:id)
-        end
-        tcid = []
-        if !r.tipo_contribuyente_id.blank?
-          tcid = [r.tipo_contribuyente_id]
-          tcid += r.tipo_contribuyente.get_children_id
-        end
-        if ct_id.present?
-          if contribuyente_id == ct_id          
-            #Se verifica que la institucion posea la actividad economica de la relacion       
-            if !(contribuyente.actividad_economica_ids & aeid).blank?
-              posee_rol = true
-            end
-          end
-        else #DZC busca todas las personas asociadas a todos los cargos del contribuyente, para el caso de que no se indique cargo
-          # por defecto es true y si uno no cumple lo mato
-          posee_rol = true
-          
-          if !aeid.blank?
-            actividades_economicas_contribuyente = contribuyente.actividad_economica_contribuyentes.pluck(:actividad_economica_id)
-            posee_rol = false if (actividades_economicas_contribuyente & aeid).blank?
-          end
+    contribuyente = Contribuyente.includes(:actividad_economica_contribuyentes, :dato_anual_contribuyentes).find(contribuyente_id)
+    instrumentos_id = instrumentos_relacionados(tipo_instrumento_id)
 
-          if !tcid.blank?
-            tipo_contribuyentes = contribuyente.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
-            posee_rol = false if (tipo_contribuyentes & tcid).blank?
-          end
+    ae_cache = {}
+    tc_cache = {}
+    actividades_economicas_contribuyente = contribuyente.actividad_economica_contribuyentes.map(&:actividad_economica_id)
+    tipo_contribuyentes = contribuyente.dato_anual_contribuyentes.map(&:tipo_contribuyente_id)
+
+    responsables = Responsable.includes(:actividad_economica, :tipo_contribuyente)
+                              .where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
+    responsables.each do |r|
+      break if posee_rol
+
+      ct_id = r.contribuyente_id
+      aeid = resolver_ae_ids(r, ae_cache)
+      tcid = resolver_tc_ids(r, tc_cache)
+
+      if ct_id.present?
+        if contribuyente_id == ct_id && !(actividades_economicas_contribuyente & aeid).blank?
+          posee_rol = true
         end
+      else
+        posee_rol = true
+        posee_rol = false if !aeid.blank? && (actividades_economicas_contribuyente & aeid).blank?
+        posee_rol = false if !tcid.blank? && (tipo_contribuyentes & tcid).blank?
       end
     end
+
     posee_rol
   end
 
   def self.__tipo_instrumento_por_persona_rol(roles_id, personas)
+    return [] if personas.blank?
+
+    persona_ids = personas.map(&:id)
+    cargos_por_persona = PersonaCargo.where(persona_id: persona_ids)
+                                     .pluck(:persona_id, :cargo_id)
+                                     .group_by(&:first)
+                                     .transform_values { |pares| pares.map(&:last) }
+    todos_cargos = cargos_por_persona.values.flatten.uniq
+    return [] if todos_cargos.empty?
+
+    responsables_loaded = where(rol_id: roles_id, cargo_id: todos_cargos)
+                          .pluck(:cargo_id, :contribuyente_id, :tipo_instrumento_id)
+
     tipo_instrumentos = []
     personas.each do |persona|
+      c_ids = cargos_por_persona[persona.id] || []
+      responsables_loaded.each do |cargo_id, contrib_id, ti_id|
+        next unless c_ids.include?(cargo_id)
 
-      cargos_ids = persona.persona_cargos.pluck(:cargo_id)
-      responsables = self.where(rol_id: roles_id).where(cargo_id: cargos_ids)
-
-      #Dos busquedas
-      #primero los que no tienen contribuyente asociado
-      tipo_instrumentos += responsables.where(contribuyente_id: nil).pluck(:tipo_instrumento_id)
-      #segundo los que si tienen contribuyente y coinciden con el de la persona
-      #la persona no cambia segun activiad economica o tipo contribuyente, asique me lo salto
-      tipo_instrumentos += responsables.where(contribuyente_id: persona.contribuyente_id).pluck(:tipo_instrumento_id)
+        if contrib_id.nil? || contrib_id == persona.contribuyente_id
+          tipo_instrumentos << ti_id
+        end
+      end
     end
+
     tipo_instrumentos.uniq
   end
 
   def self.__roles_por_persona(personas)
+    return [] if personas.blank?
+
+    persona_ids = personas.map(&:id)
+    cargos_por_persona = PersonaCargo.where(persona_id: persona_ids)
+                                     .pluck(:persona_id, :cargo_id)
+                                     .group_by(&:first)
+                                     .transform_values { |pares| pares.map(&:last) }
+    todos_cargos = cargos_por_persona.values.flatten.uniq
+    return [] if todos_cargos.empty?
+
+    responsables_loaded = where(cargo_id: todos_cargos)
+                          .pluck(:cargo_id, :contribuyente_id, :rol_id)
+
     roles = []
     personas.each do |persona|
+      c_ids = cargos_por_persona[persona.id] || []
+      responsables_loaded.each do |cargo_id, contrib_id, r_id|
+        next unless c_ids.include?(cargo_id)
 
-      cargos_ids = persona.persona_cargos.pluck(:cargo_id)
-      responsables = self.where(cargo_id: cargos_ids)
-
-      #Dos busquedas
-      #primero los que no tienen contribuyente asociado
-      roles += responsables.where(contribuyente_id: nil).pluck(:rol_id)
-      #segundo los que si tienen contribuyente y coinciden con el de la persona
-      #la persona no cambia segun activiad economica o tipo contribuyente, asique me lo salto
-      roles += responsables.where(contribuyente_id: persona.contribuyente_id).pluck(:rol_id)
+        if contrib_id.nil? || contrib_id == persona.contribuyente_id
+          roles << r_id
+        end
+      end
     end
+
     roles.uniq
   end
 
   def self.__contribuyentes_por_rol(rol_id, tipo_instrumento_id)
-    where_query = ""
-    responsables = Responsable.where(rol_id: rol_id, tipo_instrumento_id: tipo_instrumento_id)
+    where_parts = []
+    ae_cache = {}
+    tc_cache = {}
+
+    responsables = Responsable.includes(:actividad_economica, :tipo_contribuyente)
+                              .where(rol_id: rol_id, tipo_instrumento_id: tipo_instrumento_id)
     responsables.each do |r|
-      subquery = ""
-      if !r.contribuyente_id.blank? #subquery.where(contribuyente_id: r.contribuyente_id) if !r.contribuyente_id.blank?
-        subquery += "contribuyentes.id = "+r.contribuyente_id.to_s 
+      conditions = []
+      conditions << "contribuyentes.id = #{r.contribuyente_id.to_i}" unless r.contribuyente_id.blank?
+
+      unless r.actividad_economica_id.blank?
+        aeid = resolver_ae_ids(r, ae_cache)
+        conditions << "actividad_economica_contribuyentes.actividad_economica_id IN (#{aeid.join(',')})"
       end
-      if !r.actividad_economica_id.blank? #subquery.where(actividad_economica_contribuyentes: { actividad_economica_id: r.actividad_economica_id }) if !r.actividad_economica_id.blank?
-        aeid = [r.actividad_economica_id]
-        aeid += r.actividad_economica.get_children.pluck(:id)
-        subquery += " AND " if !subquery.blank?
-        subquery += "actividad_economica_contribuyentes.actividad_economica_id IN (#{aeid.join(',')}) "
+
+      unless r.tipo_contribuyente_id.blank?
+        tcid = resolver_tc_ids(r, tc_cache)
+        conditions << "dato_anual_contribuyentes.tipo_contribuyente_id IN (#{tcid.join(',')})"
       end
-      if !r.tipo_contribuyente_id.blank? #subquery.where(dato_anual_contribuyentes: { tipo_contribuyente_id: r.tipo_contribuyente_id }) if !r.tipo_contribuyente_id.blank?
-        tcid = [r.tipo_contribuyente_id]
-        tcid += r.tipo_contribuyente.get_children_id
-        subquery += " AND " if !subquery.blank? 
-        subquery += "dato_anual_contribuyentes.tipo_contribuyente_id IN (#{tcid.join(',')})"
-      end
-      subquery = " OR ("+subquery+") " if !subquery.blank? && !where_query.blank?
-      where_query += subquery if !subquery.blank?
+
+      where_parts << "(#{conditions.join(' AND ')})" unless conditions.empty?
     end
-    contribuyentes = []
-    contribuyentes = Contribuyente.joins([:actividad_economica_contribuyentes, :dato_anual_contribuyentes]).where(where_query) if !where_query.blank?
-    contribuyentes
+
+    return [] if where_parts.empty?
+
+    Contribuyente.joins([:actividad_economica_contribuyentes, :dato_anual_contribuyentes])
+                 .where(where_parts.join(' OR '))
   end
 
   def self._cargos_por_rol_empresa(rol_id, tipo_instrumento_id, contribuyente_id)
     cargos = []
-    instrumentos_id = [tipo_instrumento_id]    
-    instrumentos_id << TipoInstrumento.where(id: tipo_instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: tipo_instrumento_id).tipo_instrumento_id.blank?
-    responsables = Responsable.where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
+    instrumentos_id = instrumentos_relacionados(tipo_instrumento_id)
+    ae_cache = {}
+    tc_cache = {}
+
+    contribuyente = Contribuyente.includes(:actividad_economica_contribuyentes, :dato_anual_contribuyentes)
+                                 .find_by(id: contribuyente_id)
+    return [] unless contribuyente
+
+    responsables = Responsable.includes(:cargo, :actividad_economica, :tipo_contribuyente)
+                              .where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
     responsables.each do |r|
-      subquery = ""
-      if !r.contribuyente_id.blank? #subquery.where(contribuyente_id: r.contribuyente_id) if !r.contribuyente_id.blank?
-        subquery += "contribuyentes.id = "+r.contribuyente_id.to_s 
+      aeid = resolver_ae_ids(r, ae_cache)
+      tcid = resolver_tc_ids(r, tc_cache)
+
+      if __info_contribuyente_optimized(contribuyente, r.contribuyente_id, aeid, tcid)
+        cargos << r.cargo if r.cargo
       end
-      if !r.actividad_economica_id.blank? #subquery.where(actividad_economica_contribuyentes: { actividad_economica_id: r.actividad_economica_id }) if !r.actividad_economica_id.blank?
-        aeid = [r.actividad_economica_id]
-        aeid += r.actividad_economica.get_children.pluck(:id)
-        subquery += " AND " if !subquery.blank?
-        subquery += "actividad_economica_contribuyentes.actividad_economica_id IN (#{aeid.join(',')}) "
-      end
-      if !r.tipo_contribuyente_id.blank? #subquery.where(dato_anual_contribuyentes: { tipo_contribuyente_id: r.tipo_contribuyente_id }) if !r.tipo_contribuyente_id.blank?
-        tcid = [r.tipo_contribuyente_id]
-        tcid += r.tipo_contribuyente.get_children_id
-        subquery += " AND " if !subquery.blank? 
-        subquery += "dato_anual_contribuyentes.tipo_contribuyente_id IN (#{tcid.join(',')})"
-      end
-      contribuyentes = Contribuyente.joins([:actividad_economica_contribuyentes, :dato_anual_contribuyentes]).where(subquery).where(id: contribuyente_id)
-      cargos << r.cargo if contribuyentes.count > 0
     end
+
     cargos
   end
-
 end
